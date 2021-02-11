@@ -1,6 +1,6 @@
-﻿#pragma once
+#pragma once
 
-#include "Windows/Windows.API.hh"
+#include "Platform/Windows/Windows.API.hh"
 #include <string>
 
 namespace ct

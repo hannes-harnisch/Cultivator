@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Intrinsics.hh"
 #include <cstdlib>
@@ -6,12 +6,17 @@
 
 namespace ct
 {
-	void showErrorWindow(const std::string& title, const std::string& message);
+	void showErrorBox(const std::string& title, const std::string& message);
 
 	inline void crash(const std::string& message)
 	{
-		showErrorWindow("FATAL ERROR", message);
+		showErrorBox("FATAL ERROR", message);
 		std::exit(EXIT_FAILURE);
+	}
+
+	template<typename T, uint32_t N> constexpr uint32_t countOf(T (&)[N])
+	{
+		return N;
 	}
 }
 
@@ -41,6 +46,6 @@ namespace ct
 				ct::crash(message);                                                                                    \
 		}
 
-	#define ctEnsureResult(condition, message) Ensure((condition) >= 0, message)
+	#define ctEnsureResult(condition, message) ctEnsure((condition) >= 0, message)
 
 #endif

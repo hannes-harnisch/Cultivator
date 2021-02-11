@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Window.hh"
 
@@ -16,25 +16,25 @@ namespace ct
 			return *Instance;
 		}
 
-		inline void exit()
-		{
-			ShouldRun = false;
-		}
+		void quit();
 
 		App(const App&) = delete;
 		App(App&&)		= delete;
+
 		App& operator=(const App&) = delete;
 		App& operator=(App&&) = delete;
 
 	private:
 		static inline App* Instance;
 
-		bool ShouldRun = true;
+		bool ShouldTick = true;
 		Window MainWindow;
 
 		App();
 
-		int run();
+		int start();
+		void tick();
+
 		void initializePlatform();
 		void pollEvents();
 	};

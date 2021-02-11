@@ -1,7 +1,7 @@
 #include "App.hh"
 
 #include "Assert.hh"
-#include "Windows/Windows.API.hh"
+#include "Platform/Windows/Windows.API.hh"
 
 namespace ct
 {
@@ -9,11 +9,8 @@ namespace ct
 	{
 		switch(message)
 		{
-			case WM_CLOSE:
-				App::get().exit();
-				return 0;
-			default:
-				return ::DefWindowProc(windowHandle, message, wParam, lParam);
+			case WM_CLOSE: App::get().quit(); return 0;
+			default: return ::DefWindowProc(windowHandle, message, wParam, lParam);
 		}
 	}
 

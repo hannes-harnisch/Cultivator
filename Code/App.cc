@@ -1,4 +1,4 @@
-﻿#include "App.hh"
+#include "App.hh"
 
 #include "Assert.hh"
 #include <cstdlib>
@@ -6,7 +6,7 @@
 int main()
 {
 	static ct::App app;
-	return app.run();
+	return app.start();
 }
 
 namespace ct
@@ -18,15 +18,24 @@ namespace ct
 
 		initializePlatform();
 		MainWindow = Window(CT_APP_NAME, 500, 500, 0, 0);
+		MainWindow.show();
 	}
 
-	int App::run()
+	void App::quit()
 	{
-		MainWindow.show();
+		ShouldTick = false;
+	}
 
-		while(ShouldRun)
-			pollEvents();
+	int App::start()
+	{
+		while(ShouldTick)
+			tick();
 
 		return EXIT_SUCCESS;
+	}
+
+	void App::tick()
+	{
+		pollEvents();
 	}
 }

@@ -1,10 +1,10 @@
-#include "Windows/Windows.API.hh"
-#include "Windows/Windows.Utils.hh"
+#include "Platform/Windows/Windows.API.hh"
+#include "Platform/Windows/Windows.Utils.hh"
 #include <string>
 
 namespace ct
 {
-	void showErrorWindow(const std::string& title, const std::string& message)
+	void showErrorBox(const std::string& title, const std::string& message)
 	{
 		auto wideTitle {widenString(title)};
 		auto wideMessage {widenString(message)};

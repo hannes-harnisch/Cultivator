@@ -21,7 +21,11 @@ workspace 'Cultivator'
 
 	filter 'system:Windows'
 		systemversion	'latest'
-		files			{ 'Code/**/Windows.*.*' }
+		files			{ 'Code/**/Windows.*.*', 'Code/**/Vulkan.*.*' }
+		includedirs		'C:/VulkanSDK/1.2.154.1/Include'
+		libdirs			'C:/VulkanSDK/1.2.154.1/Lib'
+		links			'Vulkan-1.lib'
+		defines			'CT_SYSTEM_WINDOWS'
 
 	filter 'configurations:Debug'
 		runtime			'Debug'
@@ -45,6 +49,11 @@ workspace 'Cultivator'
 project 'Cultivator'
 	location			'Code'
 	includedirs			'Code'
-	kind				'WindowedApp'
 	entrypoint			'mainCRTStartup'
 	defines				'CT_APP_NAME="%{prj.name}"'
+
+	filter 'configurations:Debug'
+		kind			'ConsoleApp'
+
+	filter 'configurations:Release'
+		kind			'WindowedApp'

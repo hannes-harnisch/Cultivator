@@ -1,7 +1,6 @@
-﻿#pragma once
+#pragma once
 
 #define WIN32_LEAN_AND_MEAN
-#define STRICT
 
 #define NOGDICAPMASKS	  // CC_*, LC_*, PC_*, CP_*, TC_*, RC_
 #define NOVIRTUALKEYCODES // VK_*
