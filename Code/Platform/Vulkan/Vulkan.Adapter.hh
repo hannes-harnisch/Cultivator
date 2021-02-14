@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Platform/Vulkan/Vulkan.API.hh"
-#include <algorithm>
+#include "PCH.hh"
 
 namespace ct::vulkan
 {

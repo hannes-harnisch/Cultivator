@@ -1,8 +1,8 @@
+#include "PCH.hh"
 #include "Vulkan.SwapChain.hh"
 
 #include "Assert.hh"
 #include "Platform/Vulkan/Vulkan.Adapter.hh"
-#include <utility>
 
 namespace ct::vulkan
 {
@@ -20,7 +20,8 @@ namespace ct::vulkan
 
 	SwapChain::~SwapChain()
 	{
-		Adapter::get().instance().destroySurfaceKHR(Surface);
+		if(Surface)
+			Adapter::get().instance().destroySurfaceKHR(Surface);
 	}
 
 	SwapChain& SwapChain::operator=(SwapChain&& other) noexcept

@@ -18,6 +18,8 @@ workspace 'Cultivator'
 	objdir				( '.bin_int/' .. output_dir .. '/%{prj.name}' )
 	targetdir			( '.bin/'	 .. output_dir .. '/%{prj.name}' )
 	debugdir			( '.bin/'	 .. output_dir .. '/%{prj.name}' )
+	pchheader			'PCH.hh'
+	pchsource			'Code/PCH.cc'
 
 	filter 'system:Windows'
 		systemversion	'latest'

@@ -1,8 +1,7 @@
+#include "PCH.hh"
 #include "Platform/Vulkan/Vulkan.Adapter.hh"
 
 #include "Assert.hh"
-#include <cstdio>
-#include <vector>
 
 namespace ct::vulkan
 {
@@ -127,10 +126,10 @@ namespace ct::vulkan
 			vk::InstanceCreateInfo()
 				.setPNext(&loggerInfo)
 				.setPApplicationInfo(&appInfo)
-				.setEnabledExtensionCount(std::size(RequiredInstanceExtensions))
+				.setEnabledExtensionCount(uint32_t(std::size(RequiredInstanceExtensions)))
 				.setPpEnabledExtensionNames(RequiredInstanceExtensions)
 #if CT_DEBUG
-				.setEnabledLayerCount(std::size(RequiredDebugLayers))
+				.setEnabledLayerCount(uint32_t(std::size(RequiredDebugLayers)))
 				.setPpEnabledLayerNames(RequiredDebugLayers)
 #endif
 		};

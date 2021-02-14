@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Platform/Windows/Windows.Window.hh"
-#include <string>
 
 namespace ct
 {

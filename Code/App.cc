@@ -1,4 +1,5 @@
-﻿#include "App.hh"
+#include "PCH.hh"
+#include "App.hh"
 
 #include "Assert.hh"
 #include <cstdlib>
