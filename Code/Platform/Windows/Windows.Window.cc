@@ -1,15 +1,16 @@
-#include "Window.hh"
+#include "Platform/Windows/Windows.Window.hh"
 
-#include "Platform/Windows/Windows.API.hh"
 #include "Platform/Windows/Windows.Utils.hh"
 
-namespace ct
+namespace ct::windows
 {
 	Window::Window(const std::string& title, int width, int height, int x, int y)
 	{
 		auto wideTitle {widenString(title)};
 		NativeHandle = ::CreateWindow(TEXT(CT_APP_NAME), wideTitle.data(), WS_OVERLAPPEDWINDOW, x, y, width, height,
 									  nullptr, nullptr, nullptr, nullptr);
+
+		SwapChain = vulkan::SwapChain(NativeHandle);
 	}
 
 	Window::Window(Window&& other) noexcept
@@ -19,8 +20,7 @@ namespace ct
 
 	Window::~Window()
 	{
-		HWND handle {static_cast<HWND>(NativeHandle)};
-		::DestroyWindow(handle);
+		::DestroyWindow(NativeHandle);
 	}
 
 	Window& Window::operator=(Window&& other) noexcept
@@ -31,7 +31,6 @@ namespace ct
 
 	void Window::show()
 	{
-		HWND handle {static_cast<HWND>(NativeHandle)};
-		::ShowWindow(handle, SW_SHOW);
+		::ShowWindow(NativeHandle, SW_SHOW);
 	}
 }

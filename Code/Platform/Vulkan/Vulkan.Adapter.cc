@@ -8,14 +8,14 @@ namespace ct::vulkan
 {
 	namespace
 	{
-		VkApplicationInfo getAppInfo()
+		vk::ApplicationInfo getAppInfo()
 		{
-			return {.sType				= VK_STRUCTURE_TYPE_APPLICATION_INFO,
-					.pApplicationName	= CT_APP_NAME,
-					.applicationVersion = VK_MAKE_VERSION(0, 0, 1),
-					.pEngineName		= CT_APP_NAME,
-					.engineVersion		= VK_MAKE_VERSION(0, 0, 1),
-					.apiVersion			= VK_API_VERSION_1_0};
+			return vk::ApplicationInfo()
+				.setPApplicationName(CT_APP_NAME)
+				.setApplicationVersion(VK_MAKE_VERSION(0, 0, 1))
+				.setPEngineName(CT_APP_NAME)
+				.setEngineVersion(VK_MAKE_VERSION(0, 0, 1))
+				.setApiVersion(VK_API_VERSION_1_0);
 		}
 
 		VKAPI_ATTR VkBool32 VKAPI_CALL logDebug(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -37,26 +37,30 @@ namespace ct::vulkan
 			return false;
 		}
 
-		VkDebugUtilsMessengerCreateInfoEXT getLoggerInfo()
+		vk::DebugUtilsMessengerCreateInfoEXT getLoggerInfo()
 		{
-			return {.sType			 = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-					.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-									   VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-									   VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-					.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-								   VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-								   VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
-					.pfnUserCallback = logDebug};
+			return vk::DebugUtilsMessengerCreateInfoEXT()
+				.setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+									vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+									vk::DebugUtilsMessageSeverityFlagBitsEXT::eError)
+				.setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+								vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+								vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance)
+				.setPfnUserCallback(logDebug);
 		}
 	}
 
 	Adapter::Adapter()
 	{
+		ctEnsure(!Singleton, "Adapter can only be instantiated once.");
+		Singleton = this;
+
 		ensureInstanceExtensionsExist();
 #if CT_DEBUG
 		ensureDebugLayersExist();
 #endif
 		initializeInstance();
+		initializePhysicalDevice();
 	}
 
 	Adapter::Adapter(Adapter&& other) noexcept
@@ -67,27 +71,22 @@ namespace ct::vulkan
 	Adapter::~Adapter()
 	{
 #if CT_DEBUG
-		auto func {vkGetInstanceProcAddr(Instance, "vkDestroyDebugUtilsMessengerEXT")};
-		auto vkDestroyDebugUtilsMessengerEXT {reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(func)};
-		vkDestroyDebugUtilsMessengerEXT(Instance, Logger, nullptr);
+		vk::DispatchLoaderDynamic dispatch(Instance, vkGetInstanceProcAddr);
+		Instance.destroyDebugUtilsMessengerEXT(Logger, nullptr, dispatch);
 #endif
-
-		vkDestroyInstance(Instance, nullptr);
 	}
 
 	Adapter& Adapter::operator=(Adapter&& other) noexcept
 	{
 		std::swap(Instance, other.Instance);
 		std::swap(Logger, other.Logger);
+		std::swap(PhysicalDevice, other.PhysicalDevice);
 		return *this;
 	}
 
 	void Adapter::ensureInstanceExtensionsExist()
 	{
-		uint32_t extensionCount {0};
-		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-		std::vector<VkExtensionProperties> extensions(extensionCount);
-		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+		auto extensions {vk::enumerateInstanceExtensionProperties()};
 
 		for(auto requiredExtension : RequiredInstanceExtensions)
 		{
@@ -104,10 +103,7 @@ namespace ct::vulkan
 
 	void Adapter::ensureDebugLayersExist()
 	{
-		uint32_t layerCount {0};
-		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-		std::vector<VkLayerProperties> layers(layerCount);
-		vkEnumerateInstanceLayerProperties(&layerCount, layers.data());
+		auto layers {vk::enumerateInstanceLayerProperties()};
 
 		for(auto requiredLayer : RequiredDebugLayers)
 		{
@@ -126,25 +122,43 @@ namespace ct::vulkan
 	{
 		auto appInfo {getAppInfo()};
 		auto loggerInfo {getLoggerInfo()};
-
-		VkInstanceCreateInfo instanceInfo {};
-		instanceInfo.sType			  = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		instanceInfo.pNext			  = &loggerInfo;
-		instanceInfo.pApplicationInfo = &appInfo;
+		auto info
+		{
+			vk::InstanceCreateInfo()
+				.setPNext(&loggerInfo)
+				.setPApplicationInfo(&appInfo)
+				.setEnabledExtensionCount(std::size(RequiredInstanceExtensions))
+				.setPpEnabledExtensionNames(RequiredInstanceExtensions)
 #if CT_DEBUG
-		instanceInfo.enabledLayerCount	 = countOf(RequiredDebugLayers);
-		instanceInfo.ppEnabledLayerNames = RequiredDebugLayers;
+				.setEnabledLayerCount(std::size(RequiredDebugLayers))
+				.setPpEnabledLayerNames(RequiredDebugLayers)
 #endif
-		instanceInfo.enabledExtensionCount	 = countOf(RequiredInstanceExtensions);
-		instanceInfo.ppEnabledExtensionNames = RequiredInstanceExtensions;
-		ctEnsureResult(vkCreateInstance(&instanceInfo, nullptr, &Instance), "Failed to create Vulkan instance.");
+		};
+		Instance = vk::createInstance(info);
+		ctEnsure(Instance, "Failed to create Vulkan instance.");
 
 #if CT_DEBUG
-		auto func {vkGetInstanceProcAddr(Instance, "vkCreateDebugUtilsMessengerEXT")};
-		auto vkCreateDebugUtilsMessengerEXT {reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(func)};
-		ctEnsureResult(vkCreateDebugUtilsMessengerEXT(Instance, &loggerInfo, nullptr, &Logger),
-					   "Failed to create Vulkan logger.");
+		vk::DispatchLoaderDynamic dispatch(Instance, vkGetInstanceProcAddr);
+		Logger = Instance.createDebugUtilsMessengerEXT(loggerInfo, nullptr, dispatch);
+		ctEnsure(Logger, "Failed to create Vulkan logger.");
 #endif
 	}
 
+	void Adapter::initializePhysicalDevice()
+	{
+		auto devices {Instance.enumeratePhysicalDevices()};
+
+		for(auto device : devices)
+		{
+			auto properties {device.getProperties()};
+
+			if(properties.deviceType == vk::PhysicalDeviceType::eIntegratedGpu)
+				PhysicalDevice = device;
+			if(properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
+			{
+				PhysicalDevice = device;
+				break;
+			}
+		}
+	}
 }

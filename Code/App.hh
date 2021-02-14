@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Platform/Vulkan/Vulkan.Adapter.hh"
 #include "Window.hh"
 
 int main();
@@ -13,22 +14,23 @@ namespace ct
 	public:
 		inline static App& get()
 		{
-			return *Instance;
+			return *Singleton;
 		}
 
 		void quit();
 
 		App(const App&) = delete;
-		App(App&&)		= delete;
-
 		App& operator=(const App&) = delete;
+
+		App(App&&)	 = delete;
 		App& operator=(App&&) = delete;
 
 	private:
-		static inline App* Instance;
+		static inline App* Singleton;
 
-		bool ShouldTick = true;
+		vulkan::Adapter Adapter;
 		Window MainWindow;
+		bool ShouldTick = true;
 
 		App();
 

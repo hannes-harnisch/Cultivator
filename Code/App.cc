@@ -1,4 +1,4 @@
-#include "App.hh"
+﻿#include "App.hh"
 
 #include "Assert.hh"
 #include <cstdlib>
@@ -13,8 +13,8 @@ namespace ct
 {
 	App::App()
 	{
-		ctEnsure(!Instance, "App can only be instantiated once.");
-		Instance = this;
+		ctEnsure(!Singleton, "App can only be instantiated once.");
+		Singleton = this;
 
 		initializePlatform();
 		MainWindow = Window(CT_APP_NAME, 500, 500, 0, 0);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Platform/Vulkan/Vulkan.API.hh"
+#include <algorithm>
 
 namespace ct::vulkan
 {
@@ -15,26 +16,38 @@ namespace ct::vulkan
 		Adapter(const Adapter&) = delete;
 		Adapter& operator=(const Adapter&) = delete;
 
+		static inline Adapter& get()
+		{
+			return *Singleton;
+		}
+
+		inline vk::Instance instance()
+		{
+			return Instance;
+		}
+
 	private:
 		static constexpr const char* RequiredDebugLayers[] {"VK_LAYER_KHRONOS_validation"};
 		static constexpr const char* RequiredInstanceExtensions[]
 		{
 			VK_KHR_SURFACE_EXTENSION_NAME,
-
 #if CT_DEBUG
-			VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+				VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
 #endif
-
 #if CT_SYSTEM_WINDOWS
-			VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+				VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
 #endif
 		};
 
-		VkInstance Instance;
-		VkDebugUtilsMessengerEXT Logger;
+		static inline Adapter* Singleton;
+
+		vk::Instance Instance;
+		vk::DebugUtilsMessengerEXT Logger;
+		vk::PhysicalDevice PhysicalDevice;
 
 		void ensureInstanceExtensionsExist();
 		void ensureDebugLayersExist();
 		void initializeInstance();
+		void initializePhysicalDevice();
 	};
 }

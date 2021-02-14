@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Intrinsics.hh"
 #include <cstdlib>
@@ -12,11 +12,6 @@ namespace ct
 	{
 		showErrorBox("FATAL ERROR", message);
 		std::exit(EXIT_FAILURE);
-	}
-
-	template<typename T, uint32_t N> constexpr uint32_t countOf(T (&)[N])
-	{
-		return N;
 	}
 }
 

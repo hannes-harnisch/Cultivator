@@ -3,7 +3,7 @@
 #include "Platform/Windows/Windows.API.hh"
 #include <string>
 
-namespace ct
+namespace ct::windows
 {
 	inline std::wstring widenString(const std::string& narrow)
 	{
