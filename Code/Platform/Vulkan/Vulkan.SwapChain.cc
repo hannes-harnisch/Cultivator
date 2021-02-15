@@ -2,16 +2,12 @@
 #include "Vulkan.SwapChain.hh"
 
 #include "Assert.hh"
-#include "Platform/Vulkan/Vulkan.Adapter.hh"
+#include "Platform/Vulkan/Vulkan.GraphicsPlatform.hh"
 
 namespace ct::vulkan
 {
-	SwapChain::SwapChain(void* nativeWindowHandle)
-	{
-		auto info {vk::Win32SurfaceCreateInfoKHR().setHwnd(static_cast<HWND>(nativeWindowHandle))};
-		Surface = Adapter::get().instance().createWin32SurfaceKHR(info);
-		ctEnsure(Surface, "Could not create Vulkan surface for Windows.");
-	}
+	SwapChain::SwapChain(void* windowHandle) : Surface(windowHandle)
+	{}
 
 	SwapChain::SwapChain(SwapChain&& other) noexcept
 	{
@@ -19,16 +15,11 @@ namespace ct::vulkan
 	}
 
 	SwapChain::~SwapChain()
-	{
-		if(Surface)
-			Adapter::get().instance().destroySurfaceKHR(Surface);
-	}
+	{}
 
 	SwapChain& SwapChain::operator=(SwapChain&& other) noexcept
 	{
-		std::swap(Surface, other.Surface);
-		std::swap(Chain, other.Chain);
+		std::swap(SwapChainHandle, other.SwapChainHandle);
 		return *this;
 	}
-
 }

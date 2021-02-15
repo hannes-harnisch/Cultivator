@@ -4,18 +4,19 @@
 
 namespace ct::vulkan
 {
-	class Adapter
+	class GraphicsPlatform
 	{
 	public:
-		Adapter();
-		Adapter(Adapter&& other) noexcept;
-		~Adapter();
-		Adapter& operator=(Adapter&& other) noexcept;
+		GraphicsPlatform();
+		~GraphicsPlatform();
 
-		Adapter(const Adapter&) = delete;
-		Adapter& operator=(const Adapter&) = delete;
+		GraphicsPlatform(const GraphicsPlatform&) = delete;
+		GraphicsPlatform& operator=(const GraphicsPlatform&) = delete;
 
-		static inline Adapter& get()
+		GraphicsPlatform(GraphicsPlatform&& other) = delete;
+		GraphicsPlatform& operator=(GraphicsPlatform&& other) = delete;
+
+		static inline GraphicsPlatform& get()
 		{
 			return *Singleton;
 		}
@@ -30,19 +31,22 @@ namespace ct::vulkan
 		static constexpr const char* RequiredInstanceExtensions[]
 		{
 			VK_KHR_SURFACE_EXTENSION_NAME,
+
 #if CT_DEBUG
 				VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
 #endif
+
 #if CT_SYSTEM_WINDOWS
 				VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
 #endif
 		};
 
-		static inline Adapter* Singleton;
+		static inline GraphicsPlatform* Singleton;
 
 		vk::Instance Instance;
 		vk::DebugUtilsMessengerEXT Logger;
 		vk::PhysicalDevice PhysicalDevice;
+		vk::Device Device;
 
 		void ensureInstanceExtensionsExist();
 		void ensureDebugLayersExist();

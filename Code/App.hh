@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Platform/Vulkan/Vulkan.Adapter.hh"
+#include "Platform/Vulkan/Vulkan.GraphicsPlatform.hh"
 #include "Window.hh"
 
 int main();
@@ -28,7 +28,7 @@ namespace ct
 	private:
 		static inline App* Singleton;
 
-		vulkan::Adapter Adapter;
+		vulkan::GraphicsPlatform GraphicsPlatform;
 		Window MainWindow;
 		bool ShouldTick = true;
 

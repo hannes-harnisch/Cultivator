@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PCH.hh"
+#include "Platform/Vulkan/Vulkan.Surface.hh"
 
 namespace ct::vulkan
 {
@@ -8,7 +9,7 @@ namespace ct::vulkan
 	{
 	public:
 		SwapChain() = default;
-		SwapChain(void* nativeWindowHandle);
+		SwapChain(void* windowHandle);
 		SwapChain(SwapChain&& other) noexcept;
 		~SwapChain();
 		SwapChain& operator=(SwapChain&& other) noexcept;
@@ -17,7 +18,7 @@ namespace ct::vulkan
 		SwapChain& operator=(const SwapChain&) = delete;
 
 	private:
-		vk::SurfaceKHR Surface;
-		vk::SwapchainKHR Chain;
+		Surface Surface;
+		vk::SwapchainKHR SwapChainHandle;
 	};
 }

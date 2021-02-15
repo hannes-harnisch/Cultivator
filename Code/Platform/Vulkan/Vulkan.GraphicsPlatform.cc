@@ -1,5 +1,5 @@
 #include "PCH.hh"
-#include "Platform/Vulkan/Vulkan.Adapter.hh"
+#include "Platform/Vulkan/Vulkan.GraphicsPlatform.hh"
 
 #include "Assert.hh"
 
@@ -22,17 +22,14 @@ namespace ct::vulkan
 												const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 												void* pUserData)
 		{
-			if(messageSeverity < VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-				return false;
-
-			std::string msgType;
+			std::string messageType;
 			switch(messageTypes)
 			{
-				case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT: msgType = "GENERAL"; break;
-				case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT: msgType = "VALIDATION"; break;
-				case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT: msgType = "PERFORMANCE"; break;
+				case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT: messageType = "GENERAL"; break;
+				case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT: messageType = "VALIDATION"; break;
+				case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT: messageType = "PERFORMANCE"; break;
 			}
-			std::printf("\n[DEBUG] [%s] %s\n", msgType.data(), pCallbackData->pMessage);
+			std::printf("\n[DEBUG] [%s] %s\n", messageType.data(), pCallbackData->pMessage);
 			return false;
 		}
 
@@ -49,9 +46,9 @@ namespace ct::vulkan
 		}
 	}
 
-	Adapter::Adapter()
+	GraphicsPlatform::GraphicsPlatform()
 	{
-		ctEnsure(!Singleton, "Adapter can only be instantiated once.");
+		ctEnsure(!Singleton, "GraphicsPlatform can only be instantiated once.");
 		Singleton = this;
 
 		ensureInstanceExtensionsExist();
@@ -62,28 +59,19 @@ namespace ct::vulkan
 		initializePhysicalDevice();
 	}
 
-	Adapter::Adapter(Adapter&& other) noexcept
+	GraphicsPlatform::~GraphicsPlatform()
 	{
-		*this = std::move(other);
-	}
+		Device.destroy();
 
-	Adapter::~Adapter()
-	{
 #if CT_DEBUG
 		vk::DispatchLoaderDynamic dispatch(Instance, vkGetInstanceProcAddr);
 		Instance.destroyDebugUtilsMessengerEXT(Logger, nullptr, dispatch);
 #endif
+
+		Instance.destroy();
 	}
 
-	Adapter& Adapter::operator=(Adapter&& other) noexcept
-	{
-		std::swap(Instance, other.Instance);
-		std::swap(Logger, other.Logger);
-		std::swap(PhysicalDevice, other.PhysicalDevice);
-		return *this;
-	}
-
-	void Adapter::ensureInstanceExtensionsExist()
+	void GraphicsPlatform::ensureInstanceExtensionsExist()
 	{
 		auto extensions {vk::enumerateInstanceExtensionProperties()};
 
@@ -100,7 +88,7 @@ namespace ct::vulkan
 		}
 	}
 
-	void Adapter::ensureDebugLayersExist()
+	void GraphicsPlatform::ensureDebugLayersExist()
 	{
 		auto layers {vk::enumerateInstanceLayerProperties()};
 
@@ -117,7 +105,7 @@ namespace ct::vulkan
 		}
 	}
 
-	void Adapter::initializeInstance()
+	void GraphicsPlatform::initializeInstance()
 	{
 		auto appInfo {getAppInfo()};
 		auto loggerInfo {getLoggerInfo()};
@@ -143,7 +131,7 @@ namespace ct::vulkan
 #endif
 	}
 
-	void Adapter::initializePhysicalDevice()
+	void GraphicsPlatform::initializePhysicalDevice()
 	{
 		auto devices {Instance.enumeratePhysicalDevices()};
 
