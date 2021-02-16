@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Platform/Vulkan/Vulkan.SwapChain.hh"
+#include "Vendor/Vulkan/Vulkan.SwapChain.hh"
 
 namespace ct
 {

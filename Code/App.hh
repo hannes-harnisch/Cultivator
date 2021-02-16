@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Platform/Vulkan/Vulkan.GraphicsPlatform.hh"
+#include "Vendor/Vulkan/Vulkan.GraphicsPlatform.hh"
+#include "AppPlatform.hh"
 #include "Window.hh"
 
 int main();
@@ -28,6 +29,7 @@ namespace ct
 	private:
 		static inline App* Singleton;
 
+		AppPlatform AppPlatform;
 		vulkan::GraphicsPlatform GraphicsPlatform;
 		Window MainWindow;
 		bool ShouldTick = true;
@@ -36,8 +38,5 @@ namespace ct
 
 		int start();
 		void tick();
-
-		void initializePlatform();
-		void pollEvents();
 	};
 }

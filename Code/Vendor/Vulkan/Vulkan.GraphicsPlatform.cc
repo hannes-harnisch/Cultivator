@@ -1,7 +1,8 @@
 #include "PCH.hh"
-#include "Platform/Vulkan/Vulkan.GraphicsPlatform.hh"
+#include "Vulkan.GraphicsPlatform.hh"
 
 #include "Assert.hh"
+#include "Vendor/Vulkan/Vulkan.Surface.hh"
 
 namespace ct::vulkan
 {
@@ -22,6 +23,9 @@ namespace ct::vulkan
 												const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 												void* pUserData)
 		{
+			if(messageSeverity < VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+				return false;
+
 			std::string messageType;
 			switch(messageTypes)
 			{
@@ -56,7 +60,9 @@ namespace ct::vulkan
 		ensureDebugLayersExist();
 #endif
 		initializeInstance();
-		initializePhysicalDevice();
+		initializeAdapter();
+		ensureDeviceExtensionsExist();
+		initializeDevice();
 	}
 
 	GraphicsPlatform::~GraphicsPlatform()
@@ -74,11 +80,12 @@ namespace ct::vulkan
 	void GraphicsPlatform::ensureInstanceExtensionsExist()
 	{
 		auto extensions {vk::enumerateInstanceExtensionProperties()};
+		ctEnsureResult(extensions.result, "Failed to enumerate Vulkan instance extensions.");
 
 		for(auto requiredExtension : RequiredInstanceExtensions)
 		{
 			bool found = false;
-			for(auto& extension : extensions)
+			for(auto& extension : extensions.value)
 				if(std::strcmp(extension.extensionName, requiredExtension) == 0)
 				{
 					found = true;
@@ -91,11 +98,12 @@ namespace ct::vulkan
 	void GraphicsPlatform::ensureDebugLayersExist()
 	{
 		auto layers {vk::enumerateInstanceLayerProperties()};
+		ctEnsureResult(layers.result, "Failed to enumerate Vulkan instance layers.");
 
 		for(auto requiredLayer : RequiredDebugLayers)
 		{
 			bool found = false;
-			for(auto& layer : layers)
+			for(auto& layer : layers.value)
 				if(std::strcmp(layer.layerName, requiredLayer) == 0)
 				{
 					found = true;
@@ -109,43 +117,82 @@ namespace ct::vulkan
 	{
 		auto appInfo {getAppInfo()};
 		auto loggerInfo {getLoggerInfo()};
-		auto info
-		{
-			vk::InstanceCreateInfo()
-				.setPNext(&loggerInfo)
-				.setPApplicationInfo(&appInfo)
-				.setEnabledExtensionCount(uint32_t(std::size(RequiredInstanceExtensions)))
-				.setPpEnabledExtensionNames(RequiredInstanceExtensions)
+		auto instanceInfo = vk::InstanceCreateInfo()
+								.setPNext(&loggerInfo)
+								.setPApplicationInfo(&appInfo)
 #if CT_DEBUG
-				.setEnabledLayerCount(uint32_t(std::size(RequiredDebugLayers)))
-				.setPpEnabledLayerNames(RequiredDebugLayers)
+								.setEnabledLayerCount(uint32_t(std::size(RequiredDebugLayers)))
+								.setPpEnabledLayerNames(RequiredDebugLayers)
 #endif
-		};
-		Instance = vk::createInstance(info);
-		ctEnsure(Instance, "Failed to create Vulkan instance.");
+								.setEnabledExtensionCount(uint32_t(std::size(RequiredInstanceExtensions)))
+								.setPpEnabledExtensionNames(RequiredInstanceExtensions);
+		auto instance {vk::createInstance(instanceInfo)};
+		ctEnsureResult(instance.result, "Failed to create Vulkan instance.");
+		Instance = instance.value;
 
 #if CT_DEBUG
 		vk::DispatchLoaderDynamic dispatch(Instance, vkGetInstanceProcAddr);
-		Logger = Instance.createDebugUtilsMessengerEXT(loggerInfo, nullptr, dispatch);
-		ctEnsure(Logger, "Failed to create Vulkan logger.");
+		auto logger {Instance.createDebugUtilsMessengerEXT(loggerInfo, nullptr, dispatch)};
+		ctEnsureResult(logger.result, "Failed to create Vulkan logger.");
+		Logger = logger.value;
 #endif
 	}
 
-	void GraphicsPlatform::initializePhysicalDevice()
+	void GraphicsPlatform::initializeAdapter()
 	{
-		auto devices {Instance.enumeratePhysicalDevices()};
+		auto adapters {Instance.enumeratePhysicalDevices()};
+		ctEnsureResult(adapters.result, "Failed to enumerate Vulkan adapters.");
 
-		for(auto device : devices)
+		for(auto adapter : adapters.value)
 		{
-			auto properties {device.getProperties()};
+			auto properties {adapter.getProperties()};
 
 			if(properties.deviceType == vk::PhysicalDeviceType::eIntegratedGpu)
-				PhysicalDevice = device;
+				Adapter = adapter;
 			if(properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
 			{
-				PhysicalDevice = device;
+				Adapter = adapter;
 				break;
 			}
+		}
+	}
+
+	void GraphicsPlatform::ensureDeviceExtensionsExist()
+	{
+		auto extensions {Adapter.enumerateDeviceExtensionProperties()};
+		ctEnsureResult(extensions.result, "Failed to enumerate Vulkan device extensions.");
+
+		for(auto requiredExtension : RequiredDeviceExtensions)
+		{
+			bool found = false;
+			for(auto& extension : extensions.value)
+				if(std::strcmp(extension.extensionName, requiredExtension) == 0)
+				{
+					found = true;
+					break;
+				}
+			ctEnsure(found, "Failed to find required Vulkan device extension.");
+		}
+	}
+
+	void GraphicsPlatform::initializeDevice()
+	{
+		uint32_t graphicsFamilyIndex {UINT32_MAX};
+		uint32_t presentationFamilyIndex {UINT32_MAX};
+
+		uint32_t index {};
+		auto dummySurface {Surface::makeDummy()};
+		for(auto& queueFamily : Adapter.getQueueFamilyProperties())
+		{
+			if(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
+				graphicsFamilyIndex = index;
+
+			auto surfaceSupport {Adapter.getSurfaceSupportKHR(index, dummySurface.handle())};
+			ctEnsureResult(surfaceSupport.result, "Failed to query for Vulkan surface support.");
+			if(surfaceSupport.value)
+				presentationFamilyIndex = index;
+
+			index++;
 		}
 	}
 }

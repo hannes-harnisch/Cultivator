@@ -1,7 +1,7 @@
 #include "PCH.hh"
-#include "Platform/Windows/Windows.Window.hh"
+#include "Vendor/Windows/Windows.Window.hh"
 
-#include "Platform/Windows/Windows.Utils.hh"
+#include "Vendor/Windows/Windows.Utils.hh"
 
 namespace ct::windows
 {

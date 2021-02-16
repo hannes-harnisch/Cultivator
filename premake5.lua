@@ -14,16 +14,16 @@ workspace 'Cultivator'
 	exceptionhandling	'Off'
 	buildoptions		{ '/Zc:rvalueCast' }
 	files				{ 'Code/**.cc', 'Code/**.hh', 'Code/**.hlsl' }
-	removefiles			{ 'Code/**.*.cc', 'Code/**.*.hh' }
+	removefiles			{ 'Code/**/**.*.*' }
 	objdir				( '.bin_int/' .. output_dir .. '/%{prj.name}' )
-	targetdir			( '.bin/'	 .. output_dir .. '/%{prj.name}' )
-	debugdir			( '.bin/'	 .. output_dir .. '/%{prj.name}' )
+	targetdir			( '.bin/'	  .. output_dir .. '/%{prj.name}' )
+	debugdir			( '.bin/'	  .. output_dir .. '/%{prj.name}' )
 	pchheader			'PCH.hh'
 	pchsource			'Code/PCH.cc'
 
 	filter 'system:Windows'
 		systemversion	'latest'
-		files			{ 'Code/**/Windows.*.*', 'Code/**/Vulkan.*.*' }
+		files			{ 'Code/**/Windows.*.*', 'Code/**/Vulkan.*.*', 'Code/**/VulkanWindows.*.*' }
 		includedirs		'C:/VulkanSDK/1.2.154.1/Include'
 		libdirs			'C:/VulkanSDK/1.2.154.1/Lib'
 		links			'Vulkan-1.lib'

@@ -2,7 +2,7 @@
 #include "Vulkan.SwapChain.hh"
 
 #include "Assert.hh"
-#include "Platform/Vulkan/Vulkan.GraphicsPlatform.hh"
+#include "Vendor/Vulkan/Vulkan.GraphicsPlatform.hh"
 
 namespace ct::vulkan
 {

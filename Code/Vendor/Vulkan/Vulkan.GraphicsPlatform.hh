@@ -16,7 +16,7 @@ namespace ct::vulkan
 		GraphicsPlatform(GraphicsPlatform&& other) = delete;
 		GraphicsPlatform& operator=(GraphicsPlatform&& other) = delete;
 
-		static inline GraphicsPlatform& get()
+		inline static GraphicsPlatform& get()
 		{
 			return *Singleton;
 		}
@@ -40,17 +40,20 @@ namespace ct::vulkan
 				VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
 #endif
 		};
+		static constexpr const char* RequiredDeviceExtensions[] {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 		static inline GraphicsPlatform* Singleton;
 
 		vk::Instance Instance;
 		vk::DebugUtilsMessengerEXT Logger;
-		vk::PhysicalDevice PhysicalDevice;
+		vk::PhysicalDevice Adapter;
 		vk::Device Device;
 
 		void ensureInstanceExtensionsExist();
 		void ensureDebugLayersExist();
 		void initializeInstance();
-		void initializePhysicalDevice();
+		void initializeAdapter();
+		void ensureDeviceExtensionsExist();
+		void initializeDevice();
 	};
 }

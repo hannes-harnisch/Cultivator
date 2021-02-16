@@ -1,10 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #if CT_SYSTEM_WINDOWS
-	#include "Platform/Windows/Windows.API.hh"
+	#include "Vendor/Windows/Windows.API.hh"
 #endif
 
-#include "Platform/Vulkan/Vulkan.API.hh"
+#include "Vendor/Vulkan/Vulkan.API.hh"
 
 #include <cstdio>
 #include <cstdlib>
