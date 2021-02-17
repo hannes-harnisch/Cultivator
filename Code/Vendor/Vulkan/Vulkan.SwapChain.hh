@@ -6,7 +6,7 @@
 
 namespace ct::vulkan
 {
-	class SwapChain
+	class SwapChain final
 	{
 	public:
 		SwapChain(void* windowHandle, Rectangle viewport);
@@ -21,10 +21,14 @@ namespace ct::vulkan
 		vk::Extent2D Extent;
 		vk::SwapchainKHR SwapChainHandle;
 		std::vector<vk::Image> SwapChainImages;
+		std::vector<vk::ImageView> SwapChainViews;
 
 		vk::SurfaceFormatKHR querySurfaceFormat();
 		vk::PresentModeKHR queryPresentMode();
 		vk::Extent2D queryExtent(Rectangle viewport);
 		vk::SwapchainKHR querySwapChain();
+		vk::SwapchainCreateInfoKHR fillSwapChainInfo();
+		std::vector<vk::Image> querySwapChainImages();
+		std::vector<vk::ImageView> querySwapChainImageViews();
 	};
 }

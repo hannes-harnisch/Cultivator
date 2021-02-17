@@ -1,10 +1,11 @@
 #pragma once
 
 #include "PCH.hh"
+#include "Vendor/Vulkan/Vulkan.Queue.hh"
 
 namespace ct::vulkan
 {
-	class GraphicsPlatform
+	class GraphicsPlatform final
 	{
 	public:
 		inline static GraphicsPlatform& get()
@@ -15,19 +16,29 @@ namespace ct::vulkan
 		GraphicsPlatform();
 		~GraphicsPlatform();
 
-		inline vk::Instance instance()
+		inline vk::Instance instance() const
 		{
 			return Instance;
 		}
 
-		inline vk::PhysicalDevice adapter()
+		inline vk::PhysicalDevice adapter() const
 		{
 			return Adapter;
 		}
 
-		inline vk::Device device()
+		inline vk::Device device() const
 		{
 			return Device;
+		}
+
+		inline Queue graphicsQueue() const
+		{
+			return GraphicsQueue;
+		}
+
+		inline Queue presentQueue() const
+		{
+			return PresentQueue;
 		}
 
 		GraphicsPlatform(const GraphicsPlatform&) = delete;
@@ -62,22 +73,15 @@ namespace ct::vulkan
 		vk::DebugUtilsMessengerEXT Logger;
 		vk::PhysicalDevice Adapter;
 		vk::Device Device;
-		vk::Queue GraphicsQueue;
-		vk::Queue PresentationQueue;
+		Queue GraphicsQueue;
+		Queue PresentQueue;
 
-		struct QueueFamilyIndices
-		{
-			const uint32_t Graphics;
-			const uint32_t Presentation;
-		};
-
+		void initializeInstance();
 		void ensureInstanceExtensionsExist();
 		void ensureLayersExist();
-		void initializeInstance();
 		void initializeAdapter();
-		void ensureDeviceExtensionsExist();
 		void initializeDevice();
-		QueueFamilyIndices queryQueueFamilies();
+		void ensureDeviceExtensionsExist();
 		vk::DeviceCreateInfo fillDeviceInfo(const std::vector<vk::DeviceQueueCreateInfo>& queueInfos);
 	};
 }

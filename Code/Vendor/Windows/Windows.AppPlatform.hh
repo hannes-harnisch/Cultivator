@@ -4,11 +4,11 @@
 
 namespace ct::windows
 {
-	class AppPlatform : public AppPlatformBase
+	class AppPlatform final : public AppPlatformBase
 	{
 	public:
 		AppPlatform();
 
-		void pollEvents() override;
+		void pollEvents() final override;
 	};
 }

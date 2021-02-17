@@ -5,7 +5,7 @@
 
 namespace ct::windows
 {
-	class Window : public WindowBase
+	class Window final : public WindowBase
 	{
 	public:
 		Window(const std::string& title, Rectangle size, int x, int y);

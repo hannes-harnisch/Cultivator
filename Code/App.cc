@@ -11,7 +11,7 @@ int main()
 
 namespace ct
 {
-	App::App() : MainWindow(CT_APP_NAME, {500, 500}, 0, 0)
+	App::App() : MainWindow {CT_APP_NAME, {500, 500}, 0, 0}
 	{
 		ctEnsure(!Singleton, "App can only be instantiated once.");
 		Singleton = this;

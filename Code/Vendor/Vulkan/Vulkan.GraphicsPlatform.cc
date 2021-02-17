@@ -11,11 +11,8 @@ namespace ct::vulkan
 		ctEnsure(!Singleton, "GraphicsPlatform can only be instantiated once.");
 		Singleton = this;
 
-		ensureInstanceExtensionsExist();
-		ensureLayersExist();
 		initializeInstance();
 		initializeAdapter();
-		ensureDeviceExtensionsExist();
 		initializeDevice();
 	}
 
@@ -29,42 +26,6 @@ namespace ct::vulkan
 #endif
 
 		Instance.destroy();
-	}
-
-	void GraphicsPlatform::ensureInstanceExtensionsExist()
-	{
-		auto extensions {vk::enumerateInstanceExtensionProperties()};
-		ctEnsureResult(extensions.result, "Failed to enumerate Vulkan instance extensions.");
-
-		for(auto requiredExtension : RequiredInstanceExtensions)
-		{
-			bool found {};
-			for(auto& extension : extensions.value)
-				if(std::strcmp(extension.extensionName, requiredExtension) == 0)
-				{
-					found = true;
-					break;
-				}
-			ctEnsure(found, "Failed to find required Vulkan instance extension.");
-		}
-	}
-
-	void GraphicsPlatform::ensureLayersExist()
-	{
-		auto layers {vk::enumerateInstanceLayerProperties()};
-		ctEnsureResult(layers.result, "Failed to enumerate Vulkan layers.");
-
-		for(auto requiredLayer : RequiredLayers)
-		{
-			bool found {};
-			for(auto& layer : layers.value)
-				if(std::strcmp(layer.layerName, requiredLayer) == 0)
-				{
-					found = true;
-					break;
-				}
-			ctEnsure(found, "Failed to find required Vulkan layer.");
-		}
 	}
 
 	namespace
@@ -113,6 +74,8 @@ namespace ct::vulkan
 
 	void GraphicsPlatform::initializeInstance()
 	{
+		ensureInstanceExtensionsExist();
+		ensureLayersExist();
 		auto appInfo {fillAppInfo()};
 		auto loggerInfo {fillLoggerInfo()};
 		auto instanceInfo {vk::InstanceCreateInfo()
@@ -134,6 +97,42 @@ namespace ct::vulkan
 #endif
 	}
 
+	void GraphicsPlatform::ensureInstanceExtensionsExist()
+	{
+		auto extensions {vk::enumerateInstanceExtensionProperties()};
+		ctEnsureResult(extensions.result, "Failed to enumerate Vulkan instance extensions.");
+
+		for(auto requiredExtension : RequiredInstanceExtensions)
+		{
+			bool found {};
+			for(auto& extension : extensions.value)
+				if(std::strcmp(extension.extensionName, requiredExtension) == 0)
+				{
+					found = true;
+					break;
+				}
+			ctEnsure(found, "Failed to find required Vulkan instance extension.");
+		}
+	}
+
+	void GraphicsPlatform::ensureLayersExist()
+	{
+		auto layers {vk::enumerateInstanceLayerProperties()};
+		ctEnsureResult(layers.result, "Failed to enumerate Vulkan layers.");
+
+		for(auto requiredLayer : RequiredLayers)
+		{
+			bool found {};
+			for(auto& layer : layers.value)
+				if(std::strcmp(layer.layerName, requiredLayer) == 0)
+				{
+					found = true;
+					break;
+				}
+			ctEnsure(found, "Failed to find required Vulkan layer.");
+		}
+	}
+
 	void GraphicsPlatform::initializeAdapter()
 	{
 		auto adapters {Instance.enumeratePhysicalDevices()};
@@ -153,6 +152,65 @@ namespace ct::vulkan
 		}
 	}
 
+	namespace
+	{
+		struct QueueFamilyIndices
+		{
+			uint32_t Graphics;
+			uint32_t Present;
+		};
+
+		QueueFamilyIndices queryQueueFamilies(vk::PhysicalDevice adapter)
+		{
+			std::optional<uint32_t> graphicsFamilyIndex;
+			std::optional<uint32_t> presentationFamilyIndex;
+
+			uint32_t index {};
+			auto dummy {Surface::makeDummy()};
+			for(auto& queueFamily : adapter.getQueueFamilyProperties())
+			{
+				if(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
+					graphicsFamilyIndex = index;
+
+				auto surfaceSupport {adapter.getSurfaceSupportKHR(index, dummy.handle())};
+				ctEnsureResult(surfaceSupport.result, "Failed to query for Vulkan surface support.");
+				if(surfaceSupport.value)
+					presentationFamilyIndex = index;
+
+				++index;
+			}
+			ctEnsure(graphicsFamilyIndex, "The GPU driver does not support graphics queues.");
+			ctEnsure(presentationFamilyIndex, "The GPU driver does not support presentation queues.");
+			return {*graphicsFamilyIndex, *presentationFamilyIndex};
+		}
+	}
+
+	void GraphicsPlatform::initializeDevice()
+	{
+		ensureDeviceExtensionsExist();
+		auto indices {queryQueueFamilies(Adapter)};
+
+		float queuePriorities[] {1.0f};
+		auto graphicsQueueInfo {vk::DeviceQueueCreateInfo()
+									.setQueueFamilyIndex(indices.Graphics)
+									.setQueueCount(uint32_t(std::size(queuePriorities)))
+									.setPQueuePriorities(queuePriorities)};
+		auto presentQueueInfo(graphicsQueueInfo);
+		presentQueueInfo.setQueueFamilyIndex(indices.Present);
+
+		std::vector queueInfos {graphicsQueueInfo};
+		if(indices.Graphics != indices.Present)
+			queueInfos.push_back(presentQueueInfo);
+
+		auto deviceInfo {fillDeviceInfo(queueInfos)};
+		auto device {Adapter.createDevice(deviceInfo)};
+		ctEnsureResult(device.result, "Failed to create Vulkan device.");
+		Device = device.value;
+
+		GraphicsQueue = Queue(indices.Graphics);
+		PresentQueue  = Queue(indices.Present);
+	}
+
 	void GraphicsPlatform::ensureDeviceExtensionsExist()
 	{
 		auto extensions {Adapter.enumerateDeviceExtensionProperties()};
@@ -169,55 +227,6 @@ namespace ct::vulkan
 				}
 			ctEnsure(found, "Failed to find required Vulkan device extension.");
 		}
-	}
-
-	void GraphicsPlatform::initializeDevice()
-	{
-		auto indices {queryQueueFamilies()};
-
-		float queuePriorities[] {1.0f};
-		auto graphicsQueueInfo {vk::DeviceQueueCreateInfo()
-									.setQueueFamilyIndex(indices.Graphics)
-									.setQueueCount(uint32_t(std::size(queuePriorities)))
-									.setPQueuePriorities(queuePriorities)};
-		auto presentationQueueInfo(graphicsQueueInfo);
-		presentationQueueInfo.setQueueFamilyIndex(indices.Presentation);
-
-		std::vector queueInfos {graphicsQueueInfo};
-		if(indices.Graphics != indices.Presentation)
-			queueInfos.push_back(presentationQueueInfo);
-
-		auto deviceInfo {fillDeviceInfo(queueInfos)};
-		auto device {Adapter.createDevice(deviceInfo)};
-		ctEnsureResult(device.result, "Failed to create Vulkan device.");
-		Device = device.value;
-
-		GraphicsQueue	  = Device.getQueue(indices.Graphics, 0);
-		PresentationQueue = Device.getQueue(indices.Presentation, 0);
-	}
-
-	GraphicsPlatform::QueueFamilyIndices GraphicsPlatform::queryQueueFamilies()
-	{
-		std::optional<uint32_t> graphicsFamilyIndex;
-		std::optional<uint32_t> presentationFamilyIndex;
-
-		uint32_t index {};
-		auto dummy {Surface::makeDummy()};
-		for(auto& queueFamily : Adapter.getQueueFamilyProperties())
-		{
-			if(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
-				graphicsFamilyIndex = index;
-
-			auto surfaceSupport {Adapter.getSurfaceSupportKHR(index, dummy.handle())};
-			ctEnsureResult(surfaceSupport.result, "Failed to query for Vulkan surface support.");
-			if(surfaceSupport.value)
-				presentationFamilyIndex = index;
-
-			++index;
-		}
-		ctEnsure(graphicsFamilyIndex, "The GPU driver does not support graphics queues.");
-		ctEnsure(presentationFamilyIndex, "The GPU driver does not support presentation queues.");
-		return {*graphicsFamilyIndex, *presentationFamilyIndex};
 	}
 
 	vk::DeviceCreateInfo GraphicsPlatform::fillDeviceInfo(const std::vector<vk::DeviceQueueCreateInfo>& queueInfos)

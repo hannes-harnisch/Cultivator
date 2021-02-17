@@ -6,7 +6,7 @@
 namespace ct::windows
 {
 	Window::Window(const std::string& title, Rectangle size, int x, int y) :
-		WindowBase(makeNativeHandle(title, size, x, y), getViewport())
+		WindowBase {makeNativeHandle(title, size, x, y), getViewport()}
 	{}
 
 	Window::~Window()

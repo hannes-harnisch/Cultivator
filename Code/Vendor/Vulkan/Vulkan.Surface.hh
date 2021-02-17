@@ -5,14 +5,14 @@
 
 namespace ct::vulkan
 {
-	class Surface
+	class Surface final
 	{
 	public:
 		static Surface makeDummy();
 
 		Surface(void* nativeWindowHandle);
 
-		inline Surface(Surface&& other) noexcept : SurfaceHandle(std::exchange(other.SurfaceHandle, nullptr))
+		inline Surface(Surface&& other) noexcept : SurfaceHandle {std::exchange(other.SurfaceHandle, nullptr)}
 		{}
 
 		inline ~Surface()
@@ -26,7 +26,7 @@ namespace ct::vulkan
 			return *this;
 		}
 
-		inline vk::SurfaceKHR handle()
+		inline vk::SurfaceKHR handle() const
 		{
 			return SurfaceHandle;
 		}
