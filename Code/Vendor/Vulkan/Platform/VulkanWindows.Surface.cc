@@ -1,4 +1,4 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 #include "../Vulkan.Surface.hh"
 
 #include "Assert.hh"

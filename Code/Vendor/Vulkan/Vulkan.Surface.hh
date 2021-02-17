@@ -8,18 +8,16 @@ namespace ct::vulkan
 	class Surface
 	{
 	public:
-		Surface() = default;
+		static Surface makeDummy();
+
 		Surface(void* nativeWindowHandle);
 
-		inline Surface(Surface&& other) noexcept
-		{
-			*this = std::move(other);
-		}
+		inline Surface(Surface&& other) noexcept : SurfaceHandle(std::exchange(other.SurfaceHandle, nullptr))
+		{}
 
 		inline ~Surface()
 		{
-			if(SurfaceHandle)
-				GraphicsPlatform::get().instance().destroySurfaceKHR(SurfaceHandle);
+			GraphicsPlatform::get().instance().destroySurfaceKHR(SurfaceHandle);
 		}
 
 		inline Surface& operator=(Surface&& other) noexcept
@@ -28,15 +26,10 @@ namespace ct::vulkan
 			return *this;
 		}
 
-		static Surface makeDummy();
-
 		inline vk::SurfaceKHR handle()
 		{
 			return SurfaceHandle;
 		}
-
-		Surface(const Surface&) = delete;
-		Surface& operator=(const Surface&) = delete;
 
 	private:
 		vk::SurfaceKHR SurfaceHandle;

@@ -23,9 +23,6 @@ namespace ct
 		App(const App&) = delete;
 		App& operator=(const App&) = delete;
 
-		App(App&&)	 = delete;
-		App& operator=(App&&) = delete;
-
 	private:
 		static inline App* Singleton;
 
