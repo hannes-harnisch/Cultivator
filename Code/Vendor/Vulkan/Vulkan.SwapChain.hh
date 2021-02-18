@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PCH.hh"
-#include "Rectangle.hh"
+#include "Utils/Rectangle.hh"
 #include "Vendor/Vulkan/Vulkan.Surface.hh"
 
 namespace ct::vulkan

@@ -1,45 +1,13 @@
 #include "PCH.hh"
 #include "Vulkan.GraphicsPlatform.hh"
 
-#include "Assert.hh"
+#include "Utils/Assert.hh"
 #include "Vendor/Vulkan/Vulkan.Surface.hh"
 
 namespace ct::vulkan
 {
-	GraphicsPlatform::GraphicsPlatform()
-	{
-		ctEnsure(!Singleton, "GraphicsPlatform can only be instantiated once.");
-		Singleton = this;
-
-		initializeInstance();
-		initializeAdapter();
-		initializeDevice();
-	}
-
-	GraphicsPlatform::~GraphicsPlatform()
-	{
-		Device.destroy();
-
-#if CT_DEBUG
-		vk::DispatchLoaderDynamic dispatch(Instance, vkGetInstanceProcAddr);
-		Instance.destroyDebugUtilsMessengerEXT(Logger, nullptr, dispatch);
-#endif
-
-		Instance.destroy();
-	}
-
 	namespace
 	{
-		vk::ApplicationInfo fillAppInfo()
-		{
-			return vk::ApplicationInfo()
-				.setPApplicationName(CT_APP_NAME)
-				.setApplicationVersion(VK_MAKE_VERSION(0, 0, 1))
-				.setPEngineName(CT_APP_NAME)
-				.setEngineVersion(VK_MAKE_VERSION(0, 0, 1))
-				.setApiVersion(VK_API_VERSION_1_0);
-		}
-
 		VKAPI_ATTR VkBool32 VKAPI_CALL logDebug(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 												VkDebugUtilsMessageTypeFlagsEXT messageTypes,
 												const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -72,40 +40,78 @@ namespace ct::vulkan
 		}
 	}
 
-	void GraphicsPlatform::initializeInstance()
+	GraphicsPlatform::GraphicsPlatform()
 	{
-		ensureInstanceExtensionsExist();
-		ensureLayersExist();
-		auto appInfo {fillAppInfo()};
+		ctEnsure(!Singleton, "GraphicsPlatform can only be instantiated once.");
+		Singleton = this;
+
 		auto loggerInfo {fillLoggerInfo()};
-		auto instanceInfo {vk::InstanceCreateInfo()
-							   .setPNext(&loggerInfo)
-							   .setPApplicationInfo(&appInfo)
-							   .setEnabledLayerCount(uint32_t(RequiredLayers.size()))
-							   .setPpEnabledLayerNames(RequiredLayers.data())
-							   .setEnabledExtensionCount(uint32_t(RequiredInstanceExtensions.size()))
-							   .setPpEnabledExtensionNames(RequiredInstanceExtensions.data())};
-		auto instance {vk::createInstance(instanceInfo)};
-		ctEnsureResult(instance.result, "Failed to create Vulkan instance.");
-		Instance = instance.value;
+		initializeInstance(loggerInfo);
+		initializeLogger(loggerInfo);
+		initializeAdapter();
+		initializeDeviceAndQueues();
+	}
+
+	GraphicsPlatform::~GraphicsPlatform()
+	{
+		Device.destroy();
 
 #if CT_DEBUG
 		vk::DispatchLoaderDynamic dispatch(Instance, vkGetInstanceProcAddr);
-		auto logger {Instance.createDebugUtilsMessengerEXT(loggerInfo, nullptr, dispatch)};
-		ctEnsureResult(logger.result, "Failed to create Vulkan logger.");
-		Logger = logger.value;
+		Instance.destroyDebugUtilsMessengerEXT(Logger, nullptr, dispatch);
+#endif
+
+		Instance.destroy();
+	}
+
+	namespace
+	{
+		vk::ApplicationInfo fillAppInfo()
+		{
+			return vk::ApplicationInfo()
+				.setPApplicationName(CT_APP_NAME)
+				.setApplicationVersion(VK_MAKE_VERSION(0, 0, 1))
+				.setPEngineName(CT_APP_NAME)
+				.setEngineVersion(VK_MAKE_VERSION(0, 0, 1))
+				.setApiVersion(VK_API_VERSION_1_0);
+		}
+	}
+
+	void GraphicsPlatform::initializeInstance(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
+	{
+		ensureInstanceExtensionsExist();
+		ensureLayersExist();
+
+		auto appInfo {fillAppInfo()};
+		auto instanceInfo {vk::InstanceCreateInfo()
+							   .setPNext(&loggerInfo)
+							   .setPApplicationInfo(&appInfo)
+							   .setPEnabledLayerNames(RequiredLayers)
+							   .setPEnabledExtensionNames(RequiredInstanceExtensions)};
+		auto [result, instance] {vk::createInstance(instanceInfo)};
+		ctEnsureResult(result, "Failed to create Vulkan instance.");
+		Instance = instance;
+	}
+
+	void GraphicsPlatform::initializeLogger(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
+	{
+#if CT_DEBUG
+		vk::DispatchLoaderDynamic dispatch(Instance, vkGetInstanceProcAddr);
+		auto [result, logger] {Instance.createDebugUtilsMessengerEXT(loggerInfo, nullptr, dispatch)};
+		ctEnsureResult(result, "Failed to create Vulkan logger.");
+		Logger = logger;
 #endif
 	}
 
 	void GraphicsPlatform::ensureInstanceExtensionsExist()
 	{
-		auto extensions {vk::enumerateInstanceExtensionProperties()};
-		ctEnsureResult(extensions.result, "Failed to enumerate Vulkan instance extensions.");
+		auto [result, extensions] {vk::enumerateInstanceExtensionProperties()};
+		ctEnsureResult(result, "Failed to enumerate Vulkan instance extensions.");
 
 		for(auto requiredExtension : RequiredInstanceExtensions)
 		{
 			bool found {};
-			for(auto& extension : extensions.value)
+			for(auto& extension : extensions)
 				if(std::strcmp(extension.extensionName, requiredExtension) == 0)
 				{
 					found = true;
@@ -117,13 +123,13 @@ namespace ct::vulkan
 
 	void GraphicsPlatform::ensureLayersExist()
 	{
-		auto layers {vk::enumerateInstanceLayerProperties()};
-		ctEnsureResult(layers.result, "Failed to enumerate Vulkan layers.");
+		auto [result, layers] {vk::enumerateInstanceLayerProperties()};
+		ctEnsureResult(result, "Failed to enumerate Vulkan layers.");
 
 		for(auto requiredLayer : RequiredLayers)
 		{
 			bool found {};
-			for(auto& layer : layers.value)
+			for(auto& layer : layers)
 				if(std::strcmp(layer.layerName, requiredLayer) == 0)
 				{
 					found = true;
@@ -135,10 +141,10 @@ namespace ct::vulkan
 
 	void GraphicsPlatform::initializeAdapter()
 	{
-		auto adapters {Instance.enumeratePhysicalDevices()};
-		ctEnsureResult(adapters.result, "Failed to enumerate Vulkan adapters.");
+		auto [result, adapters] {Instance.enumeratePhysicalDevices()};
+		ctEnsureResult(result, "Failed to enumerate Vulkan adapters.");
 
-		for(auto adapter : adapters.value)
+		for(auto adapter : adapters)
 		{
 			auto properties {adapter.getProperties()};
 
@@ -162,64 +168,64 @@ namespace ct::vulkan
 
 		QueueFamilyIndices queryQueueFamilies(vk::PhysicalDevice adapter)
 		{
-			std::optional<uint32_t> graphicsFamilyIndex;
-			std::optional<uint32_t> presentationFamilyIndex;
+			std::optional<uint32_t> graphicsFamily;
+			std::optional<uint32_t> presentationFamily;
 
 			uint32_t index {};
 			auto dummy {Surface::makeDummy()};
 			for(auto& queueFamily : adapter.getQueueFamilyProperties())
 			{
 				if(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
-					graphicsFamilyIndex = index;
+					graphicsFamily = index;
 
-				auto surfaceSupport {adapter.getSurfaceSupportKHR(index, dummy.handle())};
-				ctEnsureResult(surfaceSupport.result, "Failed to query for Vulkan surface support.");
-				if(surfaceSupport.value)
-					presentationFamilyIndex = index;
+				auto [result, supportsSurfaces] {adapter.getSurfaceSupportKHR(index, dummy.handle())};
+				ctEnsureResult(result, "Failed to query for Vulkan surface support.");
+				if(supportsSurfaces)
+					presentationFamily = index;
 
 				++index;
 			}
-			ctEnsure(graphicsFamilyIndex, "The GPU driver does not support graphics queues.");
-			ctEnsure(presentationFamilyIndex, "The GPU driver does not support presentation queues.");
-			return {*graphicsFamilyIndex, *presentationFamilyIndex};
+			ctEnsure(graphicsFamily, "The GPU driver does not support graphics queues.");
+			ctEnsure(presentationFamily, "The GPU driver does not support presentation queues.");
+			return {*graphicsFamily, *presentationFamily};
 		}
 	}
 
-	void GraphicsPlatform::initializeDevice()
+	void GraphicsPlatform::initializeDeviceAndQueues()
 	{
 		ensureDeviceExtensionsExist();
-		auto indices {queryQueueFamilies(Adapter)};
 
-		float queuePriorities[] {1.0f};
-		auto graphicsQueueInfo {vk::DeviceQueueCreateInfo()
-									.setQueueFamilyIndex(indices.Graphics)
-									.setQueueCount(uint32_t(std::size(queuePriorities)))
-									.setPQueuePriorities(queuePriorities)};
-		auto presentQueueInfo(graphicsQueueInfo);
-		presentQueueInfo.setQueueFamilyIndex(indices.Present);
+		auto families {queryQueueFamilies(Adapter)};
+		const std::array<float, 1> queuePriorities {1.0f};
+		vk::DeviceQueueCreateInfo graphicsQueueInfo({}, families.Graphics, queuePriorities);
+		auto presentQueueInfo {graphicsQueueInfo};
+		presentQueueInfo.setQueueFamilyIndex(families.Present);
 
 		std::vector queueInfos {graphicsQueueInfo};
-		if(indices.Graphics != indices.Present)
+		if(families.Graphics != families.Present)
 			queueInfos.push_back(presentQueueInfo);
 
-		auto deviceInfo {fillDeviceInfo(queueInfos)};
-		auto device {Adapter.createDevice(deviceInfo)};
-		ctEnsureResult(device.result, "Failed to create Vulkan device.");
-		Device = device.value;
+		auto deviceInfo {vk::DeviceCreateInfo()
+							 .setQueueCreateInfos(queueInfos)
+							 .setPEnabledLayerNames(RequiredLayers)
+							 .setPEnabledExtensionNames(RequiredDeviceExtensions)};
+		auto [result, device] {Adapter.createDevice(deviceInfo)};
+		ctEnsureResult(result, "Failed to create Vulkan device.");
+		Device = device;
 
-		GraphicsQueue = Queue(indices.Graphics);
-		PresentQueue  = Queue(indices.Present);
+		GraphicsQueue = Queue(families.Graphics);
+		PresentQueue  = Queue(families.Present);
 	}
 
 	void GraphicsPlatform::ensureDeviceExtensionsExist()
 	{
-		auto extensions {Adapter.enumerateDeviceExtensionProperties()};
-		ctEnsureResult(extensions.result, "Failed to enumerate Vulkan device extensions.");
+		auto [result, extensions] {Adapter.enumerateDeviceExtensionProperties()};
+		ctEnsureResult(result, "Failed to enumerate Vulkan device extensions.");
 
 		for(auto requiredExtension : RequiredDeviceExtensions)
 		{
 			bool found {};
-			for(auto& extension : extensions.value)
+			for(auto& extension : extensions)
 				if(std::strcmp(extension.extensionName, requiredExtension) == 0)
 				{
 					found = true;
@@ -227,16 +233,5 @@ namespace ct::vulkan
 				}
 			ctEnsure(found, "Failed to find required Vulkan device extension.");
 		}
-	}
-
-	vk::DeviceCreateInfo GraphicsPlatform::fillDeviceInfo(const std::vector<vk::DeviceQueueCreateInfo>& queueInfos)
-	{
-		return vk::DeviceCreateInfo()
-			.setQueueCreateInfoCount(uint32_t(queueInfos.size()))
-			.setPQueueCreateInfos(queueInfos.data())
-			.setEnabledLayerCount(uint32_t(RequiredLayers.size()))
-			.setPpEnabledLayerNames(RequiredLayers.data())
-			.setEnabledExtensionCount(uint32_t(RequiredDeviceExtensions.size()))
-			.setPpEnabledExtensionNames(RequiredDeviceExtensions.data());
 	}
 }

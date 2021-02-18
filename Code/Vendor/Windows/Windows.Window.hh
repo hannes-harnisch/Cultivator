@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PCH.hh"
-#include "WindowBase.hh"
+#include "App/WindowBase.hh"
 
 namespace ct::windows
 {

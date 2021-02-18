@@ -1,7 +1,7 @@
 #include "PCH.hh"
 #include "App.hh"
 
-#include "Assert.hh"
+#include "Utils/Assert.hh"
 
 int main()
 {

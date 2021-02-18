@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Assert.hh"
-#include "Rectangle.hh"
+#include "Utils/Assert.hh"
+#include "Utils/Rectangle.hh"
 #include "Vendor/Vulkan/Vulkan.SwapChain.hh"
 
 namespace ct

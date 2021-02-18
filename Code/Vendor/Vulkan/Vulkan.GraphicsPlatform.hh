@@ -76,12 +76,12 @@ namespace ct::vulkan
 		Queue GraphicsQueue;
 		Queue PresentQueue;
 
-		void initializeInstance();
+		void initializeInstance(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo);
+		void initializeLogger(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo);
 		void ensureInstanceExtensionsExist();
 		void ensureLayersExist();
 		void initializeAdapter();
-		void initializeDevice();
+		void initializeDeviceAndQueues();
 		void ensureDeviceExtensionsExist();
-		vk::DeviceCreateInfo fillDeviceInfo(const std::vector<vk::DeviceQueueCreateInfo>& queueInfos);
 	};
 }

@@ -1,8 +1,8 @@
 #pragma once
 
+#include "App/AppPlatform.hh"
+#include "App/Window.hh"
 #include "Vendor/Vulkan/Vulkan.GraphicsPlatform.hh"
-#include "AppPlatform.hh"
-#include "Window.hh"
 
 int main();
 
