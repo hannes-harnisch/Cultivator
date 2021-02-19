@@ -1,7 +1,7 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
-#include "Vendor/Vulkan/Vulkan.GraphicsPlatform.hh"
+#include "Vendor/Vulkan/Vulkan.GraphicsContext.hh"
 
 namespace ct::vulkan
 {
@@ -17,7 +17,7 @@ namespace ct::vulkan
 
 		inline ~Surface()
 		{
-			GraphicsPlatform::get().instance().destroySurfaceKHR(SurfaceHandle);
+			GraphicsContext::get().instance().destroySurfaceKHR(SurfaceHandle);
 		}
 
 		inline Surface& operator=(Surface&& other) noexcept

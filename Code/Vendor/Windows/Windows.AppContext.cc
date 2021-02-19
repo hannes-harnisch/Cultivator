@@ -1,5 +1,5 @@
 #include "PCH.hh"
-#include "Windows.AppPlatform.hh"
+#include "Windows.AppContext.hh"
 
 #include "App/App.hh"
 #include "Utils/Assert.hh"
@@ -18,7 +18,7 @@ namespace ct::windows
 		}
 	}
 
-	AppPlatform::AppPlatform()
+	AppContext::AppContext()
 	{
 		WNDCLASS windowClass {};
 		windowClass.style		  = CS_DBLCLKS;
@@ -27,7 +27,7 @@ namespace ct::windows
 		ctEnsure(::RegisterClass(&windowClass), "Failed to register window class.");
 	}
 
-	void AppPlatform::pollEvents()
+	void AppContext::pollEvents()
 	{
 		MSG message;
 		while(::PeekMessage(&message, nullptr, 0, 0, PM_REMOVE))

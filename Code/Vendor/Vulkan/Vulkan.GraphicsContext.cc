@@ -1,5 +1,5 @@
 #include "PCH.hh"
-#include "Vulkan.GraphicsPlatform.hh"
+#include "Vulkan.GraphicsContext.hh"
 
 #include "Utils/Assert.hh"
 #include "Vendor/Vulkan/Vulkan.Surface.hh"
@@ -40,9 +40,9 @@ namespace ct::vulkan
 		}
 	}
 
-	GraphicsPlatform::GraphicsPlatform()
+	GraphicsContext::GraphicsContext()
 	{
-		ctEnsure(!Singleton, "GraphicsPlatform can only be instantiated once.");
+		ctEnsure(!Singleton, "GraphicsContext can only be instantiated once.");
 		Singleton = this;
 
 		auto loggerInfo {fillLoggerInfo()};
@@ -52,7 +52,7 @@ namespace ct::vulkan
 		initializeDeviceAndQueues();
 	}
 
-	GraphicsPlatform::~GraphicsPlatform()
+	GraphicsContext::~GraphicsContext()
 	{
 		Device.destroy();
 
@@ -77,7 +77,7 @@ namespace ct::vulkan
 		}
 	}
 
-	void GraphicsPlatform::initializeInstance(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
+	void GraphicsContext::initializeInstance(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
 	{
 		ensureInstanceExtensionsExist();
 		ensureLayersExist();
@@ -93,7 +93,7 @@ namespace ct::vulkan
 		Instance = instance;
 	}
 
-	void GraphicsPlatform::initializeLogger(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
+	void GraphicsContext::initializeLogger(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
 	{
 #if CT_DEBUG
 		vk::DispatchLoaderDynamic dispatch(Instance, vkGetInstanceProcAddr);
@@ -103,7 +103,7 @@ namespace ct::vulkan
 #endif
 	}
 
-	void GraphicsPlatform::ensureInstanceExtensionsExist()
+	void GraphicsContext::ensureInstanceExtensionsExist()
 	{
 		auto [result, extensions] {vk::enumerateInstanceExtensionProperties()};
 		ctEnsureResult(result, "Failed to enumerate Vulkan instance extensions.");
@@ -121,7 +121,7 @@ namespace ct::vulkan
 		}
 	}
 
-	void GraphicsPlatform::ensureLayersExist()
+	void GraphicsContext::ensureLayersExist()
 	{
 		auto [result, layers] {vk::enumerateInstanceLayerProperties()};
 		ctEnsureResult(result, "Failed to enumerate Vulkan layers.");
@@ -139,7 +139,7 @@ namespace ct::vulkan
 		}
 	}
 
-	void GraphicsPlatform::initializeAdapter()
+	void GraphicsContext::initializeAdapter()
 	{
 		auto [result, adapters] {Instance.enumeratePhysicalDevices()};
 		ctEnsureResult(result, "Failed to enumerate Vulkan adapters.");
@@ -191,7 +191,7 @@ namespace ct::vulkan
 		}
 	}
 
-	void GraphicsPlatform::initializeDeviceAndQueues()
+	void GraphicsContext::initializeDeviceAndQueues()
 	{
 		ensureDeviceExtensionsExist();
 
@@ -217,7 +217,7 @@ namespace ct::vulkan
 		PresentQueue  = Queue(families.Present);
 	}
 
-	void GraphicsPlatform::ensureDeviceExtensionsExist()
+	void GraphicsContext::ensureDeviceExtensionsExist()
 	{
 		auto [result, extensions] {Adapter.enumerateDeviceExtensionProperties()};
 		ctEnsureResult(result, "Failed to enumerate Vulkan device extensions.");

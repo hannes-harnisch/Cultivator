@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PCH.hh"
-#include "Intrinsics.hh"
+#include "Utils/Intrinsics.hh"
 
 namespace ct
 {
@@ -22,7 +22,7 @@ namespace ct
 				ctDebugBreak();                                                                                        \
 		}
 
-	#define ctAssertResult(condition, message) ctAssert(static_cast<int>(condition) >= 0, message)
+	#define ctAssertResult(condition, message) ctAssert(static_cast<int64_t>(condition) >= 0, message)
 	#define ctAssertPure(condition, message)   ctAssert(condition, message)
 
 	#define ctEnsure(condition, message)	   ctAssert(condition, message)
@@ -40,6 +40,6 @@ namespace ct
 				ct::crash(message);                                                                                    \
 		}
 
-	#define ctEnsureResult(condition, message) ctEnsure(static_cast<int>(condition) >= 0, message)
+	#define ctEnsureResult(condition, message) ctEnsure(static_cast<int64_t>(condition) >= 0, message)
 
 #endif

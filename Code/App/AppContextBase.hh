@@ -2,7 +2,7 @@
 
 namespace ct
 {
-	class AppPlatformBase
+	class AppContextBase
 	{
 	public:
 		virtual void pollEvents() = 0;

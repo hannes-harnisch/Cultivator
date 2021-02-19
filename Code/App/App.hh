@@ -1,8 +1,8 @@
 #pragma once
 
-#include "App/AppPlatform.hh"
+#include "App/AppContext.hh"
 #include "App/Window.hh"
-#include "Vendor/Vulkan/Vulkan.GraphicsPlatform.hh"
+#include "Vendor/Vulkan/Vulkan.GraphicsContext.hh"
 
 int main();
 
@@ -26,8 +26,8 @@ namespace ct
 	private:
 		static inline App* Singleton;
 
-		AppPlatform AppPlatform;
-		vulkan::GraphicsPlatform GraphicsPlatform;
+		AppContext AppContext;
+		vulkan::GraphicsContext GraphicsContext;
 		Window MainWindow;
 		bool ShouldTick = true;
 

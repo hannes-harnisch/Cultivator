@@ -1,12 +1,12 @@
 #pragma once
 
 #if CT_SYSTEM_WINDOWS
-	#include "Vendor/Windows/Windows.Window.hh"
+	#include "Vendor/Windows/Windows.AppContext.hh"
 #endif
 
 namespace ct
 {
 #if CT_SYSTEM_WINDOWS
-	using Window = windows::Window;
+	using AppContext = windows::AppContext;
 #endif
 }

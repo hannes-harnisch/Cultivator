@@ -5,16 +5,16 @@
 
 namespace ct::vulkan
 {
-	class GraphicsPlatform final
+	class GraphicsContext final
 	{
 	public:
-		inline static GraphicsPlatform& get()
+		inline static GraphicsContext& get()
 		{
 			return *Singleton;
 		}
 
-		GraphicsPlatform();
-		~GraphicsPlatform();
+		GraphicsContext();
+		~GraphicsContext();
 
 		inline vk::Instance instance() const
 		{
@@ -41,8 +41,8 @@ namespace ct::vulkan
 			return PresentQueue;
 		}
 
-		GraphicsPlatform(const GraphicsPlatform&) = delete;
-		GraphicsPlatform& operator=(const GraphicsPlatform&) = delete;
+		GraphicsContext(const GraphicsContext&) = delete;
+		GraphicsContext& operator=(const GraphicsContext&) = delete;
 
 	private:
 		static inline const std::vector<const char*> RequiredLayers
@@ -67,7 +67,7 @@ namespace ct::vulkan
 
 		static inline const std::vector RequiredDeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-		static inline GraphicsPlatform* Singleton;
+		static inline GraphicsContext* Singleton;
 
 		vk::Instance Instance;
 		vk::DebugUtilsMessengerEXT Logger;
