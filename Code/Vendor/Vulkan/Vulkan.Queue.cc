@@ -1,4 +1,4 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 #include "Vulkan.Queue.hh"
 
 #include "Utils/Assert.hh"
@@ -8,12 +8,12 @@
 namespace ct::vulkan
 {
 	Queue::Queue(uint32_t familyIndex) :
-		FamilyIndex {familyIndex}, QueueHandle {GraphicsContext::get().device().getQueue(FamilyIndex, 0)}
+		FamilyIndex {familyIndex}, QueueHandle {GraphicsContext::device().getQueue(FamilyIndex, 0)}
 	{}
 
 	bool Queue::supportsSurface(const Surface& surface) const
 	{
-		auto [result, supports] {GraphicsContext::get().adapter().getSurfaceSupportKHR(FamilyIndex, surface.handle())};
+		auto [result, supports] {GraphicsContext::adapter().getSurfaceSupportKHR(FamilyIndex, surface.handle())};
 		ctEnsureResult(result, "Failed to query for Vulkan surface support.");
 		return supports;
 	}

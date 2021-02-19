@@ -9,7 +9,7 @@ namespace ct::vulkan
 	{
 		HWND handle {static_cast<HWND>(nativeWindowHandle)};
 		auto surfaceInfo {vk::Win32SurfaceCreateInfoKHR().setHwnd(handle)};
-		auto surface {GraphicsContext::get().instance().createWin32SurfaceKHR(surfaceInfo)};
+		auto surface {GraphicsContext::instance().createWin32SurfaceKHR(surfaceInfo)};
 		ctEnsureResult(surface.result, "Could not create Vulkan surface for Windows.");
 		SurfaceHandle = surface.value;
 	}

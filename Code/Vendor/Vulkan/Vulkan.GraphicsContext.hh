@@ -8,38 +8,33 @@ namespace ct::vulkan
 	class GraphicsContext final
 	{
 	public:
-		inline static GraphicsContext& get()
+		inline static vk::Instance instance()
 		{
-			return *Singleton;
+			return get().Instance;
+		}
+
+		inline static vk::PhysicalDevice adapter()
+		{
+			return get().Adapter;
+		}
+
+		inline static vk::Device device()
+		{
+			return get().Device;
+		}
+
+		inline static Queue graphicsQueue()
+		{
+			return get().GraphicsQueue;
+		}
+
+		inline static Queue presentQueue()
+		{
+			return get().PresentQueue;
 		}
 
 		GraphicsContext();
 		~GraphicsContext();
-
-		inline vk::Instance instance() const
-		{
-			return Instance;
-		}
-
-		inline vk::PhysicalDevice adapter() const
-		{
-			return Adapter;
-		}
-
-		inline vk::Device device() const
-		{
-			return Device;
-		}
-
-		inline Queue graphicsQueue() const
-		{
-			return GraphicsQueue;
-		}
-
-		inline Queue presentQueue() const
-		{
-			return PresentQueue;
-		}
 
 		GraphicsContext(const GraphicsContext&) = delete;
 		GraphicsContext& operator=(const GraphicsContext&) = delete;
@@ -75,6 +70,11 @@ namespace ct::vulkan
 		vk::Device Device;
 		Queue GraphicsQueue;
 		Queue PresentQueue;
+
+		inline static GraphicsContext& get()
+		{
+			return *Singleton;
+		}
 
 		void initializeInstance(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo);
 		void initializeLogger(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo);

@@ -17,7 +17,7 @@ namespace ct::vulkan
 
 		inline ~Surface()
 		{
-			GraphicsContext::get().instance().destroySurfaceKHR(SurfaceHandle);
+			GraphicsContext::instance().destroySurfaceKHR(SurfaceHandle);
 		}
 
 		inline Surface& operator=(Surface&& other) noexcept

@@ -23,12 +23,12 @@ namespace ct::vulkan
 		std::vector<vk::Image> SwapChainImages;
 		std::vector<vk::ImageView> SwapChainViews;
 
-		vk::SurfaceFormatKHR querySurfaceFormat();
-		vk::PresentModeKHR queryPresentMode();
-		vk::Extent2D queryExtent(Rectangle viewport);
-		vk::SwapchainKHR querySwapChain();
+		vk::SurfaceFormatKHR createSurfaceFormat();
+		vk::PresentModeKHR createPresentMode();
+		vk::Extent2D createExtent(Rectangle viewport);
+		vk::SwapchainKHR createSwapChain();
 		vk::SwapchainCreateInfoKHR fillSwapChainInfo();
-		std::vector<vk::Image> querySwapChainImages();
-		std::vector<vk::ImageView> querySwapChainImageViews();
+		std::vector<vk::Image> createSwapChainImages();
+		std::vector<vk::ImageView> createSwapChainImageViews();
 	};
 }
