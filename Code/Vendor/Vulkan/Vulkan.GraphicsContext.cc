@@ -160,13 +160,13 @@ namespace ct::vulkan
 
 	namespace
 	{
-		struct QueueFamilyIndices
+		struct QueueFamilies
 		{
 			uint32_t Graphics;
 			uint32_t Present;
 		};
 
-		QueueFamilyIndices queryQueueFamilies(vk::PhysicalDevice adapter)
+		QueueFamilies queryQueueFamilies(vk::PhysicalDevice adapter)
 		{
 			std::optional<uint32_t> graphicsFamily;
 			std::optional<uint32_t> presentationFamily;

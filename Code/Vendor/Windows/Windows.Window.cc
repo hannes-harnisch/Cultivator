@@ -6,27 +6,38 @@
 namespace ct::windows
 {
 	Window::Window(const std::string& title, Rectangle size, int x, int y) :
-		WindowBase {makeNativeHandle(title, size, x, y), getViewport()}
+		WindowBase {WindowHandle = createWindowHandle(title, size, x, y), getViewport()}
 	{}
 
 	Window::~Window()
 	{
-		::DestroyWindow(static_cast<HWND>(NativeHandle));
+		::DestroyWindow(WindowHandle);
+	}
+
+	Window::Window(Window&& other) noexcept :
+		WindowBase {std::move(other)}, WindowHandle {std::exchange(other.WindowHandle, nullptr)}
+	{}
+
+	Window& Window::operator=(Window&& other) noexcept
+	{
+		WindowBase::operator=(std::move(other));
+		std::swap(WindowHandle, other.WindowHandle);
+		return *this;
 	}
 
 	Rectangle Window::getViewport()
 	{
 		RECT rect;
-		::GetClientRect(static_cast<HWND>(NativeHandle), &rect);
+		::GetClientRect(WindowHandle, &rect);
 		return {uint32_t(rect.right), uint32_t(rect.bottom)};
 	}
 
 	void Window::show()
 	{
-		::ShowWindow(static_cast<HWND>(NativeHandle), SW_SHOW);
+		::ShowWindow(WindowHandle, SW_SHOW);
 	}
 
-	HWND Window::makeNativeHandle(const std::string& title, Rectangle size, int x, int y)
+	HWND Window::createWindowHandle(const std::string& title, Rectangle size, int x, int y)
 	{
 		auto wideTitle {widenString(title)};
 		return ::CreateWindow(TEXT(CT_APP_NAME), wideTitle.data(), WS_OVERLAPPEDWINDOW, x, y, size.Width, size.Height,

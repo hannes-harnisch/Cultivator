@@ -10,11 +10,15 @@ namespace ct::windows
 	public:
 		Window(const std::string& title, Rectangle size, int x, int y);
 		~Window();
+		Window(Window&& other) noexcept;
+		Window& operator=(Window&& other) noexcept;
 
-		Rectangle getViewport() final override;
-		void show() final override;
+		Rectangle getViewport() override;
+		void show() override;
 
 	private:
-		HWND makeNativeHandle(const std::string& title, Rectangle size, int x, int y);
+		HWND WindowHandle;
+
+		HWND createWindowHandle(const std::string& title, Rectangle size, int x, int y);
 	};
 }

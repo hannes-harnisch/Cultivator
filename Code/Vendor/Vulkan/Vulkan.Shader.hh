@@ -19,7 +19,5 @@ namespace ct::vulkan
 
 	private:
 		vk::ShaderModule ShaderModule;
-
-		vk::ShaderModule createShaderModule(const std::string& filePath);
 	};
 }

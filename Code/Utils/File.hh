@@ -13,7 +13,7 @@ namespace ct
 			FILE* file;
 			fopen_s(&file, filePath.data(), "r");
 			if(!file)
-				return Array<char>();
+				return {};
 
 			std::fseek(file, 0, SEEK_END);
 			long size {std::ftell(file)};

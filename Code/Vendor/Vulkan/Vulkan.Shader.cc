@@ -6,8 +6,17 @@
 
 namespace ct::vulkan
 {
-	Shader::Shader(const std::string& filePath) : ShaderModule {createShaderModule(filePath)}
-	{}
+	Shader::Shader(const std::string& filePath)
+	{
+		auto bytecode {File::loadBinary(filePath)};
+		auto shaderInfo {vk::ShaderModuleCreateInfo()
+							 .setCodeSize(bytecode.size())
+							 .setPCode(reinterpret_cast<uint32_t*>(bytecode.data()))};
+
+		auto [result, shader] {GraphicsContext::device().createShaderModule(shaderInfo)};
+		ctAssertResult(result, "Failed to create Vulkan shader module.");
+		ShaderModule = shader;
+	}
 
 	Shader::Shader(Shader&& other) noexcept : ShaderModule {std::exchange(other.ShaderModule, nullptr)}
 	{}
@@ -21,17 +30,5 @@ namespace ct::vulkan
 	{
 		std::swap(ShaderModule, other.ShaderModule);
 		return *this;
-	}
-
-	vk::ShaderModule Shader::createShaderModule(const std::string& filePath)
-	{
-		auto bytecode {File::loadBinary(filePath)};
-		auto shaderInfo {vk::ShaderModuleCreateInfo()
-							 .setCodeSize(bytecode.size())
-							 .setPCode(reinterpret_cast<uint32_t*>(bytecode.data()))};
-
-		auto [result, shader] {GraphicsContext::device().createShaderModule(shaderInfo)};
-		ctEnsureResult(result, "Failed to create shader module.");
-		return shader;
 	}
 }
