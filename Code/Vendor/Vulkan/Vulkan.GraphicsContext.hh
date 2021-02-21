@@ -47,7 +47,7 @@ namespace ct::vulkan
 #endif
 		};
 
-		static inline const std::vector RequiredInstanceExtensions
+		static inline const std::array RequiredInstanceExtensions
 		{
 			VK_KHR_SURFACE_EXTENSION_NAME,
 
@@ -60,7 +60,7 @@ namespace ct::vulkan
 #endif
 		};
 
-		static inline const std::vector RequiredDeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+		static inline const std::array RequiredDeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 		static inline GraphicsContext* Singleton;
 

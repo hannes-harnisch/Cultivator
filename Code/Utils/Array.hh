@@ -9,7 +9,7 @@ namespace ct
 	public:
 		inline Array() = default;
 
-		inline Array(size_t size, T* data) : Size {size}, Data {data}
+		inline Array(size_t size, T data[]) : Size {size}, Data {data}
 		{}
 
 		inline Array(size_t size) : Array {size, new T[size]}

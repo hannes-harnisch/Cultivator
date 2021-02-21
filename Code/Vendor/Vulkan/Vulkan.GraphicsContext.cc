@@ -168,8 +168,7 @@ namespace ct::vulkan
 
 		QueueFamilies queryQueueFamilies(vk::PhysicalDevice adapter)
 		{
-			std::optional<uint32_t> graphicsFamily;
-			std::optional<uint32_t> presentationFamily;
+			std::optional<uint32_t> graphicsFamily, presentationFamily;
 
 			uint32_t index {};
 			auto dummy {Surface::makeDummy()};
@@ -196,10 +195,9 @@ namespace ct::vulkan
 		ensureDeviceExtensionsExist();
 
 		auto families {queryQueueFamilies(Adapter)};
-		const std::array<float, 1> queuePriorities {1.0f};
+		std::array queuePriorities {1.0f};
 		vk::DeviceQueueCreateInfo graphicsQueueInfo({}, families.Graphics, queuePriorities);
-		auto presentQueueInfo {graphicsQueueInfo};
-		presentQueueInfo.setQueueFamilyIndex(families.Present);
+		vk::DeviceQueueCreateInfo presentQueueInfo({}, families.Present, queuePriorities);
 
 		std::vector queueInfos {graphicsQueueInfo};
 		if(families.Graphics != families.Present)

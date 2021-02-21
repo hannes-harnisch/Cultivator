@@ -14,6 +14,11 @@ namespace ct::vulkan
 		~SwapChain();
 		SwapChain& operator=(SwapChain&& other) noexcept;
 
+		inline vk::Format getImageFormat() const
+		{
+			return SurfaceFormat.format;
+		}
+
 	private:
 		Surface Surface;
 		vk::SurfaceFormatKHR SurfaceFormat;

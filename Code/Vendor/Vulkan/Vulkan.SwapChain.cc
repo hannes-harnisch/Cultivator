@@ -77,7 +77,7 @@ namespace ct::vulkan
 		auto [result, caps] {GraphicsContext::adapter().getSurfaceCapabilitiesKHR(Surface.handle())};
 		ctEnsureResult(result, "Failed to create Vulkan surface capabilities.");
 
-		uint32_t imageCount {std::min(caps.minImageCount + 1, caps.maxImageCount)};
+		const uint32_t imageCount {std::min(caps.minImageCount + 1, caps.maxImageCount)};
 		SwapChainImages.resize(imageCount);
 
 		if(caps.currentExtent != UINT32_MAX)
@@ -96,7 +96,7 @@ namespace ct::vulkan
 		const uint32_t presentFamily {GraphicsContext::presentQueue().familyIndex()};
 		if(graphicsFamily != presentFamily)
 		{
-			const std::array<uint32_t, 2> indices {graphicsFamily, presentFamily};
+			std::array indices {graphicsFamily, presentFamily};
 			swapChainInfo.setImageSharingMode(vk::SharingMode::eConcurrent).setQueueFamilyIndices(indices);
 		}
 
