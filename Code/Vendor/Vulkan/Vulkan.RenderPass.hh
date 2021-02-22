@@ -5,6 +5,7 @@ namespace ct::vulkan
 	class RenderPass final
 	{
 	public:
+		RenderPass();
 		~RenderPass();
 		RenderPass(RenderPass&& other) noexcept;
 		RenderPass& operator=(RenderPass&& other) noexcept;
@@ -16,5 +17,8 @@ namespace ct::vulkan
 
 	private:
 		vk::RenderPass Pass;
+
+		vk::AttachmentDescription fillAttachmenDescription();
+		vk::SubpassDescription fillSubpassDescription();
 	};
 }

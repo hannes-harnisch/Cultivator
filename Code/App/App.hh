@@ -13,12 +13,7 @@ namespace ct
 		friend int ::main();
 
 	public:
-		inline static App& get()
-		{
-			return *Singleton;
-		}
-
-		void quit();
+		static void quit();
 
 		App(const App&) = delete;
 		App& operator=(const App&) = delete;

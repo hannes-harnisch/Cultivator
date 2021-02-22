@@ -6,8 +6,8 @@
 
 namespace ct::vulkan
 {
-	SwapChain::SwapChain(void* windowHandle, Rectangle viewport) :
-		Surface {windowHandle},
+	SwapChain::SwapChain(void* nativeWindowHandle, Rectangle viewport) :
+		Surface {nativeWindowHandle},
 		SurfaceFormat {createSurfaceFormat()},
 		PresentMode {createPresentMode()},
 		Extent {createExtent(viewport)},

@@ -12,18 +12,22 @@ namespace ct::windows
 		{
 			switch(message)
 			{
-				case WM_CLOSE: App::get().quit(); return 0;
+				case WM_CLOSE: App::quit(); return 0;
 				default: return ::DefWindowProc(windowHandle, message, wParam, lParam);
 			}
 		}
 	}
 
-	AppContext::AppContext()
+	AppContext::AppContext() : AppHandle {::GetModuleHandle(nullptr)}
 	{
+		ctEnsure(!Singleton, "AppContext can only be instantiated once.");
+		Singleton = this;
+
 		WNDCLASS windowClass {};
 		windowClass.style		  = CS_DBLCLKS;
 		windowClass.lpfnWndProc	  = receiveWindowsEvents;
-		windowClass.lpszClassName = TEXT(CT_APP_NAME);
+		windowClass.hInstance	  = AppHandle;
+		windowClass.lpszClassName = WindowClassName;
 		ctEnsure(::RegisterClass(&windowClass), "Failed to register window class.");
 	}
 

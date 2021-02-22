@@ -1,6 +1,7 @@
 #include "PCH.hh"
 #include "Vendor/Windows/Windows.Window.hh"
 
+#include "Vendor/Windows/Windows.AppContext.hh"
 #include "Vendor/Windows/Windows.Utils.hh"
 
 namespace ct::windows
@@ -40,7 +41,7 @@ namespace ct::windows
 	HWND Window::createWindowHandle(const std::string& title, Rectangle size, int x, int y)
 	{
 		auto wideTitle {widenString(title)};
-		return ::CreateWindow(TEXT(CT_APP_NAME), wideTitle.data(), WS_OVERLAPPEDWINDOW, x, y, size.Width, size.Height,
-							  nullptr, nullptr, nullptr, nullptr);
+		return ::CreateWindow(AppContext::WindowClassName, wideTitle.data(), WS_OVERLAPPEDWINDOW, x, y, size.Width,
+							  size.Height, nullptr, nullptr, AppContext::nativeInstanceHandle(), nullptr);
 	}
 }

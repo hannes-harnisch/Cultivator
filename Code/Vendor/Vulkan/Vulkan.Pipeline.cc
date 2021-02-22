@@ -18,7 +18,7 @@ namespace ct::vulkan
 		std::array colorBlendAttachments {fillColorBlendAttachment()};
 		auto colorBlendInfo {vk::PipelineColorBlendStateCreateInfo().setAttachments(colorBlendAttachments)};
 
-		std::array dynamicStates {vk::DynamicState::eViewport};
+		std::array dynamicStates {vk::DynamicState::eViewport, vk::DynamicState::eScissor};
 		auto dynamicStateInfo {vk::PipelineDynamicStateCreateInfo().setDynamicStates(dynamicStates)};
 
 		auto pipelineInfo {vk::GraphicsPipelineCreateInfo()

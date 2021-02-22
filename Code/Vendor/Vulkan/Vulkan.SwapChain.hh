@@ -9,7 +9,7 @@ namespace ct::vulkan
 	class SwapChain final
 	{
 	public:
-		SwapChain(void* windowHandle, Rectangle viewport);
+		SwapChain(void* nativeWindowHandle, Rectangle viewport);
 		SwapChain(SwapChain&& other) noexcept;
 		~SwapChain();
 		SwapChain& operator=(SwapChain&& other) noexcept;

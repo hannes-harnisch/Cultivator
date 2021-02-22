@@ -10,27 +10,27 @@ namespace ct::vulkan
 	public:
 		inline static vk::Instance instance()
 		{
-			return get().Instance;
+			return Singleton->Instance;
 		}
 
 		inline static vk::PhysicalDevice adapter()
 		{
-			return get().Adapter;
+			return Singleton->Adapter;
 		}
 
 		inline static vk::Device device()
 		{
-			return get().Device;
+			return Singleton->Device;
 		}
 
 		inline static Queue graphicsQueue()
 		{
-			return get().GraphicsQueue;
+			return Singleton->GraphicsQueue;
 		}
 
 		inline static Queue presentQueue()
 		{
-			return get().PresentQueue;
+			return Singleton->PresentQueue;
 		}
 
 		GraphicsContext();
@@ -70,11 +70,6 @@ namespace ct::vulkan
 		vk::Device Device;
 		Queue GraphicsQueue;
 		Queue PresentQueue;
-
-		inline static GraphicsContext& get()
-		{
-			return *Singleton;
-		}
 
 		void initializeInstance(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo);
 		void initializeLogger(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo);
