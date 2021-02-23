@@ -79,4 +79,21 @@ namespace ct::vulkan
 		void initializeDeviceAndQueues();
 		void ensureDeviceExtensionsExist();
 	};
+
+	class Loader final
+	{
+	public:
+		inline static vk::DispatchLoaderDynamic& getDeviceless()
+		{
+			static vk::DispatchLoaderDynamic loader(GraphicsContext::instance(), vkGetInstanceProcAddr);
+			return loader;
+		}
+
+		inline static vk::DispatchLoaderDynamic& get()
+		{
+			static vk::DispatchLoaderDynamic loader(GraphicsContext::instance(), vkGetInstanceProcAddr,
+													GraphicsContext::device(), vkGetDeviceProcAddr);
+			return loader;
+		}
+	};
 }

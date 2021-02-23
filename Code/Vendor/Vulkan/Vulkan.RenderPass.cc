@@ -7,12 +7,12 @@ namespace ct::vulkan
 {
 	RenderPass::RenderPass()
 	{
-		std::array attachmenRefs {vk::AttachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal)};
+		std::array attachmentRefs {vk::AttachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal)};
 	}
 
 	RenderPass::~RenderPass()
 	{
-		GraphicsContext::device().destroyRenderPass(Pass);
+		GraphicsContext::device().destroyRenderPass(Pass, {}, Loader::get());
 	}
 
 	RenderPass::RenderPass(RenderPass&& other) noexcept : Pass {std::exchange(other.Pass, nullptr)}
@@ -24,10 +24,10 @@ namespace ct::vulkan
 		return *this;
 	}
 
-	vk::AttachmentDescription RenderPass::fillAttachmenDescription()
+	vk::AttachmentDescription RenderPass::fillAttachmentDescription(vk::Format format)
 	{
 		return vk::AttachmentDescription()
-			.setFormat(vk::Format::eB8G8R8A8Snorm)
+			.setFormat(format)
 			.setSamples(vk::SampleCountFlagBits::e1)
 			.setLoadOp(vk::AttachmentLoadOp::eClear)
 			.setStoreOp(vk::AttachmentStoreOp::eStore)
@@ -39,7 +39,6 @@ namespace ct::vulkan
 
 	vk::SubpassDescription RenderPass::fillSubpassDescription()
 	{
-		vk::AttachmentReference attachmentRef(0, vk::ImageLayout::eColorAttachmentOptimal);
 		return vk::SubpassDescription();
 	}
 }

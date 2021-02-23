@@ -57,8 +57,7 @@ namespace ct::vulkan
 		Device.destroy();
 
 #if CT_DEBUG
-		vk::DispatchLoaderDynamic dispatch(Instance, vkGetInstanceProcAddr);
-		Instance.destroyDebugUtilsMessengerEXT(Logger, nullptr, dispatch);
+		Instance.destroyDebugUtilsMessengerEXT(Logger, {}, Loader::get());
 #endif
 
 		Instance.destroy();
@@ -96,8 +95,7 @@ namespace ct::vulkan
 	void GraphicsContext::initializeLogger(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
 	{
 #if CT_DEBUG
-		vk::DispatchLoaderDynamic dispatch(Instance, vkGetInstanceProcAddr);
-		auto [result, logger] {Instance.createDebugUtilsMessengerEXT(loggerInfo, nullptr, dispatch)};
+		auto [result, logger] {Instance.createDebugUtilsMessengerEXT(loggerInfo, nullptr, Loader::getDeviceless())};
 		ctEnsureResult(result, "Failed to create Vulkan logger.");
 		Logger = logger;
 #endif
@@ -141,12 +139,12 @@ namespace ct::vulkan
 
 	void GraphicsContext::initializeAdapter()
 	{
-		auto [result, adapters] {Instance.enumeratePhysicalDevices()};
+		auto [result, adapters] {Instance.enumeratePhysicalDevices(Loader::getDeviceless())};
 		ctEnsureResult(result, "Failed to enumerate Vulkan adapters.");
 
 		for(auto adapter : adapters)
 		{
-			auto properties {adapter.getProperties()};
+			auto properties {adapter.getProperties(Loader::getDeviceless())};
 
 			if(properties.deviceType == vk::PhysicalDeviceType::eIntegratedGpu)
 				Adapter = adapter;
@@ -172,14 +170,14 @@ namespace ct::vulkan
 
 			uint32_t index {};
 			auto dummy {Surface::makeDummy()};
-			for(auto& queueFamily : adapter.getQueueFamilyProperties())
+			for(auto& queueFamily : adapter.getQueueFamilyProperties(Loader::getDeviceless()))
 			{
 				if(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
 					graphicsFamily = index;
 
-				auto [result, supportsSurfaces] {adapter.getSurfaceSupportKHR(index, dummy.handle())};
+				auto [result, supports] {adapter.getSurfaceSupportKHR(index, dummy.handle(), Loader::getDeviceless())};
 				ctEnsureResult(result, "Failed to query for Vulkan surface support.");
-				if(supportsSurfaces)
+				if(supports)
 					presentationFamily = index;
 
 				++index;
@@ -207,7 +205,7 @@ namespace ct::vulkan
 							 .setQueueCreateInfos(queueInfos)
 							 .setPEnabledLayerNames(RequiredLayers)
 							 .setPEnabledExtensionNames(RequiredDeviceExtensions)};
-		auto [result, device] {Adapter.createDevice(deviceInfo)};
+		auto [result, device] {Adapter.createDevice(deviceInfo, nullptr, Loader::getDeviceless())};
 		ctEnsureResult(result, "Failed to create Vulkan device.");
 		Device = device;
 
@@ -217,7 +215,7 @@ namespace ct::vulkan
 
 	void GraphicsContext::ensureDeviceExtensionsExist()
 	{
-		auto [result, extensions] {Adapter.enumerateDeviceExtensionProperties()};
+		auto [result, extensions] {Adapter.enumerateDeviceExtensionProperties(nullptr, Loader::getDeviceless())};
 		ctEnsureResult(result, "Failed to enumerate Vulkan device extensions.");
 
 		for(auto requiredExtension : RequiredDeviceExtensions)

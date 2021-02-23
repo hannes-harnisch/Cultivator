@@ -8,7 +8,7 @@ int main();
 
 namespace ct
 {
-	class App
+	class App final
 	{
 		friend int ::main();
 

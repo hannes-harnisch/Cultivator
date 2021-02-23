@@ -31,9 +31,9 @@ namespace ct::vulkan
 		auto device {GraphicsContext::device()};
 
 		for(auto imageView : SwapChainViews)
-			device.destroyImageView(imageView);
+			device.destroyImageView(imageView, {}, Loader::get());
 
-		device.destroySwapchainKHR(SwapChainHandle);
+		device.destroySwapchainKHR(SwapChainHandle, {}, Loader::get());
 	}
 
 	SwapChain& SwapChain::operator=(SwapChain&& other) noexcept
@@ -50,7 +50,7 @@ namespace ct::vulkan
 
 	vk::SurfaceFormatKHR SwapChain::createSurfaceFormat()
 	{
-		auto [result, formats] {GraphicsContext::adapter().getSurfaceFormatsKHR(Surface.handle())};
+		auto [result, formats] {GraphicsContext::adapter().getSurfaceFormatsKHR(Surface.handle(), Loader::get())};
 		ctEnsureResult(result, "Failed to create Vulkan surface formats.");
 
 		for(auto format : formats)
@@ -62,7 +62,7 @@ namespace ct::vulkan
 
 	vk::PresentModeKHR SwapChain::createPresentMode()
 	{
-		auto [result, modes] {GraphicsContext::adapter().getSurfacePresentModesKHR(Surface.handle())};
+		auto [result, modes] {GraphicsContext::adapter().getSurfacePresentModesKHR(Surface.handle(), Loader::get())};
 		ctEnsureResult(result, "Failed to create Vulkan surface presentation modes.");
 
 		for(auto mode : modes)
@@ -74,10 +74,12 @@ namespace ct::vulkan
 
 	vk::Extent2D SwapChain::createExtent(Rectangle viewport)
 	{
-		auto [result, caps] {GraphicsContext::adapter().getSurfaceCapabilitiesKHR(Surface.handle())};
+		auto [result, caps] {GraphicsContext::adapter().getSurfaceCapabilitiesKHR(Surface.handle(), Loader::get())};
 		ctEnsureResult(result, "Failed to create Vulkan surface capabilities.");
 
-		const uint32_t imageCount {std::min(caps.minImageCount + 1, caps.maxImageCount)};
+		uint32_t imageCount {caps.minImageCount + 1};
+		if(caps.maxImageCount > 0 && imageCount > caps.maxImageCount)
+			imageCount = caps.maxImageCount;
 		SwapChainImages.resize(imageCount);
 
 		if(caps.currentExtent != UINT32_MAX)
@@ -100,7 +102,7 @@ namespace ct::vulkan
 			swapChainInfo.setImageSharingMode(vk::SharingMode::eConcurrent).setQueueFamilyIndices(indices);
 		}
 
-		auto [result, swapChain] {GraphicsContext::device().createSwapchainKHR(swapChainInfo)};
+		auto [result, swapChain] {GraphicsContext::device().createSwapchainKHR(swapChainInfo, nullptr, Loader::get())};
 		ctEnsureResult(result, "Failed to create Vulkan swap chain.");
 		return swapChain;
 	}
@@ -123,7 +125,7 @@ namespace ct::vulkan
 
 	std::vector<vk::Image> SwapChain::createSwapChainImages()
 	{
-		auto [result, images] {GraphicsContext::device().getSwapchainImagesKHR(SwapChainHandle)};
+		auto [result, images] {GraphicsContext::device().getSwapchainImagesKHR(SwapChainHandle, Loader::get())};
 		ctEnsureResult(result, "Failed to get swap chain images.");
 		return images;
 	}
@@ -142,7 +144,7 @@ namespace ct::vulkan
 									.setViewType(vk::ImageViewType::e2D)
 									.setFormat(SurfaceFormat.format)
 									.setSubresourceRange(subresourceRange)};
-			auto [result, imageView] {GraphicsContext::device().createImageView(imageViewInfo)};
+			auto [result, imageView] {GraphicsContext::device().createImageView(imageViewInfo, nullptr, Loader::get())};
 			ctEnsureResult(result, "Failed to create swap chain image views.");
 			views.push_back(imageView);
 		}

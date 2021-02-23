@@ -18,7 +18,7 @@ namespace ct::vulkan
 	private:
 		vk::RenderPass Pass;
 
-		vk::AttachmentDescription fillAttachmenDescription();
+		vk::AttachmentDescription fillAttachmentDescription(vk::Format format);
 		vk::SubpassDescription fillSubpassDescription();
 	};
 }

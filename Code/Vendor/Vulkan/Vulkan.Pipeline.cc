@@ -31,15 +31,16 @@ namespace ct::vulkan
 							   .setLayout(Layout)
 							   .setRenderPass(renderPass.handle())
 							   .setBasePipelineIndex(-1)};
-		auto [result, pipeline] {GraphicsContext::device().createGraphicsPipeline(nullptr, pipelineInfo)};
+		auto [result,
+			  pipeline] {GraphicsContext::device().createGraphicsPipeline({}, pipelineInfo, nullptr, Loader::get())};
 		ctAssertResult(result, "Failed to create Vulkan pipeline.");
 		PipelineHandle = pipeline;
 	}
 
 	Pipeline::~Pipeline()
 	{
-		GraphicsContext::device().destroyPipeline(PipelineHandle);
-		GraphicsContext::device().destroyPipelineLayout(Layout);
+		GraphicsContext::device().destroyPipeline(PipelineHandle, {}, Loader::get());
+		GraphicsContext::device().destroyPipelineLayout(Layout, {}, Loader::get());
 	}
 
 	Pipeline::Pipeline(Pipeline&& other) noexcept :
@@ -56,7 +57,7 @@ namespace ct::vulkan
 	vk::PipelineLayout Pipeline::createLayout()
 	{
 		vk::PipelineLayoutCreateInfo layoutInfo;
-		auto [result, layout] {GraphicsContext::device().createPipelineLayout(layoutInfo)};
+		auto [result, layout] {GraphicsContext::device().createPipelineLayout(layoutInfo, nullptr, Loader::get())};
 		ctAssertResult(result, "Failed to create Vulkan pipeline layout.");
 		return layout;
 	}
