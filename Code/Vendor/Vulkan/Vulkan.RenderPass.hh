@@ -12,13 +12,12 @@ namespace ct::vulkan
 
 		inline vk::RenderPass handle() const
 		{
-			return Pass;
+			return RenderPassHandle;
 		}
 
 	private:
-		vk::RenderPass Pass;
+		vk::RenderPass RenderPassHandle;
 
-		vk::AttachmentDescription fillAttachmentDescription(vk::Format format);
-		vk::SubpassDescription fillSubpassDescription();
+		vk::AttachmentDescription fillAttachmentDescription(vk::ImageLayout initial, vk::ImageLayout final);
 	};
 }

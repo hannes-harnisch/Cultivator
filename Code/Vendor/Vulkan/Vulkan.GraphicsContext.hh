@@ -95,5 +95,7 @@ namespace ct::vulkan
 													GraphicsContext::device(), vkGetDeviceProcAddr);
 			return loader;
 		}
+
+		Loader() = delete;
 	};
 }

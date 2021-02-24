@@ -12,7 +12,6 @@ namespace ct::vulkan
 		auto shaderInfo {vk::ShaderModuleCreateInfo()
 							 .setCodeSize(bytecode.size())
 							 .setPCode(reinterpret_cast<uint32_t*>(bytecode.data()))};
-
 		auto [result, shader] {GraphicsContext::device().createShaderModule(shaderInfo, nullptr, Loader::get())};
 		ctAssertResult(result, "Failed to create Vulkan shader module.");
 		ShaderModule = shader;
