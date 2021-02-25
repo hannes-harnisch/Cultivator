@@ -6,14 +6,13 @@ namespace ct
 {
 	template<typename T> class Singleton
 	{
-	public:
+	protected:
+		static inline T* SingletonInstance;
+
 		inline Singleton()
 		{
-			ctEnsure(!SingletonPtr, "This type can only be instantiated once.");
-			SingletonPtr = this;
+			ctEnsure(!SingletonInstance, "This type can only be instantiated once.");
+			SingletonInstance = static_cast<T*>(this);
 		}
-
-	protected:
-		static inline T* SingletonPtr;
 	};
 }

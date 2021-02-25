@@ -20,9 +20,6 @@ namespace ct::windows
 
 	AppContext::AppContext() : AppHandle {::GetModuleHandle(nullptr)}
 	{
-		ctEnsure(!Singleton, "AppContext can only be instantiated once.");
-		Singleton = this;
-
 		WNDCLASS windowClass {};
 		windowClass.style		  = CS_DBLCLKS;
 		windowClass.lpfnWndProc	  = receiveWindowsEvents;

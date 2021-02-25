@@ -39,8 +39,9 @@ namespace ct::vulkan
 
 	Pipeline::~Pipeline()
 	{
-		GraphicsContext::device().destroyPipeline(PipelineHandle, {}, Loader::get());
-		GraphicsContext::device().destroyPipelineLayout(Layout, {}, Loader::get());
+		auto device {GraphicsContext::device()};
+		device.destroyPipeline(PipelineHandle, {}, Loader::get());
+		device.destroyPipelineLayout(Layout, {}, Loader::get());
 	}
 
 	Pipeline::Pipeline(Pipeline&& other) noexcept :

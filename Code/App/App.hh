@@ -8,7 +8,7 @@ int main();
 
 namespace ct
 {
-	class App final
+	class App final : public Singleton<App>
 	{
 		friend int ::main();
 
@@ -19,8 +19,6 @@ namespace ct
 		App& operator=(const App&) = delete;
 
 	private:
-		static inline App* Singleton;
-
 		AppContext AppContext;
 		vulkan::GraphicsContext GraphicsContext;
 		Window MainWindow;

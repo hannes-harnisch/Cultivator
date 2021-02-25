@@ -42,9 +42,6 @@ namespace ct::vulkan
 
 	GraphicsContext::GraphicsContext()
 	{
-		ctEnsure(!Singleton, "GraphicsContext can only be instantiated once.");
-		Singleton = this;
-
 		auto loggerInfo {fillLoggerInfo()};
 		initializeInstance(loggerInfo);
 		initializeLogger(loggerInfo);

@@ -1,18 +1,19 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
 #include "App/AppContextBase.hh"
+#include "Utils/Singleton.hh"
 
 namespace ct::windows
 {
-	class AppContext final : public AppContextBase
+	class AppContext final : public AppContextBase, public Singleton<AppContext>
 	{
 	public:
 		static constexpr auto WindowClassName {TEXT(CT_APP_NAME)};
 
 		inline static HINSTANCE nativeInstanceHandle()
 		{
-			return Singleton->AppHandle;
+			return SingletonInstance->AppHandle;
 		}
 
 		AppContext();
@@ -20,8 +21,6 @@ namespace ct::windows
 		void pollEvents() override;
 
 	private:
-		static inline AppContext* Singleton;
-
 		HINSTANCE AppHandle;
 	};
 }

@@ -1,36 +1,37 @@
 #pragma once
 
 #include "PCH.hh"
+#include "Utils/Singleton.hh"
 #include "Vendor/Vulkan/Vulkan.Queue.hh"
 
 namespace ct::vulkan
 {
-	class GraphicsContext final
+	class GraphicsContext final : public Singleton<GraphicsContext>
 	{
 	public:
 		inline static vk::Instance instance()
 		{
-			return Singleton->Instance;
+			return SingletonInstance->Instance;
 		}
 
 		inline static vk::PhysicalDevice adapter()
 		{
-			return Singleton->Adapter;
+			return SingletonInstance->Adapter;
 		}
 
 		inline static vk::Device device()
 		{
-			return Singleton->Device;
+			return SingletonInstance->Device;
 		}
 
 		inline static Queue graphicsQueue()
 		{
-			return Singleton->GraphicsQueue;
+			return SingletonInstance->GraphicsQueue;
 		}
 
 		inline static Queue presentQueue()
 		{
-			return Singleton->PresentQueue;
+			return SingletonInstance->PresentQueue;
 		}
 
 		GraphicsContext();
@@ -61,8 +62,6 @@ namespace ct::vulkan
 		};
 
 		static inline const std::array RequiredDeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
-		static inline GraphicsContext* Singleton;
 
 		vk::Instance Instance;
 		vk::DebugUtilsMessengerEXT Logger;

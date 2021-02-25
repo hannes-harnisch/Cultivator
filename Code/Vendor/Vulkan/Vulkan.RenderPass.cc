@@ -8,9 +8,7 @@ namespace ct::vulkan
 {
 	RenderPass::RenderPass()
 	{
-		std::array attachments {fillAttachmentDescription(vk::ImageLayout::eShaderReadOnlyOptimal,
-														  vk::ImageLayout::eColorAttachmentOptimal),
-								fillAttachmentDescription(vk::ImageLayout::eColorAttachmentOptimal,
+		std::array attachments {fillAttachmentDescription(vk::ImageLayout::eColorAttachmentOptimal,
 														  vk::ImageLayout::eShaderReadOnlyOptimal)};
 		std::array attachmentRefs {vk::AttachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal)};
 		std::array subpasses {vk::SubpassDescription().setColorAttachments(attachmentRefs)};
@@ -18,7 +16,6 @@ namespace ct::vulkan
 											.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
 											.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
 											.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)};
-
 		auto renderPassInfo {vk::RenderPassCreateInfo()
 								 .setAttachments(attachments)
 								 .setSubpasses(subpasses)

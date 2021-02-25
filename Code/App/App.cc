@@ -1,4 +1,4 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 #include "App.hh"
 
 #include "Utils/Assert.hh"
@@ -13,14 +13,11 @@ namespace ct
 {
 	void App::quit()
 	{
-		Singleton->ShouldTick = false;
+		SingletonInstance->ShouldTick = false;
 	}
 
 	App::App() : MainWindow {CT_APP_NAME, {600, 600}, 400, 400}
 	{
-		ctEnsure(!Singleton, "App can only be instantiated once.");
-		Singleton = this;
-
 		MainWindow.show();
 	}
 
