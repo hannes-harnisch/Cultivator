@@ -6,8 +6,7 @@
 
 namespace ct::vulkan
 {
-	Pipeline::Pipeline(const Shader& vertex, const Shader& fragment, const RenderPass& renderPass) :
-		Layout {createLayout()}
+	Pipeline::Pipeline(const Shader& vertex, const Shader& fragment) : Layout {createLayout()}
 	{
 		std::array shaderStages {fillShaderStageInfo(vk::ShaderStageFlagBits::eVertex, vertex),
 								 fillShaderStageInfo(vk::ShaderStageFlagBits::eFragment, fragment)};
@@ -21,6 +20,7 @@ namespace ct::vulkan
 		std::array dynamicStates {vk::DynamicState::eViewport, vk::DynamicState::eScissor};
 		auto dynamicStateInfo {vk::PipelineDynamicStateCreateInfo().setDynamicStates(dynamicStates)};
 
+		RenderPass renderPass;
 		auto pipelineInfo {vk::GraphicsPipelineCreateInfo()
 							   .setStages(shaderStages)
 							   .setPVertexInputState(&vertexInputInfo)

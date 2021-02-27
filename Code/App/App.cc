@@ -1,4 +1,4 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 #include "App.hh"
 
 #include "Utils/Assert.hh"
@@ -16,7 +16,7 @@ namespace ct
 		SingletonInstance->ShouldTick = false;
 	}
 
-	App::App() : MainWindow {CT_APP_NAME, {600, 600}, 400, 400}
+	App::App() : MainWindow {CT_APP_NAME, {600, 600}, 400, 400}, Renderer {{100, 100}}
 	{
 		MainWindow.show();
 	}

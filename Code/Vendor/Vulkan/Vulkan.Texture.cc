@@ -1,7 +1,8 @@
 #include "PCH.hh"
 #include "Vulkan.Texture.hh"
 
-#include "Vulkan.GraphicsContext.hh"
+#include "Vendor/Vulkan/Vulkan.GraphicsContext.hh"
+#include "Vendor/Vulkan/Vulkan.Utils.hh"
 
 namespace ct::vulkan
 {
@@ -47,10 +48,9 @@ namespace ct::vulkan
 	vk::DeviceMemory Texture::allocateMemory()
 	{
 		auto memRequirements {GraphicsContext::device().getImageMemoryRequirements(Image, Loader::get())};
-		auto allocInfo {vk::MemoryAllocateInfo()
-							.setAllocationSize(memRequirements.size)
-							.setMemoryTypeIndex(GraphicsContext::findMemoryType(
-								memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal))};
+		uint32_t typeIndex {findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal)};
+
+		auto allocInfo {vk::MemoryAllocateInfo().setAllocationSize(memRequirements.size).setMemoryTypeIndex(typeIndex)};
 		auto [result, memory] {GraphicsContext::device().allocateMemory(allocInfo, nullptr, Loader::get())};
 		ctAssertResult(result, "Failed to allocate texture memory.");
 		return memory;

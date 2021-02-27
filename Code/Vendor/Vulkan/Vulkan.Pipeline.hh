@@ -8,7 +8,8 @@ namespace ct::vulkan
 {
 	class Pipeline final
 	{
-		Pipeline(const Shader& vertex, const Shader& fragment, const RenderPass& renderPass);
+	public:
+		Pipeline(const Shader& vertex, const Shader& fragment);
 		~Pipeline();
 		Pipeline(Pipeline&& other) noexcept;
 		Pipeline& operator=(Pipeline&& other) noexcept;

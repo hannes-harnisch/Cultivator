@@ -14,12 +14,24 @@ workspace 'Cultivator'
 	exceptionhandling	'Off'
 	buildoptions		{ '/Zc:rvalueCast' }
 	files				{ 'Code/**.cc', 'Code/**.hh', 'Code/**.hlsl' }
-	removefiles			{ 'Code/**/**.*.*' }
+	removefiles			{ 'Code/**/**.*.cc', 'Code/**/**.*.hh' }
 	objdir				( '.bin_int/' .. output_dir .. '/%{prj.name}' )
 	targetdir			( '.bin/'	  .. output_dir .. '/%{prj.name}' )
 	debugdir			( '.bin/'	  .. output_dir .. '/%{prj.name}' )
 	pchheader			'PCH.hh'
 	pchsource			'Code/PCH.cc'
+
+	filter 'files:**.hlsl'
+		flags			'ExcludeFromBuild'
+		shadermodel		'6.4'
+
+	filter 'files:**.vert.hlsl'
+		removeflags		'ExcludeFromBuild'
+		shadertype		'Vertex'
+
+	filter 'files:**.frag.hlsl'
+		removeflags		'ExcludeFromBuild'
+		shadertype		'Pixel'
 
 	filter 'system:Windows'
 		systemversion	'latest'
@@ -39,14 +51,6 @@ workspace 'Cultivator'
 		optimize		'Speed'
 		buildoptions	'/Ob3'
 		flags			{ 'LinkTimeOptimization' }
-
-	filter 'files:**.hlsl'
-		flags			'ExcludeFromBuild'
-		shadermodel		'6.4'
-
-	filter 'files:**.frag.hlsl'
-		removeflags		'ExcludeFromBuild'
-		shadertype		'Pixel'
 
 project 'Cultivator'
 	location			'Code'

@@ -34,8 +34,6 @@ namespace ct::vulkan
 			return SingletonInstance->PresentQueue;
 		}
 
-		static uint32_t findMemoryType(uint32_t filter, vk::MemoryPropertyFlagBits memProperties);
-
 		GraphicsContext();
 		~GraphicsContext();
 

@@ -60,18 +60,6 @@ namespace ct::vulkan
 		Instance.destroy();
 	}
 
-	uint32_t GraphicsContext::findMemoryType(uint32_t filter, vk::MemoryPropertyFlagBits memProperties)
-	{
-		auto memProps {SingletonInstance->Adapter.getMemoryProperties(Loader::get())};
-
-		for(uint32_t i {}; i < memProps.memoryTypeCount; ++i)
-			if(filter & (1 << i) && (memProps.memoryTypes[i].propertyFlags & memProperties) == memProperties)
-				return i;
-
-		ctEnsureResult(false, "Failed to find Vulkan memory type.");
-		return 0;
-	}
-
 	namespace
 	{
 		vk::ApplicationInfo fillAppInfo()
