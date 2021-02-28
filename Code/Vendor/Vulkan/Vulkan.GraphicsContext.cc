@@ -1,4 +1,4 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 #include "Vulkan.GraphicsContext.hh"
 
 #include "Utils/Assert.hh"
@@ -16,14 +16,7 @@ namespace ct::vulkan
 			if(messageSeverity < VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
 				return false;
 
-			std::string messageType;
-			switch(messageTypes)
-			{
-				case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT: messageType = "GENERAL"; break;
-				case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT: messageType = "VALIDATION"; break;
-				case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT: messageType = "PERFORMANCE"; break;
-			}
-			std::printf("\n[DEBUG] [%s] %s\n", messageType.data(), pCallbackData->pMessage);
+			std::printf("\n%s\n", pCallbackData->pMessage);
 			return false;
 		}
 
@@ -84,24 +77,24 @@ namespace ct::vulkan
 							   .setPApplicationInfo(&appInfo)
 							   .setPEnabledLayerNames(RequiredLayers)
 							   .setPEnabledExtensionNames(RequiredInstanceExtensions)};
-		auto [result, instance] {vk::createInstance(instanceInfo)};
-		ctEnsureResult(result, "Failed to create Vulkan instance.");
+		auto [res, instance] {vk::createInstance(instanceInfo)};
+		ctEnsureResult(res, "Failed to create Vulkan instance.");
 		Instance = instance;
 	}
 
 	void GraphicsContext::initializeLogger(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
 	{
 #if CT_DEBUG
-		auto [result, logger] {Instance.createDebugUtilsMessengerEXT(loggerInfo, nullptr, Loader::getDeviceless())};
-		ctEnsureResult(result, "Failed to create Vulkan logger.");
+		auto [res, logger] {Instance.createDebugUtilsMessengerEXT(loggerInfo, nullptr, Loader::getDeviceless())};
+		ctEnsureResult(res, "Failed to create Vulkan logger.");
 		Logger = logger;
 #endif
 	}
 
 	void GraphicsContext::ensureInstanceExtensionsExist()
 	{
-		auto [result, extensions] {vk::enumerateInstanceExtensionProperties()};
-		ctEnsureResult(result, "Failed to enumerate Vulkan instance extensions.");
+		auto [res, extensions] {vk::enumerateInstanceExtensionProperties()};
+		ctEnsureResult(res, "Failed to enumerate Vulkan instance extensions.");
 
 		for(auto requiredExtension : RequiredInstanceExtensions)
 		{
@@ -118,8 +111,8 @@ namespace ct::vulkan
 
 	void GraphicsContext::ensureLayersExist()
 	{
-		auto [result, layers] {vk::enumerateInstanceLayerProperties()};
-		ctEnsureResult(result, "Failed to enumerate Vulkan layers.");
+		auto [res, layers] {vk::enumerateInstanceLayerProperties()};
+		ctEnsureResult(res, "Failed to enumerate Vulkan layers.");
 
 		for(auto requiredLayer : RequiredLayers)
 		{
@@ -136,8 +129,8 @@ namespace ct::vulkan
 
 	void GraphicsContext::initializeAdapter()
 	{
-		auto [result, adapters] {Instance.enumeratePhysicalDevices(Loader::getDeviceless())};
-		ctEnsureResult(result, "Failed to enumerate Vulkan adapters.");
+		auto [res, adapters] {Instance.enumeratePhysicalDevices(Loader::getDeviceless())};
+		ctEnsureResult(res, "Failed to enumerate Vulkan adapters.");
 
 		for(auto adapter : adapters)
 		{
@@ -172,8 +165,8 @@ namespace ct::vulkan
 				if(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
 					graphicsFamily = index;
 
-				auto [result, supports] {adapter.getSurfaceSupportKHR(index, dummy.handle(), Loader::getDeviceless())};
-				ctEnsureResult(result, "Failed to query for Vulkan surface support.");
+				auto [res, supports] {adapter.getSurfaceSupportKHR(index, dummy.handle(), Loader::getDeviceless())};
+				ctEnsureResult(res, "Failed to query for Vulkan surface support.");
 				if(supports)
 					presentationFamily = index;
 
@@ -202,8 +195,8 @@ namespace ct::vulkan
 							 .setQueueCreateInfos(queueInfos)
 							 .setPEnabledLayerNames(RequiredLayers)
 							 .setPEnabledExtensionNames(RequiredDeviceExtensions)};
-		auto [result, device] {Adapter.createDevice(deviceInfo, nullptr, Loader::getDeviceless())};
-		ctEnsureResult(result, "Failed to create Vulkan device.");
+		auto [res, device] {Adapter.createDevice(deviceInfo, nullptr, Loader::getDeviceless())};
+		ctEnsureResult(res, "Failed to create Vulkan device.");
 		Device = device;
 
 		GraphicsQueue = Queue(families.Graphics);
@@ -212,8 +205,8 @@ namespace ct::vulkan
 
 	void GraphicsContext::ensureDeviceExtensionsExist()
 	{
-		auto [result, extensions] {Adapter.enumerateDeviceExtensionProperties(nullptr, Loader::getDeviceless())};
-		ctEnsureResult(result, "Failed to enumerate Vulkan device extensions.");
+		auto [res, extensions] {Adapter.enumerateDeviceExtensionProperties(nullptr, Loader::getDeviceless())};
+		ctEnsureResult(res, "Failed to enumerate Vulkan device extensions.");
 
 		for(auto requiredExtension : RequiredDeviceExtensions)
 		{

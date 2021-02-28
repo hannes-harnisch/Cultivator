@@ -8,8 +8,8 @@ namespace ct::vulkan
 {
 	Texture::Texture(Rectangle size) : Image {createImage(size)}, Memory {allocateMemory()}
 	{
-		auto result {GraphicsContext::device().bindImageMemory(Image, Memory, 0, Loader::get())};
-		ctAssertResult(result, "Failed to bind memory to Vulkan texture.");
+		auto res {GraphicsContext::device().bindImageMemory(Image, Memory, 0, Loader::get())};
+		ctAssertResult(res, "Failed to bind memory to Vulkan texture.");
 	}
 
 	Texture::~Texture()
@@ -40,8 +40,8 @@ namespace ct::vulkan
 							.setArrayLayers(1)
 							.setSamples(vk::SampleCountFlagBits::e1)
 							.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled)};
-		auto [result, image] {GraphicsContext::device().createImage(imageInfo, nullptr, Loader::get())};
-		ctAssertResult(result, "Failed to create Vulkan texture.");
+		auto [res, image] {GraphicsContext::device().createImage(imageInfo, nullptr, Loader::get())};
+		ctAssertResult(res, "Failed to create Vulkan texture.");
 		return image;
 	}
 
@@ -51,8 +51,8 @@ namespace ct::vulkan
 		uint32_t typeIndex {findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal)};
 
 		auto allocInfo {vk::MemoryAllocateInfo().setAllocationSize(memRequirements.size).setMemoryTypeIndex(typeIndex)};
-		auto [result, memory] {GraphicsContext::device().allocateMemory(allocInfo, nullptr, Loader::get())};
-		ctAssertResult(result, "Failed to allocate texture memory.");
+		auto [res, memory] {GraphicsContext::device().allocateMemory(allocInfo, nullptr, Loader::get())};
+		ctAssertResult(res, "Failed to allocate texture memory.");
 		return memory;
 	}
 }

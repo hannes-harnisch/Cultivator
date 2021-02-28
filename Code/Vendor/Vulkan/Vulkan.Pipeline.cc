@@ -12,7 +12,9 @@ namespace ct::vulkan
 								 fillShaderStageInfo(vk::ShaderStageFlagBits::eFragment, fragment)};
 		vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
 		vk::PipelineInputAssemblyStateCreateInfo assemblyInfo({}, vk::PrimitiveTopology::eTriangleList);
+		auto viewportInfo {vk::PipelineViewportStateCreateInfo().setViewportCount(1).setScissorCount(1)};
 		auto rasterizerInfo {fillRasterizerInfo()};
+		vk::PipelineMultisampleStateCreateInfo multisamplerInfo;
 
 		std::array colorBlendAttachments {fillColorBlendAttachment()};
 		auto colorBlendInfo {vk::PipelineColorBlendStateCreateInfo().setAttachments(colorBlendAttachments)};
@@ -25,16 +27,17 @@ namespace ct::vulkan
 							   .setStages(shaderStages)
 							   .setPVertexInputState(&vertexInputInfo)
 							   .setPInputAssemblyState(&assemblyInfo)
+							   .setPViewportState(&viewportInfo)
 							   .setPRasterizationState(&rasterizerInfo)
+							   .setPMultisampleState(&multisamplerInfo)
 							   .setPColorBlendState(&colorBlendInfo)
 							   .setPDynamicState(&dynamicStateInfo)
 							   .setLayout(Layout)
 							   .setRenderPass(renderPass.handle())
 							   .setBasePipelineIndex(-1)};
-		auto [result,
-			  pipeline] {GraphicsContext::device().createGraphicsPipeline({}, pipelineInfo, nullptr, Loader::get())};
-		ctAssertResult(result, "Failed to create Vulkan pipeline.");
-		PipelineHandle = pipeline;
+		auto [res, pipe] {GraphicsContext::device().createGraphicsPipeline({}, pipelineInfo, nullptr, Loader::get())};
+		ctAssertResult(res, "Failed to create Vulkan pipeline.");
+		PipelineHandle = pipe;
 	}
 
 	Pipeline::~Pipeline()
@@ -58,8 +61,8 @@ namespace ct::vulkan
 	vk::PipelineLayout Pipeline::createLayout()
 	{
 		vk::PipelineLayoutCreateInfo layoutInfo;
-		auto [result, layout] {GraphicsContext::device().createPipelineLayout(layoutInfo, nullptr, Loader::get())};
-		ctAssertResult(result, "Failed to create Vulkan pipeline layout.");
+		auto [res, layout] {GraphicsContext::device().createPipelineLayout(layoutInfo, nullptr, Loader::get())};
+		ctAssertResult(res, "Failed to create Vulkan pipeline layout.");
 		return layout;
 	}
 

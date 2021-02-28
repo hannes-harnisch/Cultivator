@@ -1,4 +1,4 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 #include "Vulkan.Shader.hh"
 
 #include "Utils/File.hh"
@@ -12,8 +12,8 @@ namespace ct::vulkan
 		auto shaderInfo {vk::ShaderModuleCreateInfo()
 							 .setCodeSize(bytecode.size())
 							 .setPCode(reinterpret_cast<uint32_t*>(bytecode.data()))};
-		auto [result, shader] {GraphicsContext::device().createShaderModule(shaderInfo, nullptr, Loader::get())};
-		ctAssertResult(result, "Failed to create Vulkan shader module.");
+		auto [res, shader] {GraphicsContext::device().createShaderModule(shaderInfo, nullptr, Loader::get())};
+		ctAssertResult(res, "Failed to create Vulkan shader module.");
 		ShaderModule = shader;
 	}
 

@@ -13,6 +13,7 @@ namespace ct::vulkan
 		std::array attachmentRefs {vk::AttachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal)};
 		std::array subpasses {vk::SubpassDescription().setColorAttachments(attachmentRefs)};
 		std::array subpassDependencies {vk::SubpassDependency()
+											.setSrcSubpass(VK_SUBPASS_EXTERNAL)
 											.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
 											.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
 											.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)};
@@ -20,8 +21,8 @@ namespace ct::vulkan
 								 .setAttachments(attachments)
 								 .setSubpasses(subpasses)
 								 .setDependencies(subpassDependencies)};
-		auto [result, renderPass] {GraphicsContext::device().createRenderPass(renderPassInfo, nullptr, Loader::get())};
-		ctAssertResult(result, "Failed to create Vulkan render pass.");
+		auto [res, renderPass] {GraphicsContext::device().createRenderPass(renderPassInfo, nullptr, Loader::get())};
+		ctAssertResult(res, "Failed to create Vulkan render pass.");
 		RenderPassHandle = renderPass;
 	}
 

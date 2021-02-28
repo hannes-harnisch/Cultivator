@@ -8,12 +8,11 @@ namespace ct::vulkan
 {
 	Surface::Surface(void* nativeWindowHandle)
 	{
-		auto surfaceInfo {vk::Win32SurfaceCreateInfoKHR()
-							  .setHinstance(windows::AppContext::nativeInstanceHandle())
-							  .setHwnd(static_cast<HWND>(nativeWindowHandle))};
-		auto [result, surface] {
-			GraphicsContext::instance().createWin32SurfaceKHR(surfaceInfo, nullptr, Loader::getDeviceless())};
-		ctEnsureResult(result, "Could not create Vulkan surface for Windows.");
+		auto info {vk::Win32SurfaceCreateInfoKHR()
+					   .setHinstance(windows::AppContext::nativeInstanceHandle())
+					   .setHwnd(static_cast<HWND>(nativeWindowHandle))};
+		auto [res, surface] {GraphicsContext::instance().createWin32SurfaceKHR(info, nullptr, Loader::getDeviceless())};
+		ctEnsureResult(res, "Could not create Vulkan surface for Windows.");
 		SurfaceHandle = surface;
 	}
 

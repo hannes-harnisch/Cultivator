@@ -13,8 +13,9 @@ workspace 'Cultivator'
 	rtti				'Off'
 	exceptionhandling	'Off'
 	buildoptions		{ '/Zc:rvalueCast' }
-	files				{ 'Code/**.cc', 'Code/**.hh', 'Code/**.hlsl' }
-	removefiles			{ 'Code/**/**.*.cc', 'Code/**/**.*.hh' }
+	files				{ 'Code/**.cc', 'Code/**.hh' }
+	removefiles			{ 'Code/**/**.*.*' }
+	files				{ 'Code/**.hlsl' }
 	objdir				( '.bin_int/' .. output_dir .. '/%{prj.name}' )
 	targetdir			( '.bin/'	  .. output_dir .. '/%{prj.name}' )
 	debugdir			( '.bin/'	  .. output_dir .. '/%{prj.name}' )
@@ -22,16 +23,9 @@ workspace 'Cultivator'
 	pchsource			'Code/PCH.cc'
 
 	filter 'files:**.hlsl'
-		flags			'ExcludeFromBuild'
-		shadermodel		'6.4'
-
-	filter 'files:**.vert.hlsl'
-		removeflags		'ExcludeFromBuild'
-		shadertype		'Vertex'
-
-	filter 'files:**.frag.hlsl'
-		removeflags		'ExcludeFromBuild'
-		shadertype		'Pixel'
+		buildmessage	'Compiling shader %{file.relpath}'
+		buildcommands	'glslangValidator -e main -o "%{cfg.targetdir}/%{file.basename}.spv" -V -D "%{file.relpath}"'
+		buildoutputs	'%{cfg.targetdir}/%{file.basename}.spv'
 
 	filter 'system:Windows'
 		systemversion	'latest'
