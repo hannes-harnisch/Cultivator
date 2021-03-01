@@ -1,4 +1,4 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 #include "Vulkan.GraphicsContext.hh"
 
 #include "Utils/Assert.hh"
@@ -156,7 +156,7 @@ namespace ct::vulkan
 
 		QueueFamilies queryQueueFamilies(vk::PhysicalDevice adapter)
 		{
-			std::optional<uint32_t> graphicsFamily, presentationFamily;
+			std::optional<uint32_t> graphicsFamily, presentFamily;
 
 			uint32_t index {};
 			auto dummy {Surface::makeDummy()};
@@ -168,13 +168,13 @@ namespace ct::vulkan
 				auto [res, supports] {adapter.getSurfaceSupportKHR(index, dummy.handle(), Loader::getDeviceless())};
 				ctEnsureResult(res, "Failed to query for Vulkan surface support.");
 				if(supports)
-					presentationFamily = index;
+					presentFamily = index;
 
 				++index;
 			}
 			ctEnsure(graphicsFamily, "The GPU driver does not support graphics queues.");
-			ctEnsure(presentationFamily, "The GPU driver does not support presentation queues.");
-			return {*graphicsFamily, *presentationFamily};
+			ctEnsure(presentFamily, "The GPU driver does not support present queues.");
+			return {*graphicsFamily, *presentFamily};
 		}
 	}
 
@@ -191,10 +191,12 @@ namespace ct::vulkan
 		if(families.Graphics != families.Present)
 			queueInfos.push_back(presentQueueInfo);
 
+		auto features {vk::PhysicalDeviceFeatures().setShaderImageGatherExtended(true)};
 		auto deviceInfo {vk::DeviceCreateInfo()
 							 .setQueueCreateInfos(queueInfos)
 							 .setPEnabledLayerNames(RequiredLayers)
-							 .setPEnabledExtensionNames(RequiredDeviceExtensions)};
+							 .setPEnabledExtensionNames(RequiredDeviceExtensions)
+							 .setPEnabledFeatures(&features)};
 		auto [res, device] {Adapter.createDevice(deviceInfo, nullptr, Loader::getDeviceless())};
 		ctEnsureResult(res, "Failed to create Vulkan device.");
 		Device = device;

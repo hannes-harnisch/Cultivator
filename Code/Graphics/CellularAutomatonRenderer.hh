@@ -11,6 +11,8 @@ namespace ct
 	public:
 		CellularAutomatonRenderer(Rectangle size);
 
+		void draw();
+
 	private:
 		vulkan::Pipeline GameOfLife;
 		vulkan::Pipeline Presentation;

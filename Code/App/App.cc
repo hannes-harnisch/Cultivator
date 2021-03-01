@@ -31,6 +31,7 @@ namespace ct
 
 	void App::tick()
 	{
+		Renderer.draw();
 		AppContext.pollEvents();
 	}
 }

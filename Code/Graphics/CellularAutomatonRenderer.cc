@@ -7,6 +7,9 @@ namespace ct
 		CellularAutomatonRenderer {size, vulkan::Shader("ScreenQuad.vert.spv")}
 	{}
 
+	void CellularAutomatonRenderer::draw()
+	{}
+
 	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle size, const vulkan::Shader& vertex) :
 		GameOfLife {vertex, vulkan::Shader("GameOfLife.frag.spv")},
 		Presentation {vertex, vulkan::Shader("Presentation.frag.spv")},

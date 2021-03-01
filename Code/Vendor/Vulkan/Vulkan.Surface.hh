@@ -17,7 +17,7 @@ namespace ct::vulkan
 
 		inline ~Surface()
 		{
-			GraphicsContext::instance().destroySurfaceKHR(SurfaceHandle);
+			GraphicsContext::instance().destroySurfaceKHR(SurfaceHandle, {}, Loader::getDeviceless());
 		}
 
 		inline Surface& operator=(Surface&& other) noexcept
