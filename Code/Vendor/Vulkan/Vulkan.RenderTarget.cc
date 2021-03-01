@@ -1,12 +1,12 @@
 #include "PCH.hh"
-#include "Vulkan.RenderPass.hh"
+#include "Vulkan.RenderTarget.hh"
 
 #include "Utils/Assert.hh"
 #include "Vendor/Vulkan/Vulkan.GraphicsContext.hh"
 
 namespace ct::vulkan
 {
-	RenderPass::RenderPass()
+	RenderTarget::RenderTarget()
 	{
 		std::array attachments {fillAttachmentDescription(vk::ImageLayout::eColorAttachmentOptimal,
 														  vk::ImageLayout::eShaderReadOnlyOptimal)};
@@ -23,25 +23,24 @@ namespace ct::vulkan
 								 .setDependencies(subpassDependencies)};
 		auto [res, renderPass] {GraphicsContext::device().createRenderPass(renderPassInfo, nullptr, Loader::get())};
 		ctAssertResult(res, "Failed to create Vulkan render pass.");
-		RenderPassHandle = renderPass;
+		RenderPass = renderPass;
 	}
 
-	RenderPass::~RenderPass()
+	RenderTarget::~RenderTarget()
 	{
-		GraphicsContext::device().destroyRenderPass(RenderPassHandle, {}, Loader::get());
+		GraphicsContext::device().destroyRenderPass(RenderPass, {}, Loader::get());
 	}
 
-	RenderPass::RenderPass(RenderPass&& other) noexcept :
-		RenderPassHandle {std::exchange(other.RenderPassHandle, nullptr)}
+	RenderTarget::RenderTarget(RenderTarget&& other) noexcept : RenderPass {std::exchange(other.RenderPass, nullptr)}
 	{}
 
-	RenderPass& RenderPass::operator=(RenderPass&& other) noexcept
+	RenderTarget& RenderTarget::operator=(RenderTarget&& other) noexcept
 	{
-		std::swap(RenderPassHandle, other.RenderPassHandle);
+		std::swap(RenderPass, other.RenderPass);
 		return *this;
 	}
 
-	vk::AttachmentDescription RenderPass::fillAttachmentDescription(vk::ImageLayout initial, vk::ImageLayout final)
+	vk::AttachmentDescription RenderTarget::fillAttachmentDescription(vk::ImageLayout initial, vk::ImageLayout final)
 	{
 		return vk::AttachmentDescription()
 			.setFormat(vk::Format::eB8G8R8A8Srgb)

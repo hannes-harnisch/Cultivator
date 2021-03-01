@@ -1,4 +1,4 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 #include "Vulkan.Queue.hh"
 
 #include "Utils/Assert.hh"

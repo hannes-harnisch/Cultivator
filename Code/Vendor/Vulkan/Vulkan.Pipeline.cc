@@ -22,7 +22,7 @@ namespace ct::vulkan
 		std::array dynamicStates {vk::DynamicState::eViewport, vk::DynamicState::eScissor};
 		auto dynamicStateInfo {vk::PipelineDynamicStateCreateInfo().setDynamicStates(dynamicStates)};
 
-		RenderPass renderPass;
+		RenderTarget renderTarget;
 		auto pipelineInfo {vk::GraphicsPipelineCreateInfo()
 							   .setStages(shaderStages)
 							   .setPVertexInputState(&vertexInputInfo)
@@ -33,7 +33,7 @@ namespace ct::vulkan
 							   .setPColorBlendState(&colorBlendInfo)
 							   .setPDynamicState(&dynamicStateInfo)
 							   .setLayout(Layout)
-							   .setRenderPass(renderPass.handle())
+							   .setRenderPass(renderTarget.getRenderPass())
 							   .setBasePipelineIndex(-1)};
 		auto [res, pipe] {GraphicsContext::device().createGraphicsPipeline({}, pipelineInfo, nullptr, Loader::get())};
 		ctAssertResult(res, "Failed to create Vulkan pipeline.");
