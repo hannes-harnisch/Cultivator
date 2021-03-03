@@ -1,13 +1,13 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
-#include "Vendor/Vulkan/Vulkan.GraphicsContext.hh"
+#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 
 namespace ct::vulkan
 {
 	inline uint32_t findMemoryType(uint32_t filter, vk::MemoryPropertyFlagBits memProperties)
 	{
-		auto memProps {GraphicsContext::adapter().getMemoryProperties(Loader::get())};
+		auto memProps {GPUContext::adapter().getMemoryProperties(Loader::get())};
 
 		for(uint32_t i {}; i < memProps.memoryTypeCount; ++i)
 		{

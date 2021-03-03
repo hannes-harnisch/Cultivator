@@ -1,8 +1,8 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 #include "Vulkan.Pipeline.hh"
 
 #include "Utils/Assert.hh"
-#include "Vendor/Vulkan/Vulkan.GraphicsContext.hh"
+#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 
 namespace ct::vulkan
 {
@@ -35,14 +35,14 @@ namespace ct::vulkan
 							   .setLayout(Layout)
 							   .setRenderPass(renderTarget.getRenderPass())
 							   .setBasePipelineIndex(-1)};
-		auto [res, pipe] {GraphicsContext::device().createGraphicsPipeline({}, pipelineInfo, nullptr, Loader::get())};
+		auto [res, pipe] {GPUContext::device().createGraphicsPipeline({}, pipelineInfo, nullptr, Loader::get())};
 		ctAssertResult(res, "Failed to create Vulkan pipeline.");
 		PipelineHandle = pipe;
 	}
 
 	Pipeline::~Pipeline()
 	{
-		auto device {GraphicsContext::device()};
+		auto device {GPUContext::device()};
 		device.destroyPipeline(PipelineHandle, {}, Loader::get());
 		device.destroyPipelineLayout(Layout, {}, Loader::get());
 	}
@@ -61,7 +61,7 @@ namespace ct::vulkan
 	vk::PipelineLayout Pipeline::createLayout()
 	{
 		vk::PipelineLayoutCreateInfo layoutInfo;
-		auto [res, layout] {GraphicsContext::device().createPipelineLayout(layoutInfo, nullptr, Loader::get())};
+		auto [res, layout] {GPUContext::device().createPipelineLayout(layoutInfo, nullptr, Loader::get())};
 		ctAssertResult(res, "Failed to create Vulkan pipeline layout.");
 		return layout;
 	}

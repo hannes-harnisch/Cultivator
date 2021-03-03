@@ -29,7 +29,7 @@ workspace 'Cultivator'
 
 	filter 'system:Windows'
 		systemversion	'latest'
-		files			{ 'Code/**/Windows.*.*', 'Code/**/Vulkan.*.*', 'Code/**/VulkanWindows.*.*' }
+		files			{ 'Code/**/Windows.*.*', 'Code/**/Direct3D.*.*', 'Code/**/Vulkan.*.*', 'Code/**/VulkanWindows.*.*' }
 		includedirs		'C:/VulkanSDK/1.2.154.1/Include'
 		libdirs			'C:/VulkanSDK/1.2.154.1/Lib'
 		links			'Vulkan-1.lib'

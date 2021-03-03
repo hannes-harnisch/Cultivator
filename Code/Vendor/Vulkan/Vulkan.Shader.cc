@@ -2,7 +2,7 @@
 #include "Vulkan.Shader.hh"
 
 #include "Utils/File.hh"
-#include "Vendor/Vulkan/Vulkan.GraphicsContext.hh"
+#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 
 namespace ct::vulkan
 {
@@ -12,7 +12,7 @@ namespace ct::vulkan
 		auto shaderInfo {vk::ShaderModuleCreateInfo()
 							 .setCodeSize(bytecode.size())
 							 .setPCode(reinterpret_cast<uint32_t*>(bytecode.data()))};
-		auto [res, shader] {GraphicsContext::device().createShaderModule(shaderInfo, nullptr, Loader::get())};
+		auto [res, shader] {GPUContext::device().createShaderModule(shaderInfo, nullptr, Loader::get())};
 		ctAssertResult(res, "Failed to create Vulkan shader module.");
 		ShaderModule = shader;
 	}
@@ -22,7 +22,7 @@ namespace ct::vulkan
 
 	Shader::~Shader()
 	{
-		GraphicsContext::device().destroyShaderModule(ShaderModule, {}, Loader::get());
+		GPUContext::device().destroyShaderModule(ShaderModule, {}, Loader::get());
 	}
 
 	Shader& Shader::operator=(Shader&& other) noexcept

@@ -3,7 +3,7 @@
 #include "App/AppContext.hh"
 #include "App/Window.hh"
 #include "Graphics/CellularAutomatonRenderer.hh"
-#include "Vendor/Vulkan/Vulkan.GraphicsContext.hh"
+#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 
 int main();
 
@@ -21,7 +21,7 @@ namespace ct
 
 	private:
 		AppContext AppContext;
-		vulkan::GraphicsContext GraphicsContext;
+		vulkan::GPUContext GPUContext;
 		Window MainWindow;
 		CellularAutomatonRenderer Renderer;
 		bool ShouldTick = true;

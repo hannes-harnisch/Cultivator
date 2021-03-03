@@ -1,7 +1,7 @@
 #include "PCH.hh"
 #include "Vulkan.CommandList.hh"
 
-#include "Vendor/Vulkan/Vulkan.GraphicsContext.hh"
+#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 
 namespace ct::vulkan
 {

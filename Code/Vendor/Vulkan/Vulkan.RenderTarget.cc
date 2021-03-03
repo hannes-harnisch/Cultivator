@@ -2,7 +2,7 @@
 #include "Vulkan.RenderTarget.hh"
 
 #include "Utils/Assert.hh"
-#include "Vendor/Vulkan/Vulkan.GraphicsContext.hh"
+#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 
 namespace ct::vulkan
 {
@@ -21,22 +21,25 @@ namespace ct::vulkan
 								 .setAttachments(attachments)
 								 .setSubpasses(subpasses)
 								 .setDependencies(subpassDependencies)};
-		auto [res, renderPass] {GraphicsContext::device().createRenderPass(renderPassInfo, nullptr, Loader::get())};
+		auto [res, renderPass] {GPUContext::device().createRenderPass(renderPassInfo, nullptr, Loader::get())};
 		ctAssertResult(res, "Failed to create Vulkan render pass.");
 		RenderPass = renderPass;
 	}
 
 	RenderTarget::~RenderTarget()
 	{
-		GraphicsContext::device().destroyRenderPass(RenderPass, {}, Loader::get());
+		GPUContext::device().destroyRenderPass(RenderPass, {}, Loader::get());
+		GPUContext::device().destroyFramebuffer(FrameBuffer, {}, Loader::get());
 	}
 
-	RenderTarget::RenderTarget(RenderTarget&& other) noexcept : RenderPass {std::exchange(other.RenderPass, nullptr)}
+	RenderTarget::RenderTarget(RenderTarget&& other) noexcept :
+		RenderPass {std::exchange(other.RenderPass, nullptr)}, FrameBuffer {std::exchange(other.FrameBuffer, nullptr)}
 	{}
 
 	RenderTarget& RenderTarget::operator=(RenderTarget&& other) noexcept
 	{
 		std::swap(RenderPass, other.RenderPass);
+		std::swap(FrameBuffer, other.FrameBuffer);
 		return *this;
 	}
 

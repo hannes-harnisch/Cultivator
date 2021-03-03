@@ -1,7 +1,7 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
-#include "Vendor/Vulkan/Vulkan.GraphicsContext.hh"
+#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 
 namespace ct::vulkan
 {
@@ -17,7 +17,7 @@ namespace ct::vulkan
 
 		inline ~Surface()
 		{
-			GraphicsContext::instance().destroySurfaceKHR(SurfaceHandle, {}, Loader::getDeviceless());
+			GPUContext::instance().destroySurfaceKHR(SurfaceHandle, {}, Loader::getDeviceless());
 		}
 
 		inline Surface& operator=(Surface&& other) noexcept

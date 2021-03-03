@@ -30,8 +30,8 @@ namespace ct
 
 #else
 
-	#define ctAssert(condition, message)	   void(condition)
-	#define ctAssertResult(condition, message) void(condition)
+	#define ctAssert(condition, message)	   static_cast<void>(condition)
+	#define ctAssertResult(condition, message) static_cast<void>(condition)
 	#define ctAssertPure(condition, message)
 
 	#define ctEnsure(condition, message)                                                                               \

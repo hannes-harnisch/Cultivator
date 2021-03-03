@@ -1,5 +1,5 @@
 #include "PCH.hh"
-#include "Vulkan.GraphicsContext.hh"
+#include "Vulkan.GPUContext.hh"
 
 #include "Utils/Assert.hh"
 #include "Vendor/Vulkan/Vulkan.Surface.hh"
@@ -33,7 +33,7 @@ namespace ct::vulkan
 		}
 	}
 
-	GraphicsContext::GraphicsContext()
+	GPUContext::GPUContext()
 	{
 		auto loggerInfo {fillLoggerInfo()};
 		initializeInstance(loggerInfo);
@@ -42,7 +42,7 @@ namespace ct::vulkan
 		initializeDeviceAndQueues();
 	}
 
-	GraphicsContext::~GraphicsContext()
+	GPUContext::~GPUContext()
 	{
 		Device.destroy();
 
@@ -66,7 +66,7 @@ namespace ct::vulkan
 		}
 	}
 
-	void GraphicsContext::initializeInstance(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
+	void GPUContext::initializeInstance(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
 	{
 		ensureInstanceExtensionsExist();
 		ensureLayersExist();
@@ -82,7 +82,7 @@ namespace ct::vulkan
 		Instance = instance;
 	}
 
-	void GraphicsContext::initializeLogger(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
+	void GPUContext::initializeLogger(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
 	{
 #if CT_DEBUG
 		auto [res, logger] {Instance.createDebugUtilsMessengerEXT(loggerInfo, nullptr, Loader::getDeviceless())};
@@ -91,7 +91,7 @@ namespace ct::vulkan
 #endif
 	}
 
-	void GraphicsContext::ensureInstanceExtensionsExist()
+	void GPUContext::ensureInstanceExtensionsExist()
 	{
 		auto [res, extensions] {vk::enumerateInstanceExtensionProperties()};
 		ctEnsureResult(res, "Failed to enumerate Vulkan instance extensions.");
@@ -109,7 +109,7 @@ namespace ct::vulkan
 		}
 	}
 
-	void GraphicsContext::ensureLayersExist()
+	void GPUContext::ensureLayersExist()
 	{
 		auto [res, layers] {vk::enumerateInstanceLayerProperties()};
 		ctEnsureResult(res, "Failed to enumerate Vulkan layers.");
@@ -127,7 +127,7 @@ namespace ct::vulkan
 		}
 	}
 
-	void GraphicsContext::initializeAdapter()
+	void GPUContext::initializeAdapter()
 	{
 		auto [res, adapters] {Instance.enumeratePhysicalDevices(Loader::getDeviceless())};
 		ctEnsureResult(res, "Failed to enumerate Vulkan adapters.");
@@ -178,7 +178,7 @@ namespace ct::vulkan
 		}
 	}
 
-	void GraphicsContext::initializeDeviceAndQueues()
+	void GPUContext::initializeDeviceAndQueues()
 	{
 		ensureDeviceExtensionsExist();
 
@@ -205,7 +205,7 @@ namespace ct::vulkan
 		PresentQueue  = Queue(families.Present);
 	}
 
-	void GraphicsContext::ensureDeviceExtensionsExist()
+	void GPUContext::ensureDeviceExtensionsExist()
 	{
 		auto [res, extensions] {Adapter.enumerateDeviceExtensionProperties(nullptr, Loader::getDeviceless())};
 		ctEnsureResult(res, "Failed to enumerate Vulkan device extensions.");

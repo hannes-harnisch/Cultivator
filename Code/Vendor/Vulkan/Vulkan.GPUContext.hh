@@ -6,7 +6,7 @@
 
 namespace ct::vulkan
 {
-	class GraphicsContext final : public Singleton<GraphicsContext>
+	class GPUContext final : public Singleton<GPUContext>
 	{
 	public:
 		inline static vk::Instance instance()
@@ -34,11 +34,11 @@ namespace ct::vulkan
 			return SingletonInstance->PresentQueue;
 		}
 
-		GraphicsContext();
-		~GraphicsContext();
+		GPUContext();
+		~GPUContext();
 
-		GraphicsContext(const GraphicsContext&) = delete;
-		GraphicsContext& operator=(const GraphicsContext&) = delete;
+		GPUContext(const GPUContext&) = delete;
+		GPUContext& operator=(const GPUContext&) = delete;
 
 	private:
 		static inline const std::vector<const char*> RequiredLayers
@@ -84,14 +84,14 @@ namespace ct::vulkan
 	public:
 		inline static vk::DispatchLoaderDynamic& getDeviceless()
 		{
-			static vk::DispatchLoaderDynamic loader(GraphicsContext::instance(), vkGetInstanceProcAddr);
+			static vk::DispatchLoaderDynamic loader(GPUContext::instance(), vkGetInstanceProcAddr);
 			return loader;
 		}
 
 		inline static vk::DispatchLoaderDynamic& get()
 		{
-			static vk::DispatchLoaderDynamic loader(GraphicsContext::instance(), vkGetInstanceProcAddr,
-													GraphicsContext::device(), vkGetDeviceProcAddr);
+			static vk::DispatchLoaderDynamic loader(GPUContext::instance(), vkGetInstanceProcAddr, GPUContext::device(),
+													vkGetDeviceProcAddr);
 			return loader;
 		}
 
