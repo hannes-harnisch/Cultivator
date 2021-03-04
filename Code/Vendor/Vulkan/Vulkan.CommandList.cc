@@ -12,11 +12,9 @@ namespace ct::vulkan
 		ctAssertResult(result, "Failed to begin Vulkan command list.");
 	}
 
-	void CommandList::beginRenderPass(const RenderTarget& renderTarget)
+	void CommandList::beginRenderPass(const RenderPass& renderPass, const FrameBuffer& frameBuffer)
 	{
-		auto info {vk::RenderPassBeginInfo()
-					   .setRenderPass(renderTarget.getRenderPass())
-					   .setFramebuffer(renderTarget.getFrameBuffer())};
+		auto info {vk::RenderPassBeginInfo().setRenderPass(renderPass.handle()).setFramebuffer(frameBuffer.handle())};
 		CommandBuffer.beginRenderPass(info, vk::SubpassContents::eInline, Loader::get());
 	}
 

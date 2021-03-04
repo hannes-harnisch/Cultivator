@@ -1,8 +1,9 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 #include "Vulkan.Pipeline.hh"
 
 #include "Utils/Assert.hh"
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
+#include "Vendor/Vulkan/Vulkan.RenderPass.hh"
 
 namespace ct::vulkan
 {
@@ -22,7 +23,7 @@ namespace ct::vulkan
 		std::array dynamicStates {vk::DynamicState::eViewport, vk::DynamicState::eScissor};
 		auto dynamicStateInfo {vk::PipelineDynamicStateCreateInfo().setDynamicStates(dynamicStates)};
 
-		RenderTarget renderTarget;
+		RenderPass renderPass;
 		auto pipelineInfo {vk::GraphicsPipelineCreateInfo()
 							   .setStages(shaderStages)
 							   .setPVertexInputState(&vertexInputInfo)
@@ -33,7 +34,7 @@ namespace ct::vulkan
 							   .setPColorBlendState(&colorBlendInfo)
 							   .setPDynamicState(&dynamicStateInfo)
 							   .setLayout(Layout)
-							   .setRenderPass(renderTarget.getRenderPass())
+							   .setRenderPass(renderPass.handle())
 							   .setBasePipelineIndex(-1)};
 		auto [res, pipe] {GPUContext::device().createGraphicsPipeline({}, pipelineInfo, nullptr, Loader::get())};
 		ctAssertResult(res, "Failed to create Vulkan pipeline.");

@@ -16,8 +16,10 @@ namespace ct::vulkan
 	private:
 		vk::Image Image;
 		vk::DeviceMemory Memory;
+		vk::ImageView ImageView;
 
 		vk::Image createImage(Rectangle size);
 		vk::DeviceMemory allocateMemory();
+		vk::ImageView createImageView();
 	};
 }

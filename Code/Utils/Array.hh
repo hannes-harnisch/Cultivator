@@ -7,30 +7,30 @@ namespace ct
 	template<typename T> class Array final
 	{
 	public:
-		inline Array() = default;
+		Array() = default;
 
-		inline Array(size_t size, T data[]) : Size {size}, Data {data}
+		Array(size_t size, T data[]) : Size {size}, Data {data}
 		{}
 
-		inline Array(size_t size) : Array {size, new T[size]}
+		Array(size_t size) : Array {size, new T[size]}
 		{}
 
-		inline Array(const Array& other) : Array {other.Size}
+		Array(const Array& other) : Array {other.Size}
 		{
 			auto src {other.begin()};
 			for(auto& element : *this)
 				element = *src++;
 		}
 
-		inline Array(Array&& other) noexcept : Array {other.Size, std::exchange(other.Data, nullptr)}
+		Array(Array&& other) noexcept : Array {other.Size, std::exchange(other.Data, nullptr)}
 		{}
 
-		inline ~Array()
+		~Array()
 		{
 			delete[] Data;
 		}
 
-		inline Array& operator=(const Array& other)
+		Array& operator=(const Array& other)
 		{
 			delete[] Data;
 			Size = other.Size;
@@ -43,36 +43,36 @@ namespace ct
 			return *this;
 		}
 
-		inline Array& operator=(Array&& other) noexcept
+		Array& operator=(Array&& other) noexcept
 		{
 			Size = other.Size;
 			std::swap(Data, other.Data);
 			return *this;
 		}
 
-		inline T& operator[](size_t index)
+		T& operator[](size_t index)
 		{
 			ctAssertPure(index < Size, "Array index out of range: " + std::to_string(index));
 			return *(Data + index);
 		}
 
-		inline const T& operator[](size_t index) const
+		const T& operator[](size_t index) const
 		{
 			ctAssertPure(index < Size, "Array index out of range: " + std::to_string(index));
 			return *(Data + index);
 		}
 
-		inline size_t size() const
+		size_t size() const
 		{
 			return Size;
 		}
 
-		inline T* data()
+		T* data()
 		{
 			return Data;
 		}
 
-		inline const T* data() const
+		const T* data() const
 		{
 			return Data;
 		}
@@ -92,133 +92,133 @@ namespace ct
 			using reference		   = V&;
 			using const_reference  = const V&;
 
-			inline Iterator() = default;
+			Iterator() = default;
 
-			inline V& operator*() const
+			V& operator*() const
 			{
 				return *Position;
 			}
 
-			inline V* operator->() const
+			V* operator->() const
 			{
 				return Position;
 			}
 
-			inline bool operator==(Iterator other) const
+			bool operator==(Iterator other) const
 			{
 				return Position == other.Position;
 			}
 
-			inline bool operator!=(Iterator other) const
+			bool operator!=(Iterator other) const
 			{
 				return Position != other.Position;
 			}
 
-			inline bool operator>(Iterator other) const
+			bool operator>(Iterator other) const
 			{
 				return Position > other.Position;
 			}
 
-			inline bool operator>=(Iterator other) const
+			bool operator>=(Iterator other) const
 			{
 				return Position >= other.Position;
 			}
 
-			inline bool operator<(Iterator other) const
+			bool operator<(Iterator other) const
 			{
 				return Position < other.Position;
 			}
 
-			inline bool operator<=(Iterator other) const
+			bool operator<=(Iterator other) const
 			{
 				return Position <= other.Position;
 			}
 
-			inline Iterator& operator++()
+			Iterator& operator++()
 			{
 				incrementPosition(1);
 				return *this;
 			}
 
-			inline const Iterator& operator++() const
+			const Iterator& operator++() const
 			{
 				incrementPosition(1);
 				return *this;
 			}
 
-			inline Iterator operator++(int) const
+			Iterator operator++(int) const
 			{
 				Iterator old {*this};
 				incrementPosition(1);
 				return old;
 			}
 
-			inline Iterator& operator--()
+			Iterator& operator--()
 			{
 				decrementPosition(1);
 				return *this;
 			}
 
-			inline const Iterator& operator--() const
+			const Iterator& operator--() const
 			{
 				decrementPosition(1);
 				return *this;
 			}
 
-			inline Iterator operator--(int) const
+			Iterator operator--(int) const
 			{
 				Iterator old {*this};
 				decrementPosition(1);
 				return old;
 			}
 
-			inline Iterator& operator+=(ptrdiff_t offset)
+			Iterator& operator+=(ptrdiff_t offset)
 			{
 				incrementPosition(offset);
 				return *this;
 			}
 
-			inline const Iterator& operator+=(ptrdiff_t offset) const
+			const Iterator& operator+=(ptrdiff_t offset) const
 			{
 				incrementPosition(offset);
 				return *this;
 			}
 
-			inline Iterator operator+(ptrdiff_t offset) const
+			Iterator operator+(ptrdiff_t offset) const
 			{
 				Iterator copy {*this};
 				return copy += offset;
 			}
 
-			inline friend Iterator operator+(ptrdiff_t offset, Iterator iterator)
+			friend Iterator operator+(ptrdiff_t offset, Iterator iterator)
 			{
 				return iterator + offset;
 			}
 
-			inline Iterator& operator-=(ptrdiff_t offset)
+			Iterator& operator-=(ptrdiff_t offset)
 			{
 				decrementPosition(offset);
 				return *this;
 			}
 
-			inline const Iterator& operator-=(ptrdiff_t offset) const
+			const Iterator& operator-=(ptrdiff_t offset) const
 			{
 				decrementPosition(offset);
 				return *this;
 			}
 
-			inline Iterator operator-(ptrdiff_t offset) const
+			Iterator operator-(ptrdiff_t offset) const
 			{
 				Iterator copy {*this};
 				return copy -= offset;
 			}
 
-			inline ptrdiff_t operator-(Iterator other) const
+			ptrdiff_t operator-(Iterator other) const
 			{
 				return Position - other.Position;
 			}
 
-			inline V& operator[](size_t index) const
+			V& operator[](size_t index) const
 			{
 				return *(*this + index);
 			}
@@ -230,27 +230,27 @@ namespace ct
 			V* Begin {};
 			V* End {};
 
-			inline Iterator(V* pos, V* begin, V* end) : Position {pos}, Begin {begin}, End {end}
+			Iterator(V* pos, V* begin, V* end) : Position {pos}, Begin {begin}, End {end}
 			{}
 #else
-			inline Iterator(V* pos) : Position {pos}
+			Iterator(V* pos) : Position {pos}
 			{}
 #endif
 
-			inline void incrementPosition(ptrdiff_t offset) const
+			void incrementPosition(ptrdiff_t offset) const
 			{
 				ctAssertPure(Position < End, "Cannot increment iterator past end.");
 				Position += offset;
 			}
 
-			inline void decrementPosition(ptrdiff_t offset) const
+			void decrementPosition(ptrdiff_t offset) const
 			{
 				ctAssertPure(Begin < Position, "Cannot decrement iterator before begin.");
 				Position -= offset;
 			}
 		};
 
-		inline Iterator<T> begin()
+		Iterator<T> begin()
 		{
 #if CT_DEBUG
 			return {Data, Data, Data + Size};
@@ -259,7 +259,7 @@ namespace ct
 #endif
 		}
 
-		inline Iterator<const T> begin() const
+		Iterator<const T> begin() const
 		{
 #if CT_DEBUG
 			return {Data, Data, Data + Size};
@@ -268,7 +268,7 @@ namespace ct
 #endif
 		}
 
-		inline Iterator<T> end()
+		Iterator<T> end()
 		{
 #if CT_DEBUG
 			T* endPos {Data + Size};
@@ -278,7 +278,7 @@ namespace ct
 #endif
 		}
 
-		inline Iterator<const T> end() const
+		Iterator<const T> end() const
 		{
 #if CT_DEBUG
 			T* endPos {Data + Size};

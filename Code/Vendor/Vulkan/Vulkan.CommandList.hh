@@ -1,7 +1,8 @@
 #pragma once
 
+#include "Vendor/Vulkan/Vulkan.FrameBuffer.hh"
 #include "Vendor/Vulkan/Vulkan.Pipeline.hh"
-#include "Vendor/Vulkan/Vulkan.RenderTarget.hh"
+#include "Vendor/Vulkan/Vulkan.RenderPass.hh"
 
 namespace ct::vulkan
 {
@@ -9,7 +10,7 @@ namespace ct::vulkan
 	{
 	public:
 		void begin();
-		void beginRenderPass(const RenderTarget& renderTarget);
+		void beginRenderPass(const RenderPass& renderPass, const FrameBuffer& frameBuffer);
 		void bindPipeline(const Pipeline& pipeline);
 		void draw();
 		void end();

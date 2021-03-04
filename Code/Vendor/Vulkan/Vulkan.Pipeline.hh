@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PCH.hh"
-#include "Vendor/Vulkan/Vulkan.RenderTarget.hh"
 #include "Vendor/Vulkan/Vulkan.Shader.hh"
 
 namespace ct::vulkan

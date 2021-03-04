@@ -1,4 +1,4 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 #include "Vulkan.Texture.hh"
 
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
@@ -6,27 +6,29 @@
 
 namespace ct::vulkan
 {
-	Texture::Texture(Rectangle size) : Image {createImage(size)}, Memory {allocateMemory()}
-	{
-		auto res {GPUContext::device().bindImageMemory(Image, Memory, 0, Loader::get())};
-		ctAssertResult(res, "Failed to bind memory to Vulkan texture.");
-	}
+	Texture::Texture(Rectangle size) :
+		Image {createImage(size)}, Memory {allocateMemory()}, ImageView {createImageView()}
+	{}
 
 	Texture::~Texture()
 	{
 		auto device {GPUContext::device()};
+		device.destroyImageView(ImageView, {}, Loader::get());
 		device.destroyImage(Image, {}, Loader::get());
 		device.freeMemory(Memory, {}, Loader::get());
 	}
 
 	Texture::Texture(Texture&& other) noexcept :
-		Image {std::exchange(other.Image, nullptr)}, Memory {std::exchange(other.Memory, nullptr)}
+		Image {std::exchange(other.Image, nullptr)},
+		Memory {std::exchange(other.Memory, nullptr)},
+		ImageView {std::exchange(other.ImageView, nullptr)}
 	{}
 
 	Texture& Texture::operator=(Texture&& other) noexcept
 	{
 		std::swap(Image, other.Image);
 		std::swap(Memory, other.Memory);
+		std::swap(ImageView, other.ImageView);
 		return *this;
 	}
 
@@ -53,6 +55,25 @@ namespace ct::vulkan
 		auto allocInfo {vk::MemoryAllocateInfo().setAllocationSize(memRequirements.size).setMemoryTypeIndex(typeIndex)};
 		auto [res, memory] {GPUContext::device().allocateMemory(allocInfo, nullptr, Loader::get())};
 		ctAssertResult(res, "Failed to allocate texture memory.");
+
+		ctAssertResult(GPUContext::device().bindImageMemory(Image, memory, 0, Loader::get()),
+					   "Failed to bind memory to Vulkan texture.");
 		return memory;
+	}
+
+	vk::ImageView Texture::createImageView()
+	{
+		auto subresourceRange {vk::ImageSubresourceRange()
+								   .setAspectMask(vk::ImageAspectFlagBits::eColor)
+								   .setLevelCount(1)
+								   .setLayerCount(1)};
+		auto imageViewInfo {vk::ImageViewCreateInfo()
+								.setImage(Image)
+								.setViewType(vk::ImageViewType::e2D)
+								.setFormat(vk::Format::eR8G8B8A8Srgb)
+								.setSubresourceRange(subresourceRange)};
+		auto [res, imageView] {GPUContext::device().createImageView(imageViewInfo, nullptr, Loader::get())};
+		ctAssertResult(res, "Failed to create Vulkan image view.");
+		return imageView;
 	}
 }
