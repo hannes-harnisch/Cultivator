@@ -1,36 +1,13 @@
 #include "PCH.hh"
-#include "Vulkan.Texture.hh"
 
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 #include "Vendor/Vulkan/Vulkan.Utils.hh"
+#include "Vulkan.Texture.hh"
 
 namespace ct::vulkan
 {
-	Texture::Texture(Rectangle size) :
-		Image {createImage(size)}, Memory {allocateMemory()}, ImageView {createImageView()}
+	Texture::Texture(Rectangle size) : Image {createImage(size)}, Memory {allocateMemory()}, ImageView {createImageView()}
 	{}
-
-	Texture::~Texture()
-	{
-		auto device {GPUContext::device()};
-		device.destroyImageView(ImageView, {}, Loader::get());
-		device.destroyImage(Image, {}, Loader::get());
-		device.freeMemory(Memory, {}, Loader::get());
-	}
-
-	Texture::Texture(Texture&& other) noexcept :
-		Image {std::exchange(other.Image, nullptr)},
-		Memory {std::exchange(other.Memory, nullptr)},
-		ImageView {std::exchange(other.ImageView, nullptr)}
-	{}
-
-	Texture& Texture::operator=(Texture&& other) noexcept
-	{
-		std::swap(Image, other.Image);
-		std::swap(Memory, other.Memory);
-		std::swap(ImageView, other.ImageView);
-		return *this;
-	}
 
 	vk::Image Texture::createImage(Rectangle size)
 	{
@@ -63,10 +40,8 @@ namespace ct::vulkan
 
 	vk::ImageView Texture::createImageView()
 	{
-		auto subresourceRange {vk::ImageSubresourceRange()
-								   .setAspectMask(vk::ImageAspectFlagBits::eColor)
-								   .setLevelCount(1)
-								   .setLayerCount(1)};
+		auto subresourceRange {
+			vk::ImageSubresourceRange().setAspectMask(vk::ImageAspectFlagBits::eColor).setLevelCount(1).setLayerCount(1)};
 		auto imageViewInfo {vk::ImageViewCreateInfo()
 								.setImage(Image)
 								.setViewType(vk::ImageViewType::e2D)

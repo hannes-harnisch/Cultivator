@@ -2,6 +2,8 @@
 
 #include "PCH.hh"
 
+#include "Vendor/Vulkan/Vulkan.Unique.hh"
+
 namespace ct::vulkan
 {
 	class Shader final
@@ -9,17 +11,16 @@ namespace ct::vulkan
 	public:
 		static constexpr auto EntryPoint {"main"};
 
-		Shader(const std::string& filePath);
-		Shader(Shader&& other) noexcept;
-		~Shader();
-		Shader& operator=(Shader&& other) noexcept;
+		Shader(std::string_view filePath);
 
-		inline vk::ShaderModule handle() const
+		vk::ShaderModule handle() const
 		{
 			return ShaderModule;
 		}
 
 	private:
-		vk::ShaderModule ShaderModule;
+		DeviceUnique<vk::ShaderModule, &vk::Device::destroyShaderModule> ShaderModule;
+
+		static vk::ShaderModule createShader(std::string_view filePath);
 	};
 }

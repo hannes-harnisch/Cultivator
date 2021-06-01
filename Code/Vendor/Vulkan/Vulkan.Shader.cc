@@ -1,33 +1,22 @@
-﻿#include "PCH.hh"
-#include "Vulkan.Shader.hh"
+#include "PCH.hh"
 
 #include "Utils/File.hh"
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
+#include "Vulkan.Shader.hh"
 
 namespace ct::vulkan
 {
-	Shader::Shader(const std::string& filePath)
-	{
-		auto bytecode {File::loadBinary(filePath)};
-		auto shaderInfo {vk::ShaderModuleCreateInfo()
-							 .setCodeSize(bytecode.size())
-							 .setPCode(reinterpret_cast<uint32_t*>(bytecode.data()))};
-		auto [res, shader] {GPUContext::device().createShaderModule(shaderInfo, nullptr, Loader::get())};
-		ctAssertResult(res, "Failed to create Vulkan shader module.");
-		ShaderModule = shader;
-	}
-
-	Shader::Shader(Shader&& other) noexcept : ShaderModule {std::exchange(other.ShaderModule, nullptr)}
+	Shader::Shader(std::string_view filePath) : ShaderModule(createShader(filePath))
 	{}
 
-	Shader::~Shader()
+	vk::ShaderModule Shader::createShader(std::string_view filePath)
 	{
-		GPUContext::device().destroyShaderModule(ShaderModule, {}, Loader::get());
+		auto bytecode {File::loadBinary(filePath)};
+		auto shaderInfo {
+			vk::ShaderModuleCreateInfo().setCodeSize(bytecode.size()).setPCode(reinterpret_cast<uint32_t*>(bytecode.data()))};
+		auto [res, shader] {GPUContext::device().createShaderModule(shaderInfo, nullptr, Loader::get())};
+		ctAssertResult(res, "Failed to create Vulkan shader module.");
+		return shader;
 	}
 
-	Shader& Shader::operator=(Shader&& other) noexcept
-	{
-		std::swap(ShaderModule, other.ShaderModule);
-		return *this;
-	}
 }

@@ -1,14 +1,13 @@
 #pragma once
 
 #include "PCH.hh"
-#include "Utils/Array.hh"
 
 namespace ct
 {
 	class File
 	{
 	public:
-		inline static Array<char> loadBinary(const std::string& filePath)
+		static std::vector<char> loadBinary(std::string_view filePath)
 		{
 			FILE* file;
 			fopen_s(&file, filePath.data(), "r");
@@ -19,7 +18,7 @@ namespace ct
 			long size {std::ftell(file)};
 			std::rewind(file);
 
-			Array<char> content(size);
+			std::vector<char> content(size);
 			std::fread(content.data(), size, 1, file);
 			std::fclose(file);
 			return content;

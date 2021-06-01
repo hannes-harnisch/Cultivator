@@ -1,5 +1,5 @@
-#define ALIVE (1, 1, 1, 1)
-#define DEAD (0, 0, 0, 1)
+#define ALIVE float4(1, 1, 1, 1)
+#define DEAD  float4(0, 0, 0, 1)
 
 Texture2D Universe;
 SamplerState Sampler;
@@ -13,16 +13,16 @@ int getCell(int2 offset)
 
 float4 main() : SV_TARGET
 {
-	int nw = getCell((-1, 1));
-	int n = getCell((0, 1));
-	int ne = getCell((1, 1));
-	int w = getCell((-1, 0));
-	int current = getCell((0, 0));
-	int e = getCell((1, 0));
-	int sw = getCell((-1, -1));
-	int s = getCell((0, -1));
-	int se = getCell((1, -1));
-	
+	int nw		= getCell(int2(-1, 1));
+	int n		= getCell(int2(0, 1));
+	int ne		= getCell(int2(1, 1));
+	int w		= getCell(int2(-1, 0));
+	int current = getCell(int2(0, 0));
+	int e		= getCell(int2(1, 0));
+	int sw		= getCell(int2(-1, -1));
+	int s		= getCell(int2(0, -1));
+	int se		= getCell(int2(1, -1));
+
 	int sum = nw + n + ne + w + current + e + sw + s + se;
 	if(sum == 3)
 		return ALIVE;

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "PCH.hh"
+
 #include "Vendor/Vulkan/Vulkan.Shader.hh"
+#include "Vendor/Vulkan/Vulkan.Unique.hh"
 
 namespace ct::vulkan
 {
@@ -9,25 +11,23 @@ namespace ct::vulkan
 	{
 	public:
 		Pipeline(const Shader& vertex, const Shader& fragment);
-		~Pipeline();
-		Pipeline(Pipeline&& other) noexcept;
-		Pipeline& operator=(Pipeline&& other) noexcept;
 
-		inline vk::Pipeline handle() const
+		vk::Pipeline handle() const
 		{
 			return PipelineHandle;
 		}
 
-		inline vk::PipelineLayout layout() const
+		vk::PipelineLayout layout() const
 		{
 			return Layout;
 		}
 
 	private:
-		vk::Pipeline PipelineHandle;
-		vk::PipelineLayout Layout;
+		DeviceUnique<vk::PipelineLayout, &vk::Device::destroyPipelineLayout> Layout;
+		DeviceUnique<vk::Pipeline, &vk::Device::destroyPipeline> PipelineHandle;
 
 		vk::PipelineLayout createLayout();
+		vk::Pipeline createPipeline(const Shader& vertex, const Shader& fragment);
 		vk::PipelineShaderStageCreateInfo fillShaderStageInfo(vk::ShaderStageFlagBits stage, const Shader& shader);
 		vk::PipelineRasterizationStateCreateInfo fillRasterizerInfo();
 		vk::PipelineColorBlendAttachmentState fillColorBlendAttachment();

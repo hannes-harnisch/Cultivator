@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Utils/Assert.hh"
 #include "Utils/Rectangle.hh"
@@ -15,7 +15,7 @@ namespace ct
 	protected:
 		vulkan::SwapChain SwapChain;
 
-		inline WindowBase(void* nativeWindowHandle, Rectangle viewport) : SwapChain {nativeWindowHandle, viewport}
+		WindowBase(void* nativeWindowHandle, Rectangle viewport) : SwapChain {nativeWindowHandle, viewport}
 		{
 			ctEnsure(nativeWindowHandle, "Failed to create window.");
 		}

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "PCH.hh"
+
 #include "App/AppContextBase.hh"
 #include "Utils/Singleton.hh"
 
@@ -11,7 +12,7 @@ namespace ct::windows
 	public:
 		static constexpr auto WindowClassName {TEXT(CT_APP_NAME)};
 
-		inline static HINSTANCE nativeInstanceHandle()
+		static HINSTANCE nativeInstanceHandle()
 		{
 			return SingletonInstance->AppHandle;
 		}

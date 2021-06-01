@@ -1,17 +1,17 @@
 #include "PCH.hh"
-#include "Vulkan.GPUContext.hh"
 
 #include "Utils/Assert.hh"
 #include "Vendor/Vulkan/Vulkan.Surface.hh"
+#include "Vulkan.GPUContext.hh"
 
 namespace ct::vulkan
 {
 	namespace
 	{
 		VKAPI_ATTR VkBool32 VKAPI_CALL logDebug(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-												VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+												VkDebugUtilsMessageTypeFlagsEXT,
 												const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-												void* pUserData)
+												void*)
 		{
 			if(messageSeverity < VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
 				return false;

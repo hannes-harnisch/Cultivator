@@ -1,8 +1,10 @@
 #pragma once
 
 #include "PCH.hh"
+
 #include "Utils/Rectangle.hh"
 #include "Vendor/Vulkan/Vulkan.RenderPass.hh"
+#include "Vendor/Vulkan/Vulkan.Unique.hh"
 
 namespace ct::vulkan
 {
@@ -10,16 +12,15 @@ namespace ct::vulkan
 	{
 	public:
 		FrameBuffer(Rectangle size, const RenderPass& renderPass);
-		FrameBuffer(FrameBuffer&& other) noexcept;
-		~FrameBuffer();
-		FrameBuffer& operator=(FrameBuffer&& other) noexcept;
 
-		inline vk::Framebuffer handle() const
+		vk::Framebuffer handle() const
 		{
 			return FrameBufferHandle;
 		}
 
 	private:
-		vk::Framebuffer FrameBufferHandle;
+		DeviceUnique<vk::Framebuffer, &vk::Device::destroyFramebuffer> FrameBufferHandle;
+
+		static vk::Framebuffer createFrameBuffer(Rectangle size, const RenderPass& renderPass);
 	};
 }

@@ -1,15 +1,18 @@
 #include "PCH.hh"
-#include "Vulkan.RenderPass.hh"
 
 #include "Utils/Assert.hh"
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
+#include "Vulkan.RenderPass.hh"
 
 namespace ct::vulkan
 {
-	RenderPass::RenderPass()
+	RenderPass::RenderPass() : RenderPassHandle(createRenderPass())
+	{}
+
+	vk::RenderPass RenderPass::createRenderPass()
 	{
-		std::array attachments {fillAttachmentDescription(vk::ImageLayout::eColorAttachmentOptimal,
-														  vk::ImageLayout::eShaderReadOnlyOptimal)};
+		std::array attachments {
+			fillAttachmentDescription(vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eShaderReadOnlyOptimal)};
 		std::array attachmentRefs {vk::AttachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal)};
 		std::array subpasses {vk::SubpassDescription().setColorAttachments(attachmentRefs)};
 		std::array subpassDependencies {vk::SubpassDependency()
@@ -23,22 +26,7 @@ namespace ct::vulkan
 								 .setDependencies(subpassDependencies)};
 		auto [res, renderPass] {GPUContext::device().createRenderPass(renderPassInfo, nullptr, Loader::get())};
 		ctAssertResult(res, "Failed to create Vulkan render pass.");
-		RenderPassHandle = renderPass;
-	}
-
-	RenderPass::~RenderPass()
-	{
-		GPUContext::device().destroyRenderPass(RenderPassHandle, {}, Loader::get());
-	}
-
-	RenderPass::RenderPass(RenderPass&& other) noexcept :
-		RenderPassHandle {std::exchange(other.RenderPassHandle, nullptr)}
-	{}
-
-	RenderPass& RenderPass::operator=(RenderPass&& other) noexcept
-	{
-		std::swap(RenderPassHandle, other.RenderPassHandle);
-		return *this;
+		return renderPass;
 	}
 
 	vk::AttachmentDescription RenderPass::fillAttachmentDescription(vk::ImageLayout initial, vk::ImageLayout final)

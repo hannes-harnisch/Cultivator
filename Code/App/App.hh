@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "App/AppContext.hh"
 #include "App/Window.hh"

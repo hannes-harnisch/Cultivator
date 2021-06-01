@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if __clang__
 	#define CT_COMPILER_CLANG __clang__

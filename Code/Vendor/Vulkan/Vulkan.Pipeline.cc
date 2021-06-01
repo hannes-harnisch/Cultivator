@@ -1,13 +1,25 @@
 #include "PCH.hh"
-#include "Vulkan.Pipeline.hh"
 
 #include "Utils/Assert.hh"
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 #include "Vendor/Vulkan/Vulkan.RenderPass.hh"
+#include "Vulkan.Pipeline.hh"
 
 namespace ct::vulkan
 {
-	Pipeline::Pipeline(const Shader& vertex, const Shader& fragment) : Layout {createLayout()}
+	Pipeline::Pipeline(const Shader& vertex, const Shader& fragment) :
+		Layout {createLayout()}, PipelineHandle(createPipeline(vertex, fragment))
+	{}
+
+	vk::PipelineLayout Pipeline::createLayout()
+	{
+		vk::PipelineLayoutCreateInfo layoutInfo;
+		auto [res, layout] {GPUContext::device().createPipelineLayout(layoutInfo, nullptr, Loader::get())};
+		ctAssertResult(res, "Failed to create Vulkan pipeline layout.");
+		return layout;
+	}
+
+	vk::Pipeline Pipeline::createPipeline(const Shader& vertex, const Shader& fragment)
 	{
 		std::array shaderStages {fillShaderStageInfo(vk::ShaderStageFlagBits::eVertex, vertex),
 								 fillShaderStageInfo(vk::ShaderStageFlagBits::eFragment, fragment)};
@@ -38,41 +50,12 @@ namespace ct::vulkan
 							   .setBasePipelineIndex(-1)};
 		auto [res, pipe] {GPUContext::device().createGraphicsPipeline({}, pipelineInfo, nullptr, Loader::get())};
 		ctAssertResult(res, "Failed to create Vulkan pipeline.");
-		PipelineHandle = pipe;
-	}
-
-	Pipeline::~Pipeline()
-	{
-		auto device {GPUContext::device()};
-		device.destroyPipeline(PipelineHandle, {}, Loader::get());
-		device.destroyPipelineLayout(Layout, {}, Loader::get());
-	}
-
-	Pipeline::Pipeline(Pipeline&& other) noexcept :
-		PipelineHandle {std::exchange(other.PipelineHandle, nullptr)}, Layout {std::exchange(other.Layout, nullptr)}
-	{}
-
-	Pipeline& Pipeline::operator=(Pipeline&& other) noexcept
-	{
-		std::swap(PipelineHandle, other.PipelineHandle);
-		std::swap(Layout, other.Layout);
-		return *this;
-	}
-
-	vk::PipelineLayout Pipeline::createLayout()
-	{
-		vk::PipelineLayoutCreateInfo layoutInfo;
-		auto [res, layout] {GPUContext::device().createPipelineLayout(layoutInfo, nullptr, Loader::get())};
-		ctAssertResult(res, "Failed to create Vulkan pipeline layout.");
-		return layout;
+		return pipe;
 	}
 
 	vk::PipelineShaderStageCreateInfo Pipeline::fillShaderStageInfo(vk::ShaderStageFlagBits stage, const Shader& shader)
 	{
-		return vk::PipelineShaderStageCreateInfo()
-			.setStage(stage)
-			.setModule(shader.handle())
-			.setPName(Shader::EntryPoint);
+		return vk::PipelineShaderStageCreateInfo().setStage(stage).setModule(shader.handle()).setPName(Shader::EntryPoint);
 	}
 
 	vk::PipelineRasterizationStateCreateInfo Pipeline::fillRasterizerInfo()

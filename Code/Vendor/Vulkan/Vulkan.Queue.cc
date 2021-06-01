@@ -1,9 +1,9 @@
-﻿#include "PCH.hh"
-#include "Vulkan.Queue.hh"
+#include "PCH.hh"
 
 #include "Utils/Assert.hh"
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 #include "Vendor/Vulkan/Vulkan.Surface.hh"
+#include "Vulkan.Queue.hh"
 
 namespace ct::vulkan
 {

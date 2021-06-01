@@ -1,8 +1,8 @@
-#include "PCH.hh"
-#include "Windows.AppContext.hh"
+﻿#include "PCH.hh"
 
 #include "App/App.hh"
 #include "Utils/Assert.hh"
+#include "Windows.AppContext.hh"
 
 namespace ct::windows
 {

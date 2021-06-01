@@ -1,8 +1,10 @@
 #pragma once
 
 #include "PCH.hh"
+
 #include "Utils/Rectangle.hh"
 #include "Vendor/Vulkan/Vulkan.Surface.hh"
+#include "Vendor/Vulkan/Vulkan.Unique.hh"
 
 namespace ct::vulkan
 {
@@ -10,11 +12,8 @@ namespace ct::vulkan
 	{
 	public:
 		SwapChain(void* nativeWindowHandle, Rectangle viewport);
-		SwapChain(SwapChain&& other) noexcept;
-		~SwapChain();
-		SwapChain& operator=(SwapChain&& other) noexcept;
 
-		inline vk::Format getImageFormat() const
+		vk::Format getImageFormat() const
 		{
 			return SurfaceFormat.format;
 		}
@@ -24,9 +23,9 @@ namespace ct::vulkan
 		vk::SurfaceFormatKHR SurfaceFormat;
 		vk::PresentModeKHR PresentMode;
 		vk::Extent2D Extent;
-		vk::SwapchainKHR SwapChainHandle;
+		DeviceUnique<vk::SwapchainKHR, &vk::Device::destroySwapchainKHR> SwapChainHandle;
 		std::vector<vk::Image> SwapChainImages;
-		std::vector<vk::ImageView> SwapChainViews;
+		std::vector<DeviceUnique<vk::ImageView, &vk::Device::destroyImageView>> SwapChainViews;
 
 		vk::SurfaceFormatKHR createSurfaceFormat();
 		vk::PresentModeKHR createPresentMode();
@@ -34,6 +33,6 @@ namespace ct::vulkan
 		vk::SwapchainKHR createSwapChain();
 		vk::SwapchainCreateInfoKHR fillSwapChainInfo();
 		std::vector<vk::Image> createSwapChainImages();
-		std::vector<vk::ImageView> createSwapChainImageViews();
+		std::vector<DeviceUnique<vk::ImageView, &vk::Device::destroyImageView>> createSwapChainImageViews();
 	};
 }

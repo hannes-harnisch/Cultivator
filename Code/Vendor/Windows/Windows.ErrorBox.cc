@@ -1,4 +1,5 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
+
 #include "Vendor/Windows/Windows.Utils.hh"
 
 namespace ct

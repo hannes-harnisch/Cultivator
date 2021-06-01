@@ -12,6 +12,7 @@ workspace 'Cultivator'
 	floatingpoint		'Fast'
 	rtti				'Off'
 	exceptionhandling	'Off'
+	warnings			'Extra'
 	buildoptions		{ '/Zc:rvalueCast' }
 	files				{ 'Code/**.cc', 'Code/**.hh' }
 	removefiles			{ 'Code/**/**.*.*' }
@@ -24,14 +25,20 @@ workspace 'Cultivator'
 
 	filter 'files:**.hlsl'
 		buildmessage	'Compiling shader %{file.relpath}'
-		buildcommands	'glslangValidator -e main -o "%{cfg.targetdir}/%{file.basename}.spv" -V -D "%{file.relpath}"'
+		buildcommands	'C:/VulkanSDK/1.2.176.1/bin/dxc -DENABLE_SPIRV_CODEGEN=ON -spirv "%{cfg.targetdir}/%{file.basename}.spv" "%{file.relpath}" ^'
 		buildoutputs	'%{cfg.targetdir}/%{file.basename}.spv'
+
+	filter 'files:**.vert.hlsl'	
+		buildcommands	'-T vs_6_0'
+
+	filter 'files:**.frag.hlsl'	
+		buildcommands	'-T ps_6_0'
 
 	filter 'system:Windows'
 		systemversion	'latest'
 		files			{ 'Code/**/Windows.*.*', 'Code/**/Direct3D.*.*', 'Code/**/Vulkan.*.*', 'Code/**/VulkanWindows.*.*' }
-		includedirs		'C:/VulkanSDK/1.2.154.1/Include'
-		libdirs			'C:/VulkanSDK/1.2.154.1/Lib'
+		includedirs		'C:/VulkanSDK/1.2.176.1/Include'
+		libdirs			'C:/VulkanSDK/1.2.176.1/Lib'
 		links			'Vulkan-1.lib'
 		defines			'CT_SYSTEM_WINDOWS'
 

@@ -14,12 +14,12 @@ namespace ct::vulkan
 
 		bool supportsSurface(const Surface& surface) const;
 
-		inline uint32_t familyIndex() const
+		uint32_t familyIndex() const
 		{
 			return FamilyIndex;
 		}
 
-		inline vk::Queue handle() const
+		vk::Queue handle() const
 		{
 			return QueueHandle;
 		}

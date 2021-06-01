@@ -1,4 +1,4 @@
-Texture2D Universe;
+﻿Texture2D Universe;
 SamplerState Sampler;
 
 float4 main() : SV_TARGET

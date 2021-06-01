@@ -1,7 +1,9 @@
 #pragma once
 
 #include "PCH.hh"
+
 #include "Utils/Rectangle.hh"
+#include "Vendor/Vulkan/Vulkan.Unique.hh"
 
 namespace ct::vulkan
 {
@@ -9,14 +11,11 @@ namespace ct::vulkan
 	{
 	public:
 		Texture(Rectangle size);
-		~Texture();
-		Texture(Texture&& other) noexcept;
-		Texture& operator=(Texture&& other) noexcept;
 
 	private:
-		vk::Image Image;
-		vk::DeviceMemory Memory;
-		vk::ImageView ImageView;
+		DeviceUnique<vk::Image, &vk::Device::destroyImage> Image;
+		DeviceUnique<vk::DeviceMemory, &vk::Device::freeMemory> Memory;
+		DeviceUnique<vk::ImageView, &vk::Device::destroyImageView> ImageView;
 
 		vk::Image createImage(Rectangle size);
 		vk::DeviceMemory allocateMemory();

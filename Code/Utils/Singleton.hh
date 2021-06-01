@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Utils/Assert.hh"
 
@@ -9,7 +9,7 @@ namespace ct
 	protected:
 		static inline T* SingletonInstance;
 
-		inline Singleton()
+		Singleton()
 		{
 			ctEnsure(!SingletonInstance, "This type can only be instantiated once.");
 			SingletonInstance = static_cast<T*>(this);

@@ -1,6 +1,7 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
+
 #include "Utils/Singleton.hh"
 #include "Vendor/Vulkan/Vulkan.Queue.hh"
 
@@ -9,27 +10,27 @@ namespace ct::vulkan
 	class GPUContext final : public Singleton<GPUContext>
 	{
 	public:
-		inline static vk::Instance instance()
+		static vk::Instance instance()
 		{
 			return SingletonInstance->Instance;
 		}
 
-		inline static vk::PhysicalDevice adapter()
+		static vk::PhysicalDevice adapter()
 		{
 			return SingletonInstance->Adapter;
 		}
 
-		inline static vk::Device device()
+		static vk::Device device()
 		{
 			return SingletonInstance->Device;
 		}
 
-		inline static Queue graphicsQueue()
+		static Queue graphicsQueue()
 		{
 			return SingletonInstance->GraphicsQueue;
 		}
 
-		inline static Queue presentQueue()
+		static Queue presentQueue()
 		{
 			return SingletonInstance->PresentQueue;
 		}
@@ -82,13 +83,13 @@ namespace ct::vulkan
 	class Loader final
 	{
 	public:
-		inline static vk::DispatchLoaderDynamic& getDeviceless()
+		static vk::DispatchLoaderDynamic& getDeviceless()
 		{
 			static vk::DispatchLoaderDynamic loader(GPUContext::instance(), vkGetInstanceProcAddr);
 			return loader;
 		}
 
-		inline static vk::DispatchLoaderDynamic& get()
+		static vk::DispatchLoaderDynamic& get()
 		{
 			static vk::DispatchLoaderDynamic loader(GPUContext::instance(), vkGetInstanceProcAddr, GPUContext::device(),
 													vkGetDeviceProcAddr);

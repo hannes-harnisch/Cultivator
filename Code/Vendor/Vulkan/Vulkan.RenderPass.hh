@@ -2,24 +2,24 @@
 
 #include "PCH.hh"
 
+#include "Vendor/Vulkan/Vulkan.Unique.hh"
+
 namespace ct::vulkan
 {
 	class RenderPass final
 	{
 	public:
 		RenderPass();
-		~RenderPass();
-		RenderPass(RenderPass&& other) noexcept;
-		RenderPass& operator=(RenderPass&& other) noexcept;
 
-		inline vk::RenderPass handle() const
+		vk::RenderPass handle() const
 		{
 			return RenderPassHandle;
 		}
 
 	private:
-		vk::RenderPass RenderPassHandle;
+		DeviceUnique<vk::RenderPass, &vk::Device::destroyRenderPass> RenderPassHandle;
 
-		vk::AttachmentDescription fillAttachmentDescription(vk::ImageLayout initial, vk::ImageLayout final);
+		static vk::RenderPass createRenderPass();
+		static vk::AttachmentDescription fillAttachmentDescription(vk::ImageLayout initial, vk::ImageLayout final);
 	};
 }

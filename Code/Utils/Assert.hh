@@ -1,6 +1,7 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
+
 #include "Utils/Intrinsics.hh"
 
 namespace ct
@@ -16,10 +17,10 @@ namespace ct
 
 #if CT_DEBUG
 
-	#define ctAssert(condition, message)                                                                               \
-		{                                                                                                              \
-			if(!(condition))                                                                                           \
-				ctDebugBreak();                                                                                        \
+	#define ctAssert(condition, message)                                                                                       \
+		{                                                                                                                      \
+			if(!(condition))                                                                                                   \
+				ctDebugBreak();                                                                                                \
 		}
 
 	#define ctAssertResult(condition, message) ctAssert(static_cast<int64_t>(condition) >= 0, message)
@@ -34,10 +35,10 @@ namespace ct
 	#define ctAssertResult(condition, message) static_cast<void>(condition)
 	#define ctAssertPure(condition, message)
 
-	#define ctEnsure(condition, message)                                                                               \
-		{                                                                                                              \
-			if(!(condition))                                                                                           \
-				ct::crash(message);                                                                                    \
+	#define ctEnsure(condition, message)                                                                                       \
+		{                                                                                                                      \
+			if(!(condition))                                                                                                   \
+				ct::crash(message);                                                                                            \
 		}
 
 	#define ctEnsureResult(condition, message) ctEnsure(static_cast<int64_t>(condition) >= 0, message)
