@@ -25,14 +25,14 @@ workspace 'Cultivator'
 
 	filter 'files:**.hlsl'
 		buildmessage	'Compiling shader %{file.relpath}'
-		buildcommands	'C:/VulkanSDK/1.2.176.1/bin/dxc -DENABLE_SPIRV_CODEGEN=ON -spirv "%{cfg.targetdir}/%{file.basename}.spv" "%{file.relpath}" ^'
+		buildcommands	'C:/VulkanSDK/1.2.176.1/bin/dxc %{file.relpath} -spirv /Fo %{cfg.targetdir}/%{file.basename}.spv ^'
 		buildoutputs	'%{cfg.targetdir}/%{file.basename}.spv'
 
-	filter 'files:**.vert.hlsl'	
-		buildcommands	'-T vs_6_0'
+	filter 'files:**.vert.hlsl'
+		buildcommands	'-T vs_6_6'
 
-	filter 'files:**.frag.hlsl'	
-		buildcommands	'-T ps_6_0'
+	filter 'files:**.frag.hlsl'
+		buildcommands	'-T ps_6_6'
 
 	filter 'system:Windows'
 		systemversion	'latest'

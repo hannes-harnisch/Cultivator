@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
 
@@ -11,7 +11,7 @@ namespace ct::vulkan
 	class FrameBuffer final
 	{
 	public:
-		FrameBuffer(Rectangle size, const RenderPass& renderPass);
+		FrameBuffer(Rectangle size, RenderPass const& renderPass);
 
 		vk::Framebuffer handle() const
 		{
@@ -21,6 +21,6 @@ namespace ct::vulkan
 	private:
 		DeviceUnique<vk::Framebuffer, &vk::Device::destroyFramebuffer> FrameBufferHandle;
 
-		static vk::Framebuffer createFrameBuffer(Rectangle size, const RenderPass& renderPass);
+		static vk::Framebuffer createFrameBuffer(Rectangle size, RenderPass const& renderPass);
 	};
 }

@@ -2,6 +2,7 @@
 
 #include "PCH.hh"
 
+#include "Vendor/Vulkan/Vulkan.PipelineLayout.hh"
 #include "Vendor/Vulkan/Vulkan.Shader.hh"
 #include "Vendor/Vulkan/Vulkan.Unique.hh"
 
@@ -10,25 +11,18 @@ namespace ct::vulkan
 	class Pipeline final
 	{
 	public:
-		Pipeline(const Shader& vertex, const Shader& fragment);
+		Pipeline(Shader const& vertex, Shader const& fragment, PipelineLayout const& layout);
 
 		vk::Pipeline handle() const
 		{
 			return PipelineHandle;
 		}
 
-		vk::PipelineLayout layout() const
-		{
-			return Layout;
-		}
-
 	private:
-		DeviceUnique<vk::PipelineLayout, &vk::Device::destroyPipelineLayout> Layout;
 		DeviceUnique<vk::Pipeline, &vk::Device::destroyPipeline> PipelineHandle;
 
-		vk::PipelineLayout createLayout();
-		vk::Pipeline createPipeline(const Shader& vertex, const Shader& fragment);
-		vk::PipelineShaderStageCreateInfo fillShaderStageInfo(vk::ShaderStageFlagBits stage, const Shader& shader);
+		vk::Pipeline createPipeline(Shader const& vertex, Shader const& fragment, PipelineLayout const& layout);
+		vk::PipelineShaderStageCreateInfo fillShaderStageInfo(vk::ShaderStageFlagBits stage, Shader const& shader);
 		vk::PipelineRasterizationStateCreateInfo fillRasterizerInfo();
 		vk::PipelineColorBlendAttachmentState fillColorBlendAttachment();
 	};

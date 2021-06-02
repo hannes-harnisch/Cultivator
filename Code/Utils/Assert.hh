@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
@@ -6,9 +6,9 @@
 
 namespace ct
 {
-	void showErrorBox(const std::string& title, const std::string& message);
+	void showErrorBox(std::string const& title, std::string const& message);
 
-	inline void crash(const std::string& message)
+	inline void crash(std::string const& message)
 	{
 		showErrorBox("FATAL ERROR", message);
 		std::exit(EXIT_FAILURE);

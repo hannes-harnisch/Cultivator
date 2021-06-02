@@ -6,22 +6,22 @@ SamplerState Sampler;
 
 float2 VPos : VPOS;
 
-int getCell(int2 offset)
+int getCell(int x, int y)
 {
-	return Universe.Sample(Sampler, VPos, offset).r;
+	return Universe.Sample(Sampler, VPos, int2(x, y)).r;
 }
 
 float4 main() : SV_TARGET
 {
-	int nw		= getCell(int2(-1, 1));
-	int n		= getCell(int2(0, 1));
-	int ne		= getCell(int2(1, 1));
-	int w		= getCell(int2(-1, 0));
-	int current = getCell(int2(0, 0));
-	int e		= getCell(int2(1, 0));
-	int sw		= getCell(int2(-1, -1));
-	int s		= getCell(int2(0, -1));
-	int se		= getCell(int2(1, -1));
+	int nw		= getCell(-1, 1);
+	int n		= getCell(0, 1);
+	int ne		= getCell(1, 1);
+	int w		= getCell(-1, 0);
+	int current = getCell(0, 0);
+	int e		= getCell(1, 0);
+	int sw		= getCell(-1, -1);
+	int s		= getCell(0, -1);
+	int se		= getCell(1, -1);
 
 	int sum = nw + n + ne + w + current + e + sw + s + se;
 	if(sum == 3)

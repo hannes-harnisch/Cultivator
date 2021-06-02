@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
@@ -13,12 +13,12 @@ namespace ct::vulkan
 
 		Surface(void* nativeWindowHandle);
 
-		Surface(Surface&& other) noexcept : SurfaceHandle {std::exchange(other.SurfaceHandle, nullptr)}
+		Surface(Surface&& other) noexcept : SurfaceHandle(std::exchange(other.SurfaceHandle, nullptr))
 		{}
 
 		~Surface()
 		{
-			GPUContext::instance().destroySurfaceKHR(SurfaceHandle, {}, Loader::getDeviceless());
+			GPUContext::instance().destroySurfaceKHR(SurfaceHandle, {}, Loader::get());
 		}
 
 		Surface& operator=(Surface&& other) noexcept

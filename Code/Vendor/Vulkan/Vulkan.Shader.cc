@@ -11,12 +11,11 @@ namespace ct::vulkan
 
 	vk::ShaderModule Shader::createShader(std::string_view filePath)
 	{
-		auto bytecode {File::loadBinary(filePath)};
-		auto shaderInfo {
-			vk::ShaderModuleCreateInfo().setCodeSize(bytecode.size()).setPCode(reinterpret_cast<uint32_t*>(bytecode.data()))};
-		auto [res, shader] {GPUContext::device().createShaderModule(shaderInfo, nullptr, Loader::get())};
+		auto bytecode = File::loadBinary(filePath);
+		auto shaderInfo =
+			vk::ShaderModuleCreateInfo().setCodeSize(bytecode.size()).setPCode(reinterpret_cast<uint32_t*>(bytecode.data()));
+		auto [res, shader] = GPUContext::device().createShaderModule(shaderInfo, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan shader module.");
 		return shader;
 	}
-
 }

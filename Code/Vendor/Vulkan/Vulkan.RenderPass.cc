@@ -20,11 +20,10 @@ namespace ct::vulkan
 											.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
 											.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
 											.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)};
-		auto renderPassInfo {vk::RenderPassCreateInfo()
-								 .setAttachments(attachments)
-								 .setSubpasses(subpasses)
-								 .setDependencies(subpassDependencies)};
-		auto [res, renderPass] {GPUContext::device().createRenderPass(renderPassInfo, nullptr, Loader::get())};
+		auto renderPassInfo =
+			vk::RenderPassCreateInfo().setAttachments(attachments).setSubpasses(subpasses).setDependencies(subpassDependencies);
+
+		auto [res, renderPass] = GPUContext::device().createRenderPass(renderPassInfo, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan render pass.");
 		return renderPass;
 	}

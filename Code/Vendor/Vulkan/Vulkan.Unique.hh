@@ -7,7 +7,7 @@
 namespace ct::vulkan
 {
 	template<typename T,
-			 void (vk::Device::*Deleter)(T, const vk::AllocationCallbacks*, const vk::DispatchLoaderDynamic&) const noexcept>
+			 void (vk::Device::*Deleter)(T, vk::AllocationCallbacks const*, vk::DispatchLoaderDynamic const&) const noexcept>
 	struct DeviceDeleter
 	{
 		using pointer = T;
@@ -18,7 +18,7 @@ namespace ct::vulkan
 	};
 
 	template<typename T,
-			 void (vk::Device::*Deleter)(T, const vk::AllocationCallbacks*, const vk::DispatchLoaderDynamic&) const noexcept>
+			 void (vk::Device::*Deleter)(T, vk::AllocationCallbacks const*, vk::DispatchLoaderDynamic const&) const noexcept>
 	class DeviceUnique : public std::unique_ptr<T, DeviceDeleter<T, Deleter>>
 	{
 	public:

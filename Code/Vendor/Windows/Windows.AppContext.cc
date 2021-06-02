@@ -1,4 +1,4 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 
 #include "App/App.hh"
 #include "Utils/Assert.hh"
@@ -18,7 +18,7 @@ namespace ct::windows
 		}
 	}
 
-	AppContext::AppContext() : AppHandle {::GetModuleHandle(nullptr)}
+	AppContext::AppContext() : AppHandle(::GetModuleHandle(nullptr))
 	{
 		WNDCLASS windowClass {};
 		windowClass.style		  = CS_DBLCLKS;

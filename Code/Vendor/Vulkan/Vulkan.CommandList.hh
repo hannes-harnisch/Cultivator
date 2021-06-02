@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Vendor/Vulkan/Vulkan.FrameBuffer.hh"
 #include "Vendor/Vulkan/Vulkan.Pipeline.hh"
@@ -11,8 +11,8 @@ namespace ct::vulkan
 	{
 	public:
 		void begin();
-		void beginRenderPass(const RenderPass& renderPass, const FrameBuffer& frameBuffer);
-		void bindPipeline(const Pipeline& pipeline);
+		void beginRenderPass(RenderPass const& renderPass, FrameBuffer const& frameBuffer);
+		void bindPipeline(Pipeline const& pipeline);
 		void draw();
 		void end();
 		void endRenderPass();

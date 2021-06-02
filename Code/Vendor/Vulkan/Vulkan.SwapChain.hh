@@ -18,6 +18,8 @@ namespace ct::vulkan
 			return SurfaceFormat.format;
 		}
 
+		void present();
+
 	private:
 		Surface Surface;
 		vk::SurfaceFormatKHR SurfaceFormat;

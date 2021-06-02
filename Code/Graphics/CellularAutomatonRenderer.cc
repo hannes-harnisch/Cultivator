@@ -5,16 +5,16 @@
 namespace ct
 {
 	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle size) :
-		CellularAutomatonRenderer {size, vulkan::Shader("ScreenQuad.vert.spv")}
+		CellularAutomatonRenderer(size, vulkan::Shader("ScreenQuad.vert.spv"))
 	{}
 
 	void CellularAutomatonRenderer::draw()
 	{}
 
-	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle size, const vulkan::Shader& vertex) :
-		GameOfLife {vertex, vulkan::Shader("GameOfLife.frag.spv")},
-		Presentation {vertex, vulkan::Shader("Presentation.frag.spv")},
-		Front {size},
-		Back {size}
+	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle size, vulkan::Shader const& vertex) :
+		GameOfLife(vertex, vulkan::Shader("GameOfLife.frag.spv")),
+		Presentation(vertex, vulkan::Shader("Presentation.frag.spv")),
+		Front(size),
+		Back(size)
 	{}
 }

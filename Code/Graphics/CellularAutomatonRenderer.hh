@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Utils/Rectangle.hh"
 #include "Vendor/Vulkan/Vulkan.Pipeline.hh"
@@ -18,6 +18,6 @@ namespace ct
 		vulkan::Pipeline Presentation;
 		vulkan::Texture Front, Back;
 
-		CellularAutomatonRenderer(Rectangle size, const vulkan::Shader& vertex);
+		CellularAutomatonRenderer(Rectangle size, vulkan::Shader const& vertex);
 	};
 }

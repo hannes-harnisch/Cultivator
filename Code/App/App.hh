@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "App/AppContext.hh"
 #include "App/Window.hh"
@@ -16,8 +16,8 @@ namespace ct
 	public:
 		static void quit();
 
-		App(const App&) = delete;
-		App& operator=(const App&) = delete;
+		App(App const&) = delete;
+		App& operator=(App const&) = delete;
 
 	private:
 		AppContext AppContext;

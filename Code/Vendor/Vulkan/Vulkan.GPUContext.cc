@@ -10,7 +10,7 @@ namespace ct::vulkan
 	{
 		VKAPI_ATTR VkBool32 VKAPI_CALL logDebug(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 												VkDebugUtilsMessageTypeFlagsEXT,
-												const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+												VkDebugUtilsMessengerCallbackDataEXT const* pCallbackData,
 												void*)
 		{
 			if(messageSeverity < VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
@@ -35,11 +35,13 @@ namespace ct::vulkan
 
 	GPUContext::GPUContext()
 	{
-		auto loggerInfo {fillLoggerInfo()};
+		auto loggerInfo = fillLoggerInfo();
 		initializeInstance(loggerInfo);
+		initializeLoaderWithoutDevice();
 		initializeLogger(loggerInfo);
 		initializeAdapter();
 		initializeDeviceAndQueues();
+		recreateLoaderWithDevice();
 	}
 
 	GPUContext::~GPUContext()
@@ -66,26 +68,31 @@ namespace ct::vulkan
 		}
 	}
 
-	void GPUContext::initializeInstance(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
+	void GPUContext::initializeInstance(vk::DebugUtilsMessengerCreateInfoEXT const& loggerInfo)
 	{
 		ensureInstanceExtensionsExist();
 		ensureLayersExist();
 
-		auto appInfo {fillAppInfo()};
-		auto instanceInfo {vk::InstanceCreateInfo()
-							   .setPNext(&loggerInfo)
-							   .setPApplicationInfo(&appInfo)
-							   .setPEnabledLayerNames(RequiredLayers)
-							   .setPEnabledExtensionNames(RequiredInstanceExtensions)};
-		auto [res, instance] {vk::createInstance(instanceInfo)};
+		auto appInfo	  = fillAppInfo();
+		auto instanceInfo = vk::InstanceCreateInfo()
+								.setPNext(&loggerInfo)
+								.setPApplicationInfo(&appInfo)
+								.setPEnabledLayerNames(RequiredLayers)
+								.setPEnabledExtensionNames(RequiredInstanceExtensions);
+		auto [res, instance] = vk::createInstance(instanceInfo);
 		ctEnsureResult(res, "Failed to create Vulkan instance.");
 		Instance = instance;
 	}
 
-	void GPUContext::initializeLogger(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo)
+	void GPUContext::initializeLoaderWithoutDevice()
+	{
+		Loader::loader = vk::DispatchLoaderDynamic(Instance, vkGetInstanceProcAddr);
+	}
+
+	void GPUContext::initializeLogger(vk::DebugUtilsMessengerCreateInfoEXT const& loggerInfo)
 	{
 #if CT_DEBUG
-		auto [res, logger] {Instance.createDebugUtilsMessengerEXT(loggerInfo, nullptr, Loader::getDeviceless())};
+		auto [res, logger] = Instance.createDebugUtilsMessengerEXT(loggerInfo, nullptr, Loader::get());
 		ctEnsureResult(res, "Failed to create Vulkan logger.");
 		Logger = logger;
 #endif
@@ -93,7 +100,7 @@ namespace ct::vulkan
 
 	void GPUContext::ensureInstanceExtensionsExist()
 	{
-		auto [res, extensions] {vk::enumerateInstanceExtensionProperties()};
+		auto [res, extensions] = vk::enumerateInstanceExtensionProperties();
 		ctEnsureResult(res, "Failed to enumerate Vulkan instance extensions.");
 
 		for(auto requiredExtension : RequiredInstanceExtensions)
@@ -111,7 +118,7 @@ namespace ct::vulkan
 
 	void GPUContext::ensureLayersExist()
 	{
-		auto [res, layers] {vk::enumerateInstanceLayerProperties()};
+		auto [res, layers] = vk::enumerateInstanceLayerProperties();
 		ctEnsureResult(res, "Failed to enumerate Vulkan layers.");
 
 		for(auto requiredLayer : RequiredLayers)
@@ -129,12 +136,12 @@ namespace ct::vulkan
 
 	void GPUContext::initializeAdapter()
 	{
-		auto [res, adapters] {Instance.enumeratePhysicalDevices(Loader::getDeviceless())};
+		auto [res, adapters] = Instance.enumeratePhysicalDevices(Loader::get());
 		ctEnsureResult(res, "Failed to enumerate Vulkan adapters.");
 
 		for(auto adapter : adapters)
 		{
-			auto properties {adapter.getProperties(Loader::getDeviceless())};
+			auto properties = adapter.getProperties(Loader::get());
 
 			if(properties.deviceType == vk::PhysicalDeviceType::eIntegratedGpu)
 				Adapter = adapter;
@@ -159,13 +166,13 @@ namespace ct::vulkan
 			std::optional<uint32_t> graphicsFamily, presentFamily;
 
 			uint32_t index {};
-			auto dummy {Surface::makeDummy()};
-			for(auto& queueFamily : adapter.getQueueFamilyProperties(Loader::getDeviceless()))
+			auto dummy = Surface::makeDummy();
+			for(auto& queueFamily : adapter.getQueueFamilyProperties(Loader::get()))
 			{
 				if(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
 					graphicsFamily = index;
 
-				auto [res, supports] {adapter.getSurfaceSupportKHR(index, dummy.handle(), Loader::getDeviceless())};
+				auto [res, supports] = adapter.getSurfaceSupportKHR(index, dummy.handle(), Loader::get());
 				ctEnsureResult(res, "Failed to query for Vulkan surface support.");
 				if(supports)
 					presentFamily = index;
@@ -182,7 +189,7 @@ namespace ct::vulkan
 	{
 		ensureDeviceExtensionsExist();
 
-		auto families {queryQueueFamilies(Adapter)};
+		auto families = queryQueueFamilies(Adapter);
 		std::array queuePriorities {1.0f};
 		vk::DeviceQueueCreateInfo graphicsQueueInfo({}, families.Graphics, queuePriorities);
 		vk::DeviceQueueCreateInfo presentQueueInfo({}, families.Present, queuePriorities);
@@ -191,13 +198,13 @@ namespace ct::vulkan
 		if(families.Graphics != families.Present)
 			queueInfos.push_back(presentQueueInfo);
 
-		auto features {vk::PhysicalDeviceFeatures().setShaderImageGatherExtended(true)};
-		auto deviceInfo {vk::DeviceCreateInfo()
-							 .setQueueCreateInfos(queueInfos)
-							 .setPEnabledLayerNames(RequiredLayers)
-							 .setPEnabledExtensionNames(RequiredDeviceExtensions)
-							 .setPEnabledFeatures(&features)};
-		auto [res, device] {Adapter.createDevice(deviceInfo, nullptr, Loader::getDeviceless())};
+		auto features	= vk::PhysicalDeviceFeatures().setShaderImageGatherExtended(true);
+		auto deviceInfo = vk::DeviceCreateInfo()
+							  .setQueueCreateInfos(queueInfos)
+							  .setPEnabledLayerNames(RequiredLayers)
+							  .setPEnabledExtensionNames(RequiredDeviceExtensions)
+							  .setPEnabledFeatures(&features);
+		auto [res, device] = Adapter.createDevice(deviceInfo, nullptr, Loader::get());
 		ctEnsureResult(res, "Failed to create Vulkan device.");
 		Device = device;
 
@@ -207,7 +214,7 @@ namespace ct::vulkan
 
 	void GPUContext::ensureDeviceExtensionsExist()
 	{
-		auto [res, extensions] {Adapter.enumerateDeviceExtensionProperties(nullptr, Loader::getDeviceless())};
+		auto [res, extensions] = Adapter.enumerateDeviceExtensionProperties(nullptr, Loader::get());
 		ctEnsureResult(res, "Failed to enumerate Vulkan device extensions.");
 
 		for(auto requiredExtension : RequiredDeviceExtensions)
@@ -221,5 +228,10 @@ namespace ct::vulkan
 				}
 			ctEnsure(found, "Failed to find required Vulkan device extension.");
 		}
+	}
+
+	void GPUContext::recreateLoaderWithDevice()
+	{
+		Loader::loader = vk::DispatchLoaderDynamic(Instance, vkGetInstanceProcAddr, Device, vkGetDeviceProcAddr);
 	}
 }

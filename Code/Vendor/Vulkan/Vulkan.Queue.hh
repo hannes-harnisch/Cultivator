@@ -12,7 +12,7 @@ namespace ct::vulkan
 		Queue() = default;
 		Queue(uint32_t familyIndex);
 
-		bool supportsSurface(const Surface& surface) const;
+		bool supportsSurface(Surface const& surface) const;
 
 		uint32_t familyIndex() const
 		{
@@ -25,7 +25,7 @@ namespace ct::vulkan
 		}
 
 	private:
-		uint32_t FamilyIndex {UINT32_MAX};
+		uint32_t FamilyIndex = UINT32_MAX;
 		vk::Queue QueueHandle;
 	};
 }

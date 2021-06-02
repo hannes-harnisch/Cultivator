@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
@@ -38,18 +38,18 @@ namespace ct::vulkan
 		GPUContext();
 		~GPUContext();
 
-		GPUContext(const GPUContext&) = delete;
-		GPUContext& operator=(const GPUContext&) = delete;
+		GPUContext(GPUContext const&) = delete;
+		GPUContext& operator=(GPUContext const&) = delete;
 
 	private:
-		static inline const std::vector<const char*> RequiredLayers
+		static inline std::vector<char const*> const RequiredLayers
 		{
 #if CT_DEBUG
 			"VK_LAYER_KHRONOS_validation"
 #endif
 		};
 
-		static inline const std::array RequiredInstanceExtensions
+		static inline std::array const RequiredInstanceExtensions
 		{
 			VK_KHR_SURFACE_EXTENSION_NAME,
 
@@ -62,7 +62,7 @@ namespace ct::vulkan
 #endif
 		};
 
-		static inline const std::array RequiredDeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+		static inline std::array const RequiredDeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 		vk::Instance Instance;
 		vk::DebugUtilsMessengerEXT Logger;
@@ -71,31 +71,30 @@ namespace ct::vulkan
 		Queue GraphicsQueue;
 		Queue PresentQueue;
 
-		void initializeInstance(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo);
-		void initializeLogger(const vk::DebugUtilsMessengerCreateInfoEXT& loggerInfo);
+		void initializeInstance(vk::DebugUtilsMessengerCreateInfoEXT const& loggerInfo);
+		void initializeLoaderWithoutDevice();
+		void initializeLogger(vk::DebugUtilsMessengerCreateInfoEXT const& loggerInfo);
 		void ensureInstanceExtensionsExist();
 		void ensureLayersExist();
 		void initializeAdapter();
 		void initializeDeviceAndQueues();
 		void ensureDeviceExtensionsExist();
+		void recreateLoaderWithDevice();
 	};
 
 	class Loader final
 	{
-	public:
-		static vk::DispatchLoaderDynamic& getDeviceless()
-		{
-			static vk::DispatchLoaderDynamic loader(GPUContext::instance(), vkGetInstanceProcAddr);
-			return loader;
-		}
+		friend GPUContext;
 
+	public:
 		static vk::DispatchLoaderDynamic& get()
 		{
-			static vk::DispatchLoaderDynamic loader(GPUContext::instance(), vkGetInstanceProcAddr, GPUContext::device(),
-													vkGetDeviceProcAddr);
 			return loader;
 		}
 
 		Loader() = delete;
+
+	private:
+		static inline vk::DispatchLoaderDynamic loader;
 	};
 }

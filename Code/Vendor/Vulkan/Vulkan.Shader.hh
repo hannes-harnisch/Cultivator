@@ -9,7 +9,7 @@ namespace ct::vulkan
 	class Shader final
 	{
 	public:
-		static constexpr auto EntryPoint {"main"};
+		static constexpr auto EntryPoint = "main";
 
 		Shader(std::string_view filePath);
 

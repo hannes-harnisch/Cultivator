@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
@@ -10,7 +10,7 @@ namespace ct::windows
 	class AppContext final : public AppContextBase, public Singleton<AppContext>
 	{
 	public:
-		static constexpr auto WindowClassName {TEXT(CT_APP_NAME)};
+		static constexpr auto WindowClassName = TEXT(CT_APP_NAME);
 
 		static HINSTANCE nativeInstanceHandle()
 		{
