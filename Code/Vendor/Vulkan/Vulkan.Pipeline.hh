@@ -15,11 +15,11 @@ namespace ct::vulkan
 
 		vk::Pipeline handle() const
 		{
-			return PipelineHandle;
+			return pipeline;
 		}
 
 	private:
-		DeviceUnique<vk::Pipeline, &vk::Device::destroyPipeline> PipelineHandle;
+		DeviceUnique<vk::Pipeline, &vk::Device::destroyPipeline> pipeline;
 
 		vk::Pipeline createPipeline(Shader const& vertex, Shader const& fragment, PipelineLayout const& layout);
 		vk::PipelineShaderStageCreateInfo fillShaderStageInfo(vk::ShaderStageFlagBits stage, Shader const& shader);

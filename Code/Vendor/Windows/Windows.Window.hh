@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
@@ -23,7 +23,7 @@ namespace ct::windows
 				::DestroyWindow(handle);
 			}
 		};
-		std::unique_ptr<HWND, WindowDeleter> WindowHandle;
+		std::unique_ptr<HWND, WindowDeleter> windowHandle;
 
 		HWND makeAndGetWindowHandle(std::string const& title, Rectangle size, int x, int y);
 	};

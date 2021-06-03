@@ -15,26 +15,26 @@ namespace ct::vulkan
 
 		vk::Format getImageFormat() const
 		{
-			return SurfaceFormat.format;
+			return surfaceFormat.format;
 		}
 
 		void present();
 
 	private:
-		Surface Surface;
-		vk::SurfaceFormatKHR SurfaceFormat;
-		vk::PresentModeKHR PresentMode;
-		vk::Extent2D Extent;
-		DeviceUnique<vk::SwapchainKHR, &vk::Device::destroySwapchainKHR> SwapChainHandle;
-		std::vector<vk::Image> SwapChainImages;
-		std::vector<DeviceUnique<vk::ImageView, &vk::Device::destroyImageView>> SwapChainViews;
+		Surface surface;
+		vk::SurfaceFormatKHR surfaceFormat;
+		vk::PresentModeKHR presentMode;
+		vk::Extent2D extent;
+		DeviceUnique<vk::SwapchainKHR, &vk::Device::destroySwapchainKHR> swapChain;
+		std::vector<vk::Image> swapChainImages;
+		std::vector<DeviceUnique<vk::ImageView, &vk::Device::destroyImageView>> swapChainViews;
 
-		vk::SurfaceFormatKHR createSurfaceFormat();
-		vk::PresentModeKHR createPresentMode();
-		vk::Extent2D createExtent(Rectangle viewport);
-		vk::SwapchainKHR createSwapChain();
+		vk::SurfaceFormatKHR makeSurfaceFormat();
+		vk::PresentModeKHR makePresentMode();
+		vk::Extent2D makeExtent(Rectangle viewport);
+		vk::SwapchainKHR makeSwapChain();
 		vk::SwapchainCreateInfoKHR fillSwapChainInfo();
-		std::vector<vk::Image> createSwapChainImages();
-		std::vector<DeviceUnique<vk::ImageView, &vk::Device::destroyImageView>> createSwapChainImageViews();
+		std::vector<vk::Image> makeSwapChainImages();
+		std::vector<DeviceUnique<vk::ImageView, &vk::Device::destroyImageView>> makeSwapChainImageViews();
 	};
 }

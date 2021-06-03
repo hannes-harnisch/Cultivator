@@ -6,10 +6,10 @@
 
 namespace ct::vulkan
 {
-	Shader::Shader(std::string_view filePath) : ShaderModule(createShader(filePath))
+	Shader::Shader(std::string_view filePath) : shader(makeShader(filePath))
 	{}
 
-	vk::ShaderModule Shader::createShader(std::string_view filePath)
+	vk::ShaderModule Shader::makeShader(std::string_view filePath)
 	{
 		auto bytecode = File::loadBinary(filePath);
 		auto shaderInfo =

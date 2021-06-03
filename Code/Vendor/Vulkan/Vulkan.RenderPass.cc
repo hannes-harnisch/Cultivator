@@ -6,10 +6,10 @@
 
 namespace ct::vulkan
 {
-	RenderPass::RenderPass() : RenderPassHandle(createRenderPass())
+	RenderPass::RenderPass() : renderPass(makeRenderPass())
 	{}
 
-	vk::RenderPass RenderPass::createRenderPass()
+	vk::RenderPass RenderPass::makeRenderPass()
 	{
 		std::array attachments {
 			fillAttachmentDescription(vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eShaderReadOnlyOptimal)};

@@ -8,7 +8,7 @@
 namespace ct::vulkan
 {
 	Pipeline::Pipeline(Shader const& vertex, Shader const& fragment, PipelineLayout const& layout) :
-		PipelineHandle(createPipeline(vertex, fragment, layout))
+		pipeline(createPipeline(vertex, fragment, layout))
 	{}
 
 	vk::Pipeline Pipeline::createPipeline(Shader const& vertex, Shader const& fragment, PipelineLayout const& layout)

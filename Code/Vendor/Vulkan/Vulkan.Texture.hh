@@ -13,12 +13,14 @@ namespace ct::vulkan
 		Texture(Rectangle size);
 
 	private:
-		DeviceUnique<vk::Image, &vk::Device::destroyImage> Image;
-		DeviceUnique<vk::DeviceMemory, &vk::Device::freeMemory> Memory;
-		DeviceUnique<vk::ImageView, &vk::Device::destroyImageView> ImageView;
+		DeviceUnique<vk::Image, &vk::Device::destroyImage> image;
+		DeviceUnique<vk::DeviceMemory, &vk::Device::freeMemory> memory;
+		DeviceUnique<vk::Sampler, &vk::Device::destroySampler> sampler;
+		DeviceUnique<vk::ImageView, &vk::Device::destroyImageView> imageView;
 
-		vk::Image createImage(Rectangle size);
+		vk::Image makeImage(Rectangle size);
 		vk::DeviceMemory allocateMemory();
-		vk::ImageView createImageView();
+		vk::Sampler makeSampler();
+		vk::ImageView makeImageView();
 	};
 }

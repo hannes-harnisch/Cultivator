@@ -1,4 +1,4 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 
 #include "App/App.hh"
 #include "Utils/Assert.hh"
@@ -18,12 +18,12 @@ namespace ct::windows
 		}
 	}
 
-	AppContext::AppContext() : AppHandle(::GetModuleHandle(nullptr))
+	AppContext::AppContext() : appHandle(::GetModuleHandle(nullptr))
 	{
 		WNDCLASS windowClass {};
 		windowClass.style		  = CS_DBLCLKS;
 		windowClass.lpfnWndProc	  = receiveWindowsEvents;
-		windowClass.hInstance	  = AppHandle;
+		windowClass.hInstance	  = appHandle;
 		windowClass.lpszClassName = WindowClassName;
 		ctEnsure(::RegisterClass(&windowClass), "Failed to register window class.");
 	}

@@ -11,9 +11,9 @@ namespace ct::vulkan
 		auto info = vk::Win32SurfaceCreateInfoKHR()
 						.setHinstance(windows::AppContext::nativeInstanceHandle())
 						.setHwnd(static_cast<HWND>(nativeWindowHandle));
-		auto [res, surface] = GPUContext::instance().createWin32SurfaceKHR(info, nullptr, Loader::get());
+		auto [res, handle] = GPUContext::instance().createWin32SurfaceKHR(info, nullptr, Loader::get());
 		ctEnsureResult(res, "Could not create Vulkan surface for Windows.");
-		SurfaceHandle = surface;
+		surface = handle;
 	}
 
 	Surface Surface::makeDummy()

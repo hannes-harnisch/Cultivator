@@ -1,7 +1,8 @@
-﻿#pragma once
+#pragma once
 
 #include "Utils/Rectangle.hh"
 #include "Vendor/Vulkan/Vulkan.Pipeline.hh"
+#include "Vendor/Vulkan/Vulkan.PipelineLayout.hh"
 #include "Vendor/Vulkan/Vulkan.Texture.hh"
 
 namespace ct
@@ -14,9 +15,14 @@ namespace ct
 		void draw();
 
 	private:
-		vulkan::Pipeline GameOfLife;
-		vulkan::Pipeline Presentation;
-		vulkan::Texture Front, Back;
+		vk::DescriptorSetLayout descSetLayout;
+
+		vulkan::PipelineLayout pipelineLayout;
+		vulkan::Pipeline gameOfLife;
+		vulkan::Pipeline presentation;
+		vulkan::Texture front, back;
+
+		vk::DescriptorSetLayout makeDescriptorSetLayout();
 
 		CellularAutomatonRenderer(Rectangle size, vulkan::Shader const& vertex);
 	};

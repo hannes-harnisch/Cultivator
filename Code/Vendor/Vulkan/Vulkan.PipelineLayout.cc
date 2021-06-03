@@ -5,12 +5,13 @@
 
 namespace ct::vulkan
 {
-	PipelineLayout::PipelineLayout() : Layout(createPipelineLayout())
+	PipelineLayout::PipelineLayout(std::vector<vk::DescriptorSetLayout> const& descriptorLayouts) :
+		pipelineLayout(makePipelineLayout(descriptorLayouts))
 	{}
 
-	vk::PipelineLayout PipelineLayout::createPipelineLayout()
+	vk::PipelineLayout PipelineLayout::makePipelineLayout(std::vector<vk::DescriptorSetLayout> const& descriptorLayouts)
 	{
-		vk::PipelineLayoutCreateInfo layoutInfo;
+		auto layoutInfo	   = vk::PipelineLayoutCreateInfo().setSetLayouts(descriptorLayouts);
 		auto [res, layout] = GPUContext::device().createPipelineLayout(layoutInfo, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan pipeline layout.");
 		return layout;

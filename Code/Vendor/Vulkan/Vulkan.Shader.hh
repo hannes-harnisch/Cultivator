@@ -15,12 +15,12 @@ namespace ct::vulkan
 
 		vk::ShaderModule handle() const
 		{
-			return ShaderModule;
+			return shader;
 		}
 
 	private:
-		DeviceUnique<vk::ShaderModule, &vk::Device::destroyShaderModule> ShaderModule;
+		DeviceUnique<vk::ShaderModule, &vk::Device::destroyShaderModule> shader;
 
-		static vk::ShaderModule createShader(std::string_view filePath);
+		static vk::ShaderModule makeShader(std::string_view filePath);
 	};
 }

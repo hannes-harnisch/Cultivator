@@ -12,27 +12,32 @@ namespace ct::vulkan
 	public:
 		static vk::Instance instance()
 		{
-			return SingletonInstance->Instance;
+			return SingletonInstance->instanceHandle;
 		}
 
 		static vk::PhysicalDevice adapter()
 		{
-			return SingletonInstance->Adapter;
+			return SingletonInstance->adapterHandle;
 		}
 
 		static vk::Device device()
 		{
-			return SingletonInstance->Device;
+			return SingletonInstance->deviceHandle;
+		}
+
+		static vk::PhysicalDeviceProperties deviceProperties()
+		{
+			return SingletonInstance->deviceProps;
 		}
 
 		static Queue graphicsQueue()
 		{
-			return SingletonInstance->GraphicsQueue;
+			return SingletonInstance->graphicsQueueHandle;
 		}
 
 		static Queue presentQueue()
 		{
-			return SingletonInstance->PresentQueue;
+			return SingletonInstance->presentQueueHandle;
 		}
 
 		GPUContext();
@@ -64,12 +69,13 @@ namespace ct::vulkan
 
 		static inline std::array const RequiredDeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-		vk::Instance Instance;
-		vk::DebugUtilsMessengerEXT Logger;
-		vk::PhysicalDevice Adapter;
-		vk::Device Device;
-		Queue GraphicsQueue;
-		Queue PresentQueue;
+		vk::Instance instanceHandle;
+		vk::DebugUtilsMessengerEXT loggerHandle;
+		vk::PhysicalDevice adapterHandle;
+		vk::Device deviceHandle;
+		vk::PhysicalDeviceProperties deviceProps;
+		Queue graphicsQueueHandle;
+		Queue presentQueueHandle;
 
 		void initializeInstance(vk::DebugUtilsMessengerCreateInfoEXT const& loggerInfo);
 		void initializeLoaderWithoutDevice();

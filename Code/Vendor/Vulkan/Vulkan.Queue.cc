@@ -8,13 +8,13 @@
 namespace ct::vulkan
 {
 	Queue::Queue(uint32_t familyIndex) :
-		FamilyIndex(familyIndex), QueueHandle(GPUContext::device().getQueue(FamilyIndex, 0, Loader::get()))
+		familyIndex(familyIndex), queue(GPUContext::device().getQueue(familyIndex, 0, Loader::get()))
 	{}
 
 	bool Queue::supportsSurface(Surface const& surface) const
 	{
 		auto handle			 = surface.handle();
-		auto [res, supports] = GPUContext::adapter().getSurfaceSupportKHR(FamilyIndex, handle, Loader::get());
+		auto [res, supports] = GPUContext::adapter().getSurfaceSupportKHR(familyIndex, handle, Loader::get());
 		ctEnsureResult(res, "Failed to query for Vulkan surface support.");
 		return supports;
 	}

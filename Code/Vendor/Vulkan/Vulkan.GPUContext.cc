@@ -46,13 +46,13 @@ namespace ct::vulkan
 
 	GPUContext::~GPUContext()
 	{
-		Device.destroy();
+		deviceHandle.destroy();
 
 #if CT_DEBUG
-		Instance.destroyDebugUtilsMessengerEXT(Logger, {}, Loader::get());
+		instanceHandle.destroyDebugUtilsMessengerEXT(loggerHandle, {}, Loader::get());
 #endif
 
-		Instance.destroy();
+		instanceHandle.destroy();
 	}
 
 	namespace
@@ -81,20 +81,20 @@ namespace ct::vulkan
 								.setPEnabledExtensionNames(RequiredInstanceExtensions);
 		auto [res, instance] = vk::createInstance(instanceInfo);
 		ctEnsureResult(res, "Failed to create Vulkan instance.");
-		Instance = instance;
+		instanceHandle = instance;
 	}
 
 	void GPUContext::initializeLoaderWithoutDevice()
 	{
-		Loader::loader = vk::DispatchLoaderDynamic(Instance, vkGetInstanceProcAddr);
+		Loader::loader = vk::DispatchLoaderDynamic(instanceHandle, vkGetInstanceProcAddr);
 	}
 
 	void GPUContext::initializeLogger(vk::DebugUtilsMessengerCreateInfoEXT const& loggerInfo)
 	{
 #if CT_DEBUG
-		auto [res, logger] = Instance.createDebugUtilsMessengerEXT(loggerInfo, nullptr, Loader::get());
+		auto [res, logger] = instanceHandle.createDebugUtilsMessengerEXT(loggerInfo, nullptr, Loader::get());
 		ctEnsureResult(res, "Failed to create Vulkan logger.");
-		Logger = logger;
+		loggerHandle = logger;
 #endif
 	}
 
@@ -136,18 +136,18 @@ namespace ct::vulkan
 
 	void GPUContext::initializeAdapter()
 	{
-		auto [res, adapters] = Instance.enumeratePhysicalDevices(Loader::get());
+		auto [res, adapters] = instanceHandle.enumeratePhysicalDevices(Loader::get());
 		ctEnsureResult(res, "Failed to enumerate Vulkan adapters.");
 
 		for(auto adapter : adapters)
 		{
-			auto properties = adapter.getProperties(Loader::get());
+			deviceProps = adapter.getProperties(Loader::get());
 
-			if(properties.deviceType == vk::PhysicalDeviceType::eIntegratedGpu)
-				Adapter = adapter;
-			if(properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
+			if(deviceProps.deviceType == vk::PhysicalDeviceType::eIntegratedGpu)
+				adapterHandle = adapter;
+			if(deviceProps.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
 			{
-				Adapter = adapter;
+				adapterHandle = adapter;
 				break;
 			}
 		}
@@ -189,7 +189,7 @@ namespace ct::vulkan
 	{
 		ensureDeviceExtensionsExist();
 
-		auto families = queryQueueFamilies(Adapter);
+		auto families = queryQueueFamilies(adapterHandle);
 		std::array queuePriorities {1.0f};
 		vk::DeviceQueueCreateInfo graphicsQueueInfo({}, families.Graphics, queuePriorities);
 		vk::DeviceQueueCreateInfo presentQueueInfo({}, families.Present, queuePriorities);
@@ -198,23 +198,23 @@ namespace ct::vulkan
 		if(families.Graphics != families.Present)
 			queueInfos.push_back(presentQueueInfo);
 
-		auto features	= vk::PhysicalDeviceFeatures().setShaderImageGatherExtended(true);
+		auto features	= vk::PhysicalDeviceFeatures().setShaderImageGatherExtended(true).setSamplerAnisotropy(true);
 		auto deviceInfo = vk::DeviceCreateInfo()
 							  .setQueueCreateInfos(queueInfos)
 							  .setPEnabledLayerNames(RequiredLayers)
 							  .setPEnabledExtensionNames(RequiredDeviceExtensions)
 							  .setPEnabledFeatures(&features);
-		auto [res, device] = Adapter.createDevice(deviceInfo, nullptr, Loader::get());
+		auto [res, device] = adapterHandle.createDevice(deviceInfo, nullptr, Loader::get());
 		ctEnsureResult(res, "Failed to create Vulkan device.");
-		Device = device;
+		deviceHandle = device;
 
-		GraphicsQueue = Queue(families.Graphics);
-		PresentQueue  = Queue(families.Present);
+		graphicsQueueHandle = Queue(families.Graphics);
+		presentQueueHandle	= Queue(families.Present);
 	}
 
 	void GPUContext::ensureDeviceExtensionsExist()
 	{
-		auto [res, extensions] = Adapter.enumerateDeviceExtensionProperties(nullptr, Loader::get());
+		auto [res, extensions] = adapterHandle.enumerateDeviceExtensionProperties(nullptr, Loader::get());
 		ctEnsureResult(res, "Failed to enumerate Vulkan device extensions.");
 
 		for(auto requiredExtension : RequiredDeviceExtensions)
@@ -232,6 +232,6 @@ namespace ct::vulkan
 
 	void GPUContext::recreateLoaderWithDevice()
 	{
-		Loader::loader = vk::DispatchLoaderDynamic(Instance, vkGetInstanceProcAddr, Device, vkGetDeviceProcAddr);
+		Loader::loader = vk::DispatchLoaderDynamic(instanceHandle, vkGetInstanceProcAddr, deviceHandle, vkGetDeviceProcAddr);
 	}
 }

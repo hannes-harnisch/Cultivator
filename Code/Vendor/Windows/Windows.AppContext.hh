@@ -14,7 +14,7 @@ namespace ct::windows
 
 		static HINSTANCE nativeInstanceHandle()
 		{
-			return SingletonInstance->AppHandle;
+			return SingletonInstance->appHandle;
 		}
 
 		AppContext();
@@ -22,6 +22,6 @@ namespace ct::windows
 		void pollEvents() override;
 
 	private:
-		HINSTANCE AppHandle;
+		HINSTANCE appHandle;
 	};
 }

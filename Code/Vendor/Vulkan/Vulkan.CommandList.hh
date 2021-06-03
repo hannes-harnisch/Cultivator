@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Vendor/Vulkan/Vulkan.FrameBuffer.hh"
 #include "Vendor/Vulkan/Vulkan.Pipeline.hh"
@@ -18,6 +18,6 @@ namespace ct::vulkan
 		void endRenderPass();
 
 	private:
-		vk::CommandBuffer CommandBuffer;
+		vk::CommandBuffer commandList;
 	};
 }

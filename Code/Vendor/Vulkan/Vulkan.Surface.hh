@@ -13,26 +13,26 @@ namespace ct::vulkan
 
 		Surface(void* nativeWindowHandle);
 
-		Surface(Surface&& other) noexcept : SurfaceHandle(std::exchange(other.SurfaceHandle, nullptr))
+		Surface(Surface&& other) noexcept : surface(std::exchange(other.surface, nullptr))
 		{}
 
 		~Surface()
 		{
-			GPUContext::instance().destroySurfaceKHR(SurfaceHandle, {}, Loader::get());
+			GPUContext::instance().destroySurfaceKHR(surface, {}, Loader::get());
 		}
 
 		Surface& operator=(Surface&& other) noexcept
 		{
-			std::swap(SurfaceHandle, other.SurfaceHandle);
+			std::swap(surface, other.surface);
 			return *this;
 		}
 
 		vk::SurfaceKHR handle() const
 		{
-			return SurfaceHandle;
+			return surface;
 		}
 
 	private:
-		vk::SurfaceKHR SurfaceHandle;
+		vk::SurfaceKHR surface;
 	};
 }

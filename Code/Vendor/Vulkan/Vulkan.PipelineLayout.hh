@@ -9,16 +9,16 @@ namespace ct::vulkan
 	class PipelineLayout final
 	{
 	public:
-		PipelineLayout();
+		PipelineLayout(std::vector<vk::DescriptorSetLayout> const& descriptorLayouts);
 
 		vk::PipelineLayout handle() const
 		{
-			return Layout;
+			return pipelineLayout;
 		}
 
 	private:
-		DeviceUnique<vk::PipelineLayout, &vk::Device::destroyPipelineLayout> Layout;
+		DeviceUnique<vk::PipelineLayout, &vk::Device::destroyPipelineLayout> pipelineLayout;
 
-		static vk::PipelineLayout createPipelineLayout();
+		static vk::PipelineLayout makePipelineLayout(std::vector<vk::DescriptorSetLayout> const& descriptorLayouts);
 	};
 }

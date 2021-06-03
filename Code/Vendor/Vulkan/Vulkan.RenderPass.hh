@@ -13,13 +13,13 @@ namespace ct::vulkan
 
 		vk::RenderPass handle() const
 		{
-			return RenderPassHandle;
+			return renderPass;
 		}
 
 	private:
-		DeviceUnique<vk::RenderPass, &vk::Device::destroyRenderPass> RenderPassHandle;
+		DeviceUnique<vk::RenderPass, &vk::Device::destroyRenderPass> renderPass;
 
-		static vk::RenderPass createRenderPass();
+		static vk::RenderPass makeRenderPass();
 		static vk::AttachmentDescription fillAttachmentDescription(vk::ImageLayout initial, vk::ImageLayout final);
 	};
 }

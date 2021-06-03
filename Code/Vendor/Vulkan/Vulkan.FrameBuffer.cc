@@ -5,8 +5,7 @@
 
 namespace ct::vulkan
 {
-	FrameBuffer::FrameBuffer(Rectangle size, RenderPass const& renderPass) :
-		FrameBufferHandle(createFrameBuffer(size, renderPass))
+	FrameBuffer::FrameBuffer(Rectangle size, RenderPass const& renderPass) : frameBuffer(createFrameBuffer(size, renderPass))
 	{}
 
 	vk::Framebuffer FrameBuffer::createFrameBuffer(Rectangle size, RenderPass const& renderPass)

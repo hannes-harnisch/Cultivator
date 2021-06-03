@@ -1,27 +1,25 @@
 #define ALIVE float4(1, 1, 1, 1)
-#define DEAD  float4(0, 0, 0, 1)
+#define DEAD  float4(0.5, 0, 0, 1)
 
 Texture2D Universe;
 SamplerState Sampler;
 
-float2 VPos : VPOS;
-
-int getCell(int x, int y)
+int getCell(float4 pos, int x, int y)
 {
-	return Universe.Sample(Sampler, VPos, int2(x, y)).r;
+	return Universe.Sample(Sampler, pos.xy, int2(x, y)).r;
 }
 
-float4 main() : SV_TARGET
+float4 main(float4 pos : SV_Position) : SV_Target
 {
-	int nw		= getCell(-1, 1);
-	int n		= getCell(0, 1);
-	int ne		= getCell(1, 1);
-	int w		= getCell(-1, 0);
-	int current = getCell(0, 0);
-	int e		= getCell(1, 0);
-	int sw		= getCell(-1, -1);
-	int s		= getCell(0, -1);
-	int se		= getCell(1, -1);
+	int nw		= getCell(pos, -1, 1);
+	int n		= getCell(pos, 0, 1);
+	int ne		= getCell(pos, 1, 1);
+	int w		= getCell(pos, -1, 0);
+	int current = getCell(pos, 0, 0);
+	int e		= getCell(pos, 1, 0);
+	int sw		= getCell(pos, -1, -1);
+	int s		= getCell(pos, 0, -1);
+	int se		= getCell(pos, 1, -1);
 
 	int sum = nw + n + ne + w + current + e + sw + s + se;
 	if(sum == 3)
