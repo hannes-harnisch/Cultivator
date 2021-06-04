@@ -1,11 +1,11 @@
-#pragma once
+﻿#pragma once
 
 #include "Vendor/Vulkan/Vulkan.FrameBuffer.hh"
 #include "Vendor/Vulkan/Vulkan.Pipeline.hh"
 #include "Vendor/Vulkan/Vulkan.RenderPass.hh"
 #include "Vendor/Vulkan/Vulkan.Unique.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	class CommandList final
 	{

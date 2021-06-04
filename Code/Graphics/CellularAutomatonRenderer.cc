@@ -5,14 +5,15 @@
 
 namespace ct
 {
-	using namespace vulkan;
-
-	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle size) :
-		CellularAutomatonRenderer(size, vulkan::Shader("ScreenQuad.vert.spv"))
+	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle size, Window const& window) :
+		CellularAutomatonRenderer(size, window, Shader("ScreenQuad.vert.spv"))
 	{}
 
 	void CellularAutomatonRenderer::draw()
-	{}
+	{
+		// queue.submit(commandList);
+		swapChain.present();
+	}
 
 	vk::DescriptorSetLayout CellularAutomatonRenderer::makeDescriptorSetLayout()
 	{
@@ -30,11 +31,12 @@ namespace ct
 		return handle;
 	}
 
-	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle size, vulkan::Shader const& vertex) :
+	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle size, Window const& window, Shader const& vertex) :
+		swapChain(window.handle(), window.getViewport()),
 		descSetLayout(makeDescriptorSetLayout()),
-		pipelineLayout(std::vector {descSetLayout}),
-		gameOfLife(vertex, vulkan::Shader("GameOfLife.frag.spv"), pipelineLayout),
-		presentation(vertex, vulkan::Shader("Presentation.frag.spv"), pipelineLayout),
+		pipelineLayout(std::vector {descSetLayout.get()}),
+		gameOfLife(vertex, Shader("GameOfLife.frag.spv"), pipelineLayout),
+		presentation(vertex, Shader("Presentation.frag.spv"), pipelineLayout),
 		front(size),
 		back(size)
 	{}

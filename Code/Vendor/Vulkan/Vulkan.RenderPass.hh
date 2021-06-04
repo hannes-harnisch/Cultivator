@@ -1,10 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
 
 #include "Vendor/Vulkan/Vulkan.Unique.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	class RenderPass final
 	{

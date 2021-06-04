@@ -1,10 +1,10 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 
 #include "../Vulkan.Surface.hh"
 #include "Utils/Assert.hh"
 #include "Vendor/Windows/Windows.AppContext.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	Surface::Surface(void* nativeWindowHandle)
 	{

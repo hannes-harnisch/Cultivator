@@ -1,10 +1,10 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 
 #include "Utils/File.hh"
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 #include "Vulkan.Shader.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	Shader::Shader(std::string_view filePath) : shader(makeShader(filePath))
 	{}

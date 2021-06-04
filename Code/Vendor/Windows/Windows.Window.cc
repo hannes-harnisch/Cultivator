@@ -1,4 +1,4 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 
 #include "Vendor/Windows/Windows.AppContext.hh"
 #include "Vendor/Windows/Windows.Utils.hh"
@@ -6,11 +6,11 @@
 
 namespace ct::windows
 {
-	Window::Window(std::string const& title, Rectangle size, int x, int y) :
-		WindowBase(makeAndGetWindowHandle(title, size, x, y), getViewport())
+	Window::Window(std::string_view const title, Rectangle const size, int const x, int const y) :
+		windowHandle(makeAndGetWindowHandle(title, size, x, y))
 	{}
 
-	Rectangle Window::getViewport()
+	Rectangle Window::getViewport() const
 	{
 		RECT rect;
 		::GetClientRect(windowHandle.get(), &rect);
@@ -22,12 +22,15 @@ namespace ct::windows
 		::ShowWindow(windowHandle.get(), SW_SHOW);
 	}
 
-	HWND Window::makeAndGetWindowHandle(std::string const& title, Rectangle size, int x, int y)
+	void* Window::handle() const
+	{
+		return windowHandle.get();
+	}
+
+	HWND Window::makeAndGetWindowHandle(std::string_view const title, Rectangle const size, int const x, int const y)
 	{
 		auto wideTitle = widenString(title);
-		HWND handle	   = ::CreateWindow(AppContext::WindowClassName, wideTitle.data(), WS_OVERLAPPEDWINDOW, x, y, size.Width,
-										size.Height, nullptr, nullptr, AppContext::nativeInstanceHandle(), nullptr);
-		windowHandle.reset(handle);
-		return windowHandle.get();
+		return ::CreateWindow(AppContext::WindowClassName, wideTitle.data(), WS_OVERLAPPEDWINDOW, x, y, size.Width, size.Height,
+							  nullptr, nullptr, AppContext::nativeInstanceHandle(), nullptr);
 	}
 }

@@ -1,9 +1,9 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 #include "Vulkan.CommandList.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	void CommandList::begin()
 	{

@@ -2,7 +2,7 @@
 
 #include "PCH.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	class Surface;
 
@@ -13,6 +13,7 @@ namespace ct::vulkan
 		Queue(uint32_t familyIndex);
 
 		bool supportsSurface(Surface const& surface) const;
+		bool submit();
 
 		uint32_t getFamily() const
 		{

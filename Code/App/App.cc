@@ -13,17 +13,17 @@ namespace ct
 {
 	void App::quit()
 	{
-		SingletonInstance->ShouldTick = false;
+		SingletonInstance->shouldTick = false;
 	}
 
-	App::App() : MainWindow(CT_APP_NAME, {600, 600}, 400, 400), Renderer({100, 100})
+	App::App() : window(CT_APP_NAME, {600, 600}, 400, 400), renderer({100, 100}, window)
 	{
-		MainWindow.show();
+		window.show();
 	}
 
 	int App::start()
 	{
-		while(ShouldTick)
+		while(shouldTick)
 			tick();
 
 		return EXIT_SUCCESS;
@@ -31,7 +31,7 @@ namespace ct
 
 	void App::tick()
 	{
-		Renderer.draw();
-		AppContext.pollEvents();
+		renderer.draw();
+		appContext.pollEvents();
 	}
 }

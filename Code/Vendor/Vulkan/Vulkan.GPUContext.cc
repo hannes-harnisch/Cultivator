@@ -1,10 +1,10 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 
 #include "Utils/Assert.hh"
 #include "Vendor/Vulkan/Vulkan.Surface.hh"
 #include "Vulkan.GPUContext.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	namespace
 	{

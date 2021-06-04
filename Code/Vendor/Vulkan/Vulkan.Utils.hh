@@ -1,10 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
 
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	inline uint32_t findMemoryType(uint32_t filter, vk::MemoryPropertyFlagBits memProperties)
 	{

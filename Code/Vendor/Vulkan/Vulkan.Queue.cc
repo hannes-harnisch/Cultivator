@@ -5,7 +5,7 @@
 #include "Vendor/Vulkan/Vulkan.Surface.hh"
 #include "Vulkan.Queue.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	Queue::Queue(uint32_t familyIndex) :
 		familyIndex(familyIndex), queue(GPUContext::device().getQueue(familyIndex, 0, Loader::get()))

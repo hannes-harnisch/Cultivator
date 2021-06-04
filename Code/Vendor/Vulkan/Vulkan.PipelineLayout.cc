@@ -3,7 +3,7 @@
 #include "Vulkan.GPUContext.hh"
 #include "Vulkan.PipelineLayout.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	PipelineLayout::PipelineLayout(std::vector<vk::DescriptorSetLayout> const& descriptorLayouts) :
 		pipelineLayout(makePipelineLayout(descriptorLayouts))

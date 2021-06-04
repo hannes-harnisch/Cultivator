@@ -1,11 +1,11 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
 
 #include "Utils/Singleton.hh"
 #include "Vendor/Vulkan/Vulkan.Queue.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	class GPUContext final : public Singleton<GPUContext>
 	{
@@ -54,7 +54,7 @@ namespace ct::vulkan
 #endif
 		};
 
-		static inline std::array const RequiredInstanceExtensions
+		static constexpr std::array RequiredInstanceExtensions
 		{
 			VK_KHR_SURFACE_EXTENSION_NAME,
 
@@ -67,7 +67,7 @@ namespace ct::vulkan
 #endif
 		};
 
-		static inline std::array const RequiredDeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+		static constexpr std::array RequiredDeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 		vk::Instance instanceHandle;
 		vk::DebugUtilsMessengerEXT loggerHandle;

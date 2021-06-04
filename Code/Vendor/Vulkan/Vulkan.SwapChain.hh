@@ -6,7 +6,7 @@
 #include "Vendor/Vulkan/Vulkan.Surface.hh"
 #include "Vendor/Vulkan/Vulkan.Unique.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	class SwapChain final
 	{
@@ -18,9 +18,12 @@ namespace ct::vulkan
 			return surfaceFormat.format;
 		}
 
-		void present();
+		uint32_t getNextImageIndex();
+		void present(uint32_t imageIndex, vk::Semaphore semaphore);
 
 	private:
+		constexpr static uint32_t MaxFrames = 2;
+
 		Surface surface;
 		vk::SurfaceFormatKHR surfaceFormat;
 		vk::PresentModeKHR presentMode;
@@ -28,6 +31,11 @@ namespace ct::vulkan
 		DeviceUnique<vk::SwapchainKHR, &vk::Device::destroySwapchainKHR> swapChain;
 		std::vector<vk::Image> swapChainImages;
 		std::vector<DeviceUnique<vk::ImageView, &vk::Device::destroyImageView>> swapChainViews;
+		std::vector<vk::Fence> imgInFlightFences;
+		std::array<DeviceUnique<vk::Fence, &vk::Device::destroyFence>, MaxFrames> frameFences;
+		std::array<DeviceUnique<vk::Semaphore, &vk::Device::destroySemaphore>, MaxFrames> imgDoneSemaphores;
+		std::array<DeviceUnique<vk::Semaphore, &vk::Device::destroySemaphore>, MaxFrames> imgGetSemaphores;
+		uint32_t currentFrame {};
 
 		vk::SurfaceFormatKHR makeSurfaceFormat();
 		vk::PresentModeKHR makePresentMode();

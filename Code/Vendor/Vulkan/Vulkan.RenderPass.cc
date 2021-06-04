@@ -1,10 +1,10 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 
 #include "Utils/Assert.hh"
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 #include "Vulkan.RenderPass.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	RenderPass::RenderPass() : renderPass(makeRenderPass())
 	{}

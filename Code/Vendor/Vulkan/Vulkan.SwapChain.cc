@@ -4,9 +4,9 @@
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 #include "Vulkan.SwapChain.hh"
 
-namespace ct::vulkan
+namespace ct
 {
-	SwapChain::SwapChain(void* nativeWindowHandle, Rectangle viewport) :
+	SwapChain::SwapChain(void* const nativeWindowHandle, Rectangle const viewport) :
 		surface(nativeWindowHandle),
 		surfaceFormat(makeSurfaceFormat()),
 		presentMode(makePresentMode()),
@@ -14,10 +14,68 @@ namespace ct::vulkan
 		swapChain(makeSwapChain()),
 		swapChainImages(makeSwapChainImages()),
 		swapChainViews(makeSwapChainImageViews())
-	{}
+	{
+		auto fenceInfo = vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled);
+		vk::SemaphoreCreateInfo semaphoreInfo;
+		for(int i {}; i < MaxFrames; ++i)
+		{
+			auto [getSemRes, imageGetSemaphore] = GPUContext::device().createSemaphore(semaphoreInfo, nullptr, Loader::get());
+			ctEnsureResult(getSemRes, "Failed to create image-get semaphore.");
+			imgGetSemaphores[i] = imageGetSemaphore;
 
-	void SwapChain::present()
-	{}
+			auto [doneSemRes, imageDoneSemaphore] = GPUContext::device().createSemaphore(semaphoreInfo, nullptr, Loader::get());
+			ctEnsureResult(doneSemRes, "Failed to create image-done semaphore.");
+			imgDoneSemaphores[i] = imageDoneSemaphore;
+
+			auto [fenceRes, fence] = GPUContext::device().createFence(fenceInfo, nullptr, Loader::get());
+			ctEnsureResult(fenceRes, "Failed to create fence.");
+			frameFences[i] = fence;
+		}
+		imgInFlightFences.resize(swapChainImages.size());
+	}
+
+	uint32_t SwapChain::getNextImageIndex()
+	{
+		std::array fence {frameFences[currentFrame].get()};
+		GPUContext::device().waitForFences(fence, true, UINT64_MAX, Loader::get());
+
+		auto [res, imgIndex] = GPUContext::device().acquireNextImageKHR(swapChain, UINT64_MAX, imgGetSemaphores[currentFrame],
+																		nullptr, Loader::get());
+		if(res == vk::Result::eErrorOutOfDateKHR)
+			throw "Swap chain resize not implemented.";
+
+		if(imgInFlightFences[imgIndex])
+		{
+			std::array fence {imgInFlightFences[imgIndex]};
+			ctAssertResult(GPUContext::device().waitForFences(fence, true, UINT64_MAX, Loader::get()),
+						   "Failed to wait for fences.");
+		}
+		imgInFlightFences[imgIndex] = frameFences[currentFrame];
+		GPUContext::device().resetFences(fence, Loader::get());
+
+		return imgIndex;
+	}
+
+	void SwapChain::present(uint32_t imageIndex, vk::Semaphore semaphore)
+	{
+		std::array waitSemaphores {imgGetSemaphores[currentFrame].get()};
+		std::array signalSemaphores {imgDoneSemaphores[currentFrame].get()};
+		std::array<vk::PipelineStageFlags, 1> waitStages {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+		auto submit = vk::SubmitInfo()
+						  .setWaitSemaphores(waitSemaphores)
+						  .setWaitDstStageMask(waitStages)
+						  .setCommandBuffers()
+						  .setSignalSemaphores(signalSemaphores);
+		// queue Submit
+		std::array swapChains {swapChain.get()};
+		std::array imageDoneSemaphore {semaphore};
+
+		auto presentInfo =
+			vk::PresentInfoKHR().setWaitSemaphores(imageDoneSemaphore).setSwapchains(swapChains).setPImageIndices(&imageIndex);
+		auto result = GPUContext::presentQueue().handle().presentKHR(presentInfo, Loader::get());
+		if(result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
+			throw "Swap chain resize not handled.";
+	}
 
 	vk::SurfaceFormatKHR SwapChain::makeSurfaceFormat()
 	{
@@ -43,7 +101,7 @@ namespace ct::vulkan
 		return vk::PresentModeKHR::eFifo;
 	}
 
-	vk::Extent2D SwapChain::makeExtent(Rectangle viewport)
+	vk::Extent2D SwapChain::makeExtent(Rectangle const viewport)
 	{
 		auto [res, caps] = GPUContext::adapter().getSurfaceCapabilitiesKHR(surface.handle(), Loader::get());
 		ctEnsureResult(res, "Failed to create Vulkan surface capabilities.");

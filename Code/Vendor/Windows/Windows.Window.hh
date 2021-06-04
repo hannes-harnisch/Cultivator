@@ -6,13 +6,14 @@
 
 namespace ct::windows
 {
-	class Window final : public WindowBase
+	class Window : public WindowBase
 	{
 	public:
-		Window(std::string const& title, Rectangle size, int x, int y);
+		Window(std::string_view title, Rectangle size, int x, int y);
 
-		Rectangle getViewport() override;
-		void show() override;
+		Rectangle getViewport() const final override;
+		void show() final override;
+		void* handle() const final override;
 
 	private:
 		struct WindowDeleter
@@ -25,6 +26,6 @@ namespace ct::windows
 		};
 		std::unique_ptr<HWND, WindowDeleter> windowHandle;
 
-		HWND makeAndGetWindowHandle(std::string const& title, Rectangle size, int x, int y);
+		HWND makeAndGetWindowHandle(std::string_view title, Rectangle size, int x, int y);
 	};
 }

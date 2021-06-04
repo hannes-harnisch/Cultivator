@@ -20,11 +20,11 @@ namespace ct
 		App& operator=(App const&) = delete;
 
 	private:
-		AppContext AppContext;
-		vulkan::GPUContext GPUContext;
-		Window MainWindow;
-		CellularAutomatonRenderer Renderer;
-		bool ShouldTick = true;
+		AppContext appContext;
+		GPUContext gpuContext;
+		Window window;
+		CellularAutomatonRenderer renderer;
+		bool shouldTick = true;
 
 		App();
 

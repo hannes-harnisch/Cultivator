@@ -1,11 +1,11 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
 
 #include "Utils/Rectangle.hh"
 #include "Vendor/Vulkan/Vulkan.Unique.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	class Texture final
 	{

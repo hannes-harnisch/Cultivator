@@ -1,10 +1,10 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 #include "Vendor/Vulkan/Vulkan.Utils.hh"
 #include "Vulkan.Texture.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	Texture::Texture(Rectangle size) :
 		image(makeImage(size)), memory(allocateMemory()), sampler(makeSampler()), imageView(makeImageView())

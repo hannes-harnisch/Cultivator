@@ -1,11 +1,11 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 
 #include "Utils/Assert.hh"
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 #include "Vendor/Vulkan/Vulkan.RenderPass.hh"
 #include "Vulkan.Pipeline.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	Pipeline::Pipeline(Shader const& vertex, Shader const& fragment, PipelineLayout const& layout) :
 		pipeline(createPipeline(vertex, fragment, layout))

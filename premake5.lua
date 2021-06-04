@@ -10,8 +10,6 @@ workspace 'Cultivator'
 	conformancemode		'On'
 	staticruntime		'On'
 	floatingpoint		'Fast'
-	rtti				'Off'
-	exceptionhandling	'Off'
 	warnings			'Extra'
 	buildoptions		{ '/Zc:rvalueCast' }
 	files				{ 'Code/**.cc', 'Code/**.hh' }
@@ -40,7 +38,7 @@ workspace 'Cultivator'
 		includedirs		'C:/VulkanSDK/1.2.176.1/Include'
 		libdirs			'C:/VulkanSDK/1.2.176.1/Lib'
 		links			'Vulkan-1.lib'
-		defines			'CT_SYSTEM_WINDOWS'
+		defines			{ 'CT_SYSTEM_WINDOWS', 'CT_SYSTEM=windows' }
 
 	filter 'configurations:Debug'
 		runtime			'Debug'

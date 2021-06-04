@@ -1,29 +1,33 @@
-#pragma once
+﻿#pragma once
 
+#include "App/Window.hh"
 #include "Utils/Rectangle.hh"
 #include "Vendor/Vulkan/Vulkan.Pipeline.hh"
 #include "Vendor/Vulkan/Vulkan.PipelineLayout.hh"
+#include "Vendor/Vulkan/Vulkan.SwapChain.hh"
 #include "Vendor/Vulkan/Vulkan.Texture.hh"
+#include "Vendor/Vulkan/Vulkan.Unique.hh"
 
 namespace ct
 {
 	class CellularAutomatonRenderer
 	{
 	public:
-		CellularAutomatonRenderer(Rectangle size);
+		CellularAutomatonRenderer(Rectangle size, Window const& window);
 
 		void draw();
 
 	private:
-		vk::DescriptorSetLayout descSetLayout;
+		SwapChain swapChain;
+		DeviceUnique<vk::DescriptorSetLayout, &vk::Device::destroyDescriptorSetLayout> descSetLayout;
 
-		vulkan::PipelineLayout pipelineLayout;
-		vulkan::Pipeline gameOfLife;
-		vulkan::Pipeline presentation;
-		vulkan::Texture front, back;
+		PipelineLayout pipelineLayout;
+		Pipeline gameOfLife;
+		Pipeline presentation;
+		Texture front, back;
 
 		vk::DescriptorSetLayout makeDescriptorSetLayout();
 
-		CellularAutomatonRenderer(Rectangle size, vulkan::Shader const& vertex);
+		CellularAutomatonRenderer(Rectangle size, Window const& window, Shader const& vertex);
 	};
 }

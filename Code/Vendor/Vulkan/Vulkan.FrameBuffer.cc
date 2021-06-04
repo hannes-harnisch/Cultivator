@@ -1,9 +1,9 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 #include "Vulkan.FrameBuffer.hh"
 
-namespace ct::vulkan
+namespace ct
 {
 	FrameBuffer::FrameBuffer(Rectangle size, RenderPass const& renderPass) : frameBuffer(createFrameBuffer(size, renderPass))
 	{}
