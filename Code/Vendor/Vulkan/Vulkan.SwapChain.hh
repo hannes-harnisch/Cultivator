@@ -13,17 +13,20 @@ namespace ct
 	public:
 		SwapChain(void* nativeWindowHandle, Rectangle viewport);
 
+		size_t getImageCount() const
+		{
+			return swapChainImages.size();
+		}
+
 		vk::Format getImageFormat() const
 		{
 			return surfaceFormat.format;
 		}
 
-		uint32_t getNextImageIndex();
-		void present(uint32_t imageIndex, vk::Semaphore semaphore);
+		uint32_t getNextImageIndex(vk::Semaphore imgGetSemaphore);
+		void present(uint32_t imageIndex, vk::Semaphore imgDoneSemaphore);
 
 	private:
-		constexpr static uint32_t MaxFrames = 2;
-
 		Surface surface;
 		vk::SurfaceFormatKHR surfaceFormat;
 		vk::PresentModeKHR presentMode;
@@ -31,11 +34,6 @@ namespace ct
 		DeviceUnique<vk::SwapchainKHR, &vk::Device::destroySwapchainKHR> swapChain;
 		std::vector<vk::Image> swapChainImages;
 		std::vector<DeviceUnique<vk::ImageView, &vk::Device::destroyImageView>> swapChainViews;
-		std::vector<vk::Fence> imgInFlightFences;
-		std::array<DeviceUnique<vk::Fence, &vk::Device::destroyFence>, MaxFrames> frameFences;
-		std::array<DeviceUnique<vk::Semaphore, &vk::Device::destroySemaphore>, MaxFrames> imgDoneSemaphores;
-		std::array<DeviceUnique<vk::Semaphore, &vk::Device::destroySemaphore>, MaxFrames> imgGetSemaphores;
-		uint32_t currentFrame {};
 
 		vk::SurfaceFormatKHR makeSurfaceFormat();
 		vk::PresentModeKHR makePresentMode();

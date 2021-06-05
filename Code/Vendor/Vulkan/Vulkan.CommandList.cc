@@ -5,6 +5,22 @@
 
 namespace ct
 {
+	CommandList::CommandList()
+	{
+		auto poolInfo		 = vk::CommandPoolCreateInfo().setQueueFamilyIndex(GPUContext::graphicsQueue().getFamily());
+		auto [poolRes, pool] = GPUContext::device().createCommandPool(poolInfo, nullptr, Loader::get());
+		ctEnsureResult(poolRes, "Failed to create command pool.");
+		commandPool = pool;
+
+		auto bufferInfo = vk::CommandBufferAllocateInfo()
+							  .setCommandPool(commandPool)
+							  .setCommandBufferCount(1)
+							  .setLevel(vk::CommandBufferLevel::ePrimary);
+		auto [bufferRes, buffer] = GPUContext::device().allocateCommandBuffers(bufferInfo, Loader::get());
+		ctEnsureResult(bufferRes, "Failed to allocate command buffer.");
+		commandList = buffer[0];
+	}
+
 	void CommandList::begin()
 	{
 		auto info	= vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
@@ -16,6 +32,15 @@ namespace ct
 	{
 		auto info = vk::RenderPassBeginInfo().setRenderPass(renderPass.handle()).setFramebuffer(frameBuffer.handle());
 		commandList.beginRenderPass(info, vk::SubpassContents::eInline, Loader::get());
+	}
+
+	void CommandList::bindViewport(Rectangle rectangle)
+	{
+		std::array viewports {vk::Viewport()
+								  .setWidth(static_cast<float>(rectangle.width))
+								  .setHeight(static_cast<float>(rectangle.height))
+								  .setMaxDepth(1.0)};
+		commandList.setViewport(0, viewports, Loader::get());
 	}
 
 	void CommandList::bindPipeline(Pipeline const& pipeline)

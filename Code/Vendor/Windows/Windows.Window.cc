@@ -30,7 +30,7 @@ namespace ct::windows
 	HWND Window::makeAndGetWindowHandle(std::string_view const title, Rectangle const size, int const x, int const y)
 	{
 		auto wideTitle = widenString(title);
-		return ::CreateWindow(AppContext::WindowClassName, wideTitle.data(), WS_OVERLAPPEDWINDOW, x, y, size.Width, size.Height,
+		return ::CreateWindow(AppContext::WindowClassName, wideTitle.data(), WS_OVERLAPPEDWINDOW, x, y, size.width, size.height,
 							  nullptr, nullptr, AppContext::nativeInstanceHandle(), nullptr);
 	}
 }

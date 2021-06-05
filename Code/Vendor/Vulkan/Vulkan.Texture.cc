@@ -1,4 +1,4 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 #include "Vendor/Vulkan/Vulkan.Utils.hh"
@@ -15,7 +15,7 @@ namespace ct
 		auto imageInfo = vk::ImageCreateInfo()
 							 .setImageType(vk::ImageType::e2D)
 							 .setFormat(vk::Format::eR8G8B8A8Srgb)
-							 .setExtent({size.Width, size.Height, 1})
+							 .setExtent({size.width, size.height, 1})
 							 .setMipLevels(1)
 							 .setArrayLayers(1)
 							 .setSamples(vk::SampleCountFlagBits::e1)

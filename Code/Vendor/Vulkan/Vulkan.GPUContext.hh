@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
@@ -67,7 +67,9 @@ namespace ct
 #endif
 		};
 
-		static constexpr std::array RequiredDeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+		static constexpr std::array RequiredDeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+															  VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME,
+															  VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME};
 
 		vk::Instance instanceHandle;
 		vk::DebugUtilsMessengerEXT loggerHandle;

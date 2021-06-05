@@ -18,4 +18,18 @@ namespace ct
 		ctEnsureResult(res, "Failed to query for Vulkan surface support.");
 		return supports;
 	}
+
+	void Queue::submit(vk::CommandBuffer commandBuffer, vk::Semaphore imgGet, vk::Semaphore imgDone, vk::Fence fence)
+	{
+		std::array waitSemaphores {imgGet};
+		std::array<vk::PipelineStageFlags, 1> waitStages {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+		std::array commandBuffers {commandBuffer};
+		std::array signalSemaphores {imgDone};
+		auto submit = vk::SubmitInfo()
+						  .setWaitSemaphores(waitSemaphores)
+						  .setWaitDstStageMask(waitStages)
+						  .setCommandBuffers(commandBuffers)
+						  .setSignalSemaphores(signalSemaphores);
+		queue.submit(submit, fence, Loader::get());
+	}
 }

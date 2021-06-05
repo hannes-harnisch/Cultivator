@@ -13,7 +13,7 @@ namespace ct
 		Queue(uint32_t familyIndex);
 
 		bool supportsSurface(Surface const& surface) const;
-		bool submit();
+		void submit(vk::CommandBuffer commandBuffer, vk::Semaphore imgGet, vk::Semaphore imgDone, vk::Fence fence);
 
 		uint32_t getFamily() const
 		{
