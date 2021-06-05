@@ -5,20 +5,16 @@
 
 namespace ct
 {
-	FrameBuffer::FrameBuffer(Rectangle const size, RenderPass const& renderPass) :
-		frameBuffer(createFrameBuffer(size, renderPass))
-	{}
-
-	vk::Framebuffer FrameBuffer::createFrameBuffer(Rectangle const size, RenderPass const& renderPass)
+	FrameBuffer::FrameBuffer(Rectangle const size, RenderPass const& renderPass, vk::ImageView attachment)
 	{
 		auto frameBufferInfo = vk::FramebufferCreateInfo()
 								   .setRenderPass(renderPass.handle())
-								   //.setAttachments() TODO
+								   .setAttachments(attachment)
 								   .setWidth(size.width)
 								   .setHeight(size.height)
 								   .setLayers(1);
-		auto [res, frameBuffer] = GPUContext::device().createFramebuffer(frameBufferInfo, nullptr, Loader::get());
+		auto [res, buffer] = GPUContext::device().createFramebuffer(frameBufferInfo, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan frame buffer.");
-		return frameBuffer;
+		frameBuffer = buffer;
 	}
 }

@@ -22,17 +22,19 @@ namespace ct
 		constexpr static uint32_t MaxFrames = 2;
 
 		SwapChain swapChain;
+		Texture front, back;
 		DeviceUnique<vk::DescriptorSetLayout, &vk::Device::destroyDescriptorSetLayout> descSetLayout;
 		PipelineLayout pipelineLayout;
+		RenderPass renderPass;
+		FrameBuffer frameBuffer;
 		Pipeline gameOfLife;
 		Pipeline presentation;
-		Texture front, back;
 		std::vector<vk::Fence> imgInFlightFences;
 		DeviceUnique<vk::Fence, &vk::Device::destroyFence> frameFences[MaxFrames];
 		DeviceUnique<vk::Semaphore, &vk::Device::destroySemaphore> imgDoneSemaphores[MaxFrames];
 		DeviceUnique<vk::Semaphore, &vk::Device::destroySemaphore> imgGetSemaphores[MaxFrames];
 		uint32_t currentFrame {};
-		CommandList commandList;
+		CommandList commandLists[MaxFrames];
 
 		CellularAutomatonRenderer(Rectangle size, Window const& window, Shader const& vertex);
 

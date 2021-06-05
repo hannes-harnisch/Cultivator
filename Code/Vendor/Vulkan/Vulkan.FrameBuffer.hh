@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
@@ -11,7 +11,7 @@ namespace ct
 	class FrameBuffer final
 	{
 	public:
-		FrameBuffer(Rectangle size, RenderPass const& renderPass);
+		FrameBuffer(Rectangle size, RenderPass const& renderPass, vk::ImageView attachment);
 
 		vk::Framebuffer handle() const
 		{
@@ -20,7 +20,5 @@ namespace ct
 
 	private:
 		DeviceUnique<vk::Framebuffer, &vk::Device::destroyFramebuffer> frameBuffer;
-
-		static vk::Framebuffer createFrameBuffer(Rectangle size, RenderPass const& renderPass);
 	};
 }

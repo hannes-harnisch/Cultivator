@@ -30,7 +30,12 @@ namespace ct
 
 	void CommandList::beginRenderPass(RenderPass const& renderPass, FrameBuffer const& frameBuffer)
 	{
-		auto info = vk::RenderPassBeginInfo().setRenderPass(renderPass.handle()).setFramebuffer(frameBuffer.handle());
+		std::array clearValues {vk::ClearValue().setColor(vk::ClearColorValue().setFloat32({1.0f, 1.0f, 0.0f, 0.0f}))};
+		auto info = vk::RenderPassBeginInfo()
+						.setRenderPass(renderPass.handle())
+						.setFramebuffer(frameBuffer.handle())
+						.setClearValues(clearValues);
+
 		commandList.beginRenderPass(info, vk::SubpassContents::eInline, Loader::get());
 	}
 
@@ -62,5 +67,10 @@ namespace ct
 	void CommandList::endRenderPass()
 	{
 		commandList.endRenderPass(Loader::get());
+	}
+
+	void CommandList::reset()
+	{
+		GPUContext::device().resetCommandPool(commandPool, {}, Loader::get());
 	}
 }

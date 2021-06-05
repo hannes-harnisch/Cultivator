@@ -1,4 +1,4 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 
 #include "Utils/Assert.hh"
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
@@ -7,11 +7,17 @@
 
 namespace ct
 {
-	Pipeline::Pipeline(Shader const& vertex, Shader const& fragment, PipelineLayout const& layout) :
-		pipeline(createPipeline(vertex, fragment, layout))
+	Pipeline::Pipeline(Shader const& vertex,
+					   Shader const& fragment,
+					   PipelineLayout const& layout,
+					   RenderPass const& renderPass) :
+		pipeline(createPipeline(vertex, fragment, layout, renderPass))
 	{}
 
-	vk::Pipeline Pipeline::createPipeline(Shader const& vertex, Shader const& fragment, PipelineLayout const& layout)
+	vk::Pipeline Pipeline::createPipeline(Shader const& vertex,
+										  Shader const& fragment,
+										  PipelineLayout const& layout,
+										  RenderPass const& renderPass)
 	{
 		std::array shaderStages {fillShaderStageInfo(vk::ShaderStageFlagBits::eVertex, vertex),
 								 fillShaderStageInfo(vk::ShaderStageFlagBits::eFragment, fragment)};
@@ -27,7 +33,6 @@ namespace ct
 		std::array dynamicStates {vk::DynamicState::eViewport, vk::DynamicState::eScissor};
 		auto dynamicStateInfo = vk::PipelineDynamicStateCreateInfo().setDynamicStates(dynamicStates);
 
-		RenderPass renderPass;
 		auto pipelineInfo = vk::GraphicsPipelineCreateInfo()
 								.setStages(shaderStages)
 								.setPVertexInputState(&vertexInputInfo)

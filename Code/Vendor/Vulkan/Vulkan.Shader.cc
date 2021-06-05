@@ -1,4 +1,4 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 
 #include "Utils/File.hh"
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
@@ -6,16 +6,13 @@
 
 namespace ct
 {
-	Shader::Shader(std::string_view filePath) : shader(makeShader(filePath))
-	{}
-
-	vk::ShaderModule Shader::makeShader(std::string_view filePath)
+	Shader::Shader(std::string_view const filePath)
 	{
 		auto bytecode = File::loadBinary(filePath);
 		auto shaderInfo =
 			vk::ShaderModuleCreateInfo().setCodeSize(bytecode.size()).setPCode(reinterpret_cast<uint32_t*>(bytecode.data()));
-		auto [res, shader] = GPUContext::device().createShaderModule(shaderInfo, nullptr, Loader::get());
+		auto [res, sh] = GPUContext::device().createShaderModule(shaderInfo, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan shader module.");
-		return shader;
+		shader = sh;
 	}
 }

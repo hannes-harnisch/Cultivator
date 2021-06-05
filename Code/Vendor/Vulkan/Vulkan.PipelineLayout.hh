@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
@@ -18,7 +18,5 @@ namespace ct
 
 	private:
 		DeviceUnique<vk::PipelineLayout, &vk::Device::destroyPipelineLayout> pipelineLayout;
-
-		static vk::PipelineLayout makePipelineLayout(std::vector<vk::DescriptorSetLayout> const& descriptorLayouts);
 	};
 }

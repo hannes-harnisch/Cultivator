@@ -7,19 +7,19 @@
 namespace ct
 {
 	Texture::Texture(Rectangle size) :
-		image(makeImage(size)), memory(allocateMemory()), sampler(makeSampler()), imageView(makeImageView())
+		image(makeImage(size)), memory(allocateMemory()), sampler(makeSampler()), imgView(makeImageView())
 	{}
 
 	vk::Image Texture::makeImage(Rectangle size)
 	{
 		auto imageInfo = vk::ImageCreateInfo()
 							 .setImageType(vk::ImageType::e2D)
-							 .setFormat(vk::Format::eR8G8B8A8Srgb)
+							 .setFormat(vk::Format::eB8G8R8A8Srgb)
 							 .setExtent({size.width, size.height, 1})
 							 .setMipLevels(1)
 							 .setArrayLayers(1)
 							 .setSamples(vk::SampleCountFlagBits::e1)
-							 .setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
+							 .setUsage(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled);
 		auto [res, handle] = GPUContext::device().createImage(imageInfo, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan texture.");
 		return handle;
@@ -65,7 +65,7 @@ namespace ct
 		auto imageViewInfo = vk::ImageViewCreateInfo()
 								 .setImage(image)
 								 .setViewType(vk::ImageViewType::e2D)
-								 .setFormat(vk::Format::eR8G8B8A8Srgb)
+								 .setFormat(vk::Format::eB8G8R8A8Srgb)
 								 .setSubresourceRange(subresourceRange);
 		auto [res, handle] = GPUContext::device().createImageView(imageViewInfo, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan image view.");

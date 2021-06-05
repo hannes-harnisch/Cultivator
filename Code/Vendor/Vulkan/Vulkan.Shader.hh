@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
@@ -20,7 +20,5 @@ namespace ct
 
 	private:
 		DeviceUnique<vk::ShaderModule, &vk::Device::destroyShaderModule> shader;
-
-		static vk::ShaderModule makeShader(std::string_view filePath);
 	};
 }

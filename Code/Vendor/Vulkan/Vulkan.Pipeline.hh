@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
@@ -11,7 +11,7 @@ namespace ct
 	class Pipeline final
 	{
 	public:
-		Pipeline(Shader const& vertex, Shader const& fragment, PipelineLayout const& layout);
+		Pipeline(Shader const& vertex, Shader const& fragment, PipelineLayout const& layout, RenderPass const& renderPass);
 
 		vk::Pipeline handle() const
 		{
@@ -21,7 +21,10 @@ namespace ct
 	private:
 		DeviceUnique<vk::Pipeline, &vk::Device::destroyPipeline> pipeline;
 
-		vk::Pipeline createPipeline(Shader const& vertex, Shader const& fragment, PipelineLayout const& layout);
+		vk::Pipeline createPipeline(Shader const& vertex,
+									Shader const& fragment,
+									PipelineLayout const& layout,
+									RenderPass const& renderPass);
 		vk::PipelineShaderStageCreateInfo fillShaderStageInfo(vk::ShaderStageFlagBits stage, Shader const& shader);
 		vk::PipelineRasterizationStateCreateInfo fillRasterizerInfo();
 		vk::PipelineColorBlendAttachmentState fillColorBlendAttachment();

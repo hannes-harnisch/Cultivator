@@ -5,7 +5,7 @@
 
 namespace ct
 {
-	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle size, Window const& window) :
+	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle const size, Window const& window) :
 		CellularAutomatonRenderer(size, window, Shader("ScreenQuad.vert.spv"))
 	{}
 
@@ -25,24 +25,25 @@ namespace ct
 		imgInFlightFences[imgIndex] = frameFences[currentFrame];
 		GPUContext::device().resetFences(fence, Loader::get());
 
-		GPUContext::graphicsQueue().submit(commandList.handle(), imgGetSemaphores[currentFrame],
+		GPUContext::graphicsQueue().submit(commandLists[imgIndex].handle(), imgGetSemaphores[currentFrame],
 										   imgDoneSemaphores[currentFrame], frameFences[currentFrame]);
 
 		swapChain.present(imgIndex, imgDoneSemaphores[currentFrame]);
 		currentFrame = (currentFrame + 1) % MaxFrames;
 	}
 
-	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle size, Window const& window, Shader const& vertex) :
+	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle const size, Window const& window, Shader const& vertex) :
 		swapChain(window.handle(), window.getViewport()),
-		descSetLayout(makeDescriptorSetLayout()),
-		pipelineLayout(std::vector {descSetLayout.get()}),
-		gameOfLife(vertex, Shader("GameOfLife.frag.spv"), pipelineLayout),
-		presentation(vertex, Shader("Presentation.frag.spv"), pipelineLayout),
 		front(size),
 		back(size),
-		commandList()
+		descSetLayout(makeDescriptorSetLayout()),
+		pipelineLayout(std::vector {descSetLayout.get()}),
+		frameBuffer(size, renderPass, front.imageView()),
+		gameOfLife(vertex, Shader("GameOfLife.frag.spv"), pipelineLayout, renderPass),
+		presentation(vertex, Shader("Presentation.frag.spv"), pipelineLayout, renderPass)
 	{
 		makeSyncObjects();
+		recordCommands();
 	}
 
 	void CellularAutomatonRenderer::makeSyncObjects()
@@ -68,8 +69,15 @@ namespace ct
 
 	void CellularAutomatonRenderer::recordCommands()
 	{
-		commandList.begin();
-		commandList.end();
+		for(auto& commandList : commandLists)
+		{
+			commandList.begin();
+			commandList.beginRenderPass(renderPass, frameBuffer);
+			commandList.bindPipeline(gameOfLife);
+			commandList.draw();
+			commandList.endRenderPass();
+			commandList.end();
+		}
 	}
 
 	vk::DescriptorSetLayout CellularAutomatonRenderer::makeDescriptorSetLayout()

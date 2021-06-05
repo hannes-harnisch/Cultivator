@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
@@ -12,11 +12,16 @@ namespace ct
 	public:
 		Texture(Rectangle size);
 
+		vk::ImageView imageView()
+		{
+			return imgView;
+		}
+
 	private:
 		DeviceUnique<vk::Image, &vk::Device::destroyImage> image;
 		DeviceUnique<vk::DeviceMemory, &vk::Device::freeMemory> memory;
 		DeviceUnique<vk::Sampler, &vk::Device::destroySampler> sampler;
-		DeviceUnique<vk::ImageView, &vk::Device::destroyImageView> imageView;
+		DeviceUnique<vk::ImageView, &vk::Device::destroyImageView> imgView;
 
 		vk::Image makeImage(Rectangle size);
 		vk::DeviceMemory allocateMemory();
