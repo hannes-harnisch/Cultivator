@@ -1,10 +1,11 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
 
-#include "Vendor/Vulkan/Vulkan.PipelineLayout.hh"
-#include "Vendor/Vulkan/Vulkan.Shader.hh"
-#include "Vendor/Vulkan/Vulkan.Unique.hh"
+#include "Vulkan.PipelineLayout.hh"
+#include "Vulkan.RenderPass.hh"
+#include "Vulkan.Shader.hh"
+#include "Vulkan.Unique.hh"
 
 namespace ct
 {
@@ -19,7 +20,7 @@ namespace ct
 		}
 
 	private:
-		DeviceUnique<vk::Pipeline, &vk::Device::destroyPipeline> pipeline;
+		DeviceOwn<vk::Pipeline, &vk::Device::destroyPipeline> pipeline;
 
 		vk::Pipeline createPipeline(Shader const& vertex,
 									Shader const& fragment,

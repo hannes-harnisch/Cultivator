@@ -1,13 +1,12 @@
 #include "PCH.hh"
 
-#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
-#include "Vendor/Vulkan/Vulkan.Utils.hh"
+#include "Vulkan.GPUContext.hh"
 #include "Vulkan.Texture.hh"
+#include "Vulkan.Utils.hh"
 
 namespace ct
 {
-	Texture::Texture(Rectangle size) :
-		image(makeImage(size)), memory(allocateMemory()), sampler(makeSampler()), imgView(makeImageView())
+	Texture::Texture(Rectangle size) : image(makeImage(size)), memory(allocateMemory()), imgView(makeImageView())
 	{}
 
 	vk::Image Texture::makeImage(Rectangle size)
@@ -36,25 +35,6 @@ namespace ct
 
 		ctAssertResult(GPUContext::device().bindImageMemory(image, handle, 0, Loader::get()),
 					   "Failed to bind memory to Vulkan texture.");
-		return handle;
-	}
-
-	vk::Sampler Texture::makeSampler()
-	{
-		auto samplerInfo = vk::SamplerCreateInfo()
-							   .setMagFilter(vk::Filter::eLinear)
-							   .setMinFilter(vk::Filter::eLinear)
-							   .setAddressModeU(vk::SamplerAddressMode::eClampToBorder)
-							   .setAddressModeV(vk::SamplerAddressMode::eClampToBorder)
-							   .setAddressModeW(vk::SamplerAddressMode::eClampToBorder)
-							   .setAnisotropyEnable(false)
-							   .setMaxAnisotropy(1.0f)
-							   .setBorderColor(vk::BorderColor::eIntOpaqueBlack)
-							   .setUnnormalizedCoordinates(false)
-							   .setCompareEnable(false)
-							   .setCompareOp(vk::CompareOp::eAlways);
-		auto [res, handle] = GPUContext::device().createSampler(samplerInfo, nullptr, Loader::get());
-		ctAssertResult(res, "Failed to create sampler.");
 		return handle;
 	}
 

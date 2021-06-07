@@ -1,10 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
 
 #include "Utils/Rectangle.hh"
-#include "Vendor/Vulkan/Vulkan.RenderPass.hh"
-#include "Vendor/Vulkan/Vulkan.Unique.hh"
+#include "Vulkan.RenderPass.hh"
+#include "Vulkan.Unique.hh"
 
 namespace ct
 {
@@ -19,6 +19,6 @@ namespace ct
 		}
 
 	private:
-		DeviceUnique<vk::Framebuffer, &vk::Device::destroyFramebuffer> frameBuffer;
+		DeviceOwn<vk::Framebuffer, &vk::Device::destroyFramebuffer> frameBuffer;
 	};
 }

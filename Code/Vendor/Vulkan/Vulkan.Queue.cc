@@ -1,9 +1,9 @@
 #include "PCH.hh"
 
 #include "Utils/Assert.hh"
-#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
-#include "Vendor/Vulkan/Vulkan.Surface.hh"
+#include "Vulkan.GPUContext.hh"
 #include "Vulkan.Queue.hh"
+#include "Vulkan.Surface.hh"
 
 namespace ct
 {
@@ -30,6 +30,7 @@ namespace ct
 						  .setWaitDstStageMask(waitStages)
 						  .setCommandBuffers(commandBuffers)
 						  .setSignalSemaphores(signalSemaphores);
-		queue.submit(submit, fence, Loader::get());
+		auto res = queue.submit(submit, fence, Loader::get());
+		ctAssertResult(res, "Failed to submit to queue.");
 	}
 }

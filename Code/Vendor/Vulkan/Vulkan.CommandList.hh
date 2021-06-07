@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Utils/Rectangle.hh"
-#include "Vendor/Vulkan/Vulkan.FrameBuffer.hh"
-#include "Vendor/Vulkan/Vulkan.Pipeline.hh"
-#include "Vendor/Vulkan/Vulkan.RenderPass.hh"
-#include "Vendor/Vulkan/Vulkan.Unique.hh"
+#include "Vulkan.FrameBuffer.hh"
+#include "Vulkan.Pipeline.hh"
+#include "Vulkan.PipelineLayout.hh"
+#include "Vulkan.RenderPass.hh"
+#include "Vulkan.Unique.hh"
 
 namespace ct
 {
@@ -17,6 +18,7 @@ namespace ct
 		void beginRenderPass(RenderPass const& renderPass, FrameBuffer const& frameBuffer);
 		void bindViewport(Rectangle rectangle);
 		void bindPipeline(Pipeline const& pipeline);
+		void bindDescriptorSets(PipelineLayout const& pipeLayout, std::vector<vk::DescriptorSet> const& sets);
 		void draw();
 		void end();
 		void endRenderPass();
@@ -28,7 +30,7 @@ namespace ct
 		}
 
 	private:
-		DeviceUnique<vk::CommandPool, &vk::Device::destroyCommandPool> commandPool;
+		DeviceOwn<vk::CommandPool, &vk::Device::destroyCommandPool> commandPool;
 		vk::CommandBuffer commandList;
 	};
 }

@@ -1,15 +1,12 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 
 #include "Utils/Assert.hh"
-#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
+#include "Vulkan.GPUContext.hh"
 #include "Vulkan.RenderPass.hh"
 
 namespace ct
 {
-	RenderPass::RenderPass() : renderPass(makeRenderPass())
-	{}
-
-	vk::RenderPass RenderPass::makeRenderPass()
+	RenderPass::RenderPass()
 	{
 		std::array attachments {
 			fillAttachmentDescription(vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eShaderReadOnlyOptimal)};
@@ -23,9 +20,9 @@ namespace ct
 		auto renderPassInfo =
 			vk::RenderPassCreateInfo().setAttachments(attachments).setSubpasses(subpasses).setDependencies(subpassDependencies);
 
-		auto [res, renderPass] = GPUContext::device().createRenderPass(renderPassInfo, nullptr, Loader::get());
+		auto [res, handle] = GPUContext::device().createRenderPass(renderPassInfo, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan render pass.");
-		return renderPass;
+		renderPass = handle;
 	}
 
 	vk::AttachmentDescription RenderPass::fillAttachmentDescription(vk::ImageLayout initial, vk::ImageLayout final)

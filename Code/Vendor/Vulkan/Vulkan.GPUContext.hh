@@ -1,9 +1,9 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
 
 #include "Utils/Singleton.hh"
-#include "Vendor/Vulkan/Vulkan.Queue.hh"
+#include "Vulkan.Queue.hh"
 
 namespace ct
 {

@@ -2,7 +2,7 @@
 
 #include "PCH.hh"
 
-#include "Vendor/Vulkan/Vulkan.Unique.hh"
+#include "Vulkan.Unique.hh"
 
 namespace ct
 {
@@ -17,6 +17,6 @@ namespace ct
 		}
 
 	private:
-		DeviceUnique<vk::PipelineLayout, &vk::Device::destroyPipelineLayout> pipelineLayout;
+		DeviceOwn<vk::PipelineLayout, &vk::Device::destroyPipelineLayout> pipelineLayout;
 	};
 }

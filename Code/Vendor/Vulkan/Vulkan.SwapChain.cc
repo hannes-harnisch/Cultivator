@@ -1,7 +1,7 @@
-#include "PCH.hh"
+﻿#include "PCH.hh"
 
 #include "Utils/Assert.hh"
-#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
+#include "Vulkan.GPUContext.hh"
 #include "Vulkan.SwapChain.hh"
 
 namespace ct
@@ -121,9 +121,9 @@ namespace ct
 		return images;
 	}
 
-	std::vector<DeviceUnique<vk::ImageView, &vk::Device::destroyImageView>> SwapChain::makeSwapChainImageViews()
+	std::vector<DeviceOwn<vk::ImageView, &vk::Device::destroyImageView>> SwapChain::makeSwapChainImageViews()
 	{
-		std::vector<DeviceUnique<vk::ImageView, &vk::Device::destroyImageView>> views(swapChainImages.size());
+		std::vector<DeviceOwn<vk::ImageView, &vk::Device::destroyImageView>> views(swapChainImages.size());
 		for(auto image : swapChainImages)
 		{
 			auto subresourceRange =

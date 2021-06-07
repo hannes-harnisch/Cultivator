@@ -2,7 +2,7 @@
 
 #include "PCH.hh"
 
-#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
+#include "Vulkan.GPUContext.hh"
 
 namespace ct
 {

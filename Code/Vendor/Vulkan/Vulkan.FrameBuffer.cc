@@ -1,7 +1,7 @@
 #include "PCH.hh"
 
-#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 #include "Vulkan.FrameBuffer.hh"
+#include "Vulkan.GPUContext.hh"
 
 namespace ct
 {
@@ -13,8 +13,8 @@ namespace ct
 								   .setWidth(size.width)
 								   .setHeight(size.height)
 								   .setLayers(1);
-		auto [res, buffer] = GPUContext::device().createFramebuffer(frameBufferInfo, nullptr, Loader::get());
+		auto [res, handle] = GPUContext::device().createFramebuffer(frameBufferInfo, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan frame buffer.");
-		frameBuffer = buffer;
+		frameBuffer = handle;
 	}
 }

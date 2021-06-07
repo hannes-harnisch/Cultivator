@@ -1,7 +1,7 @@
 #include "PCH.hh"
 
-#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 #include "Vulkan.CommandList.hh"
+#include "Vulkan.GPUContext.hh"
 
 namespace ct
 {
@@ -51,6 +51,11 @@ namespace ct
 	void CommandList::bindPipeline(Pipeline const& pipeline)
 	{
 		commandList.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline.handle(), Loader::get());
+	}
+
+	void CommandList::bindDescriptorSets(PipelineLayout const& pipeLayout, std::vector<vk::DescriptorSet> const& sets)
+	{
+		commandList.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeLayout.handle(), 0, sets, {}, Loader::get());
 	}
 
 	void CommandList::draw()

@@ -1,10 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include "PCH.hh"
 
 #include "Utils/Rectangle.hh"
-#include "Vendor/Vulkan/Vulkan.Surface.hh"
-#include "Vendor/Vulkan/Vulkan.Unique.hh"
+#include "Vulkan.Surface.hh"
+#include "Vulkan.Unique.hh"
 
 namespace ct
 {
@@ -31,9 +31,9 @@ namespace ct
 		vk::SurfaceFormatKHR surfaceFormat;
 		vk::PresentModeKHR presentMode;
 		vk::Extent2D extent;
-		DeviceUnique<vk::SwapchainKHR, &vk::Device::destroySwapchainKHR> swapChain;
+		DeviceOwn<vk::SwapchainKHR, &vk::Device::destroySwapchainKHR> swapChain;
 		std::vector<vk::Image> swapChainImages;
-		std::vector<DeviceUnique<vk::ImageView, &vk::Device::destroyImageView>> swapChainViews;
+		std::vector<DeviceOwn<vk::ImageView, &vk::Device::destroyImageView>> swapChainViews;
 
 		vk::SurfaceFormatKHR makeSurfaceFormat();
 		vk::PresentModeKHR makePresentMode();
@@ -41,6 +41,6 @@ namespace ct
 		vk::SwapchainKHR makeSwapChain();
 		vk::SwapchainCreateInfoKHR fillSwapChainInfo();
 		std::vector<vk::Image> makeSwapChainImages();
-		std::vector<DeviceUnique<vk::ImageView, &vk::Device::destroyImageView>> makeSwapChainImageViews();
+		std::vector<DeviceOwn<vk::ImageView, &vk::Device::destroyImageView>> makeSwapChainImageViews();
 	};
 }

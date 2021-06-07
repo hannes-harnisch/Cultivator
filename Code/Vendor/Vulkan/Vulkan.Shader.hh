@@ -2,7 +2,7 @@
 
 #include "PCH.hh"
 
-#include "Vendor/Vulkan/Vulkan.Unique.hh"
+#include "Vulkan.Unique.hh"
 
 namespace ct
 {
@@ -19,6 +19,6 @@ namespace ct
 		}
 
 	private:
-		DeviceUnique<vk::ShaderModule, &vk::Device::destroyShaderModule> shader;
+		DeviceOwn<vk::ShaderModule, &vk::Device::destroyShaderModule> shader;
 	};
 }

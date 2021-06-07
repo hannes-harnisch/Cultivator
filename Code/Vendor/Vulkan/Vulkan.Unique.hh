@@ -1,8 +1,8 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
-#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
+#include "Vulkan.GPUContext.hh"
 
 namespace ct
 {
@@ -19,12 +19,12 @@ namespace ct
 
 	template<typename T,
 			 void (vk::Device::*Deleter)(T, vk::AllocationCallbacks const*, vk::DispatchLoaderDynamic const&) const noexcept>
-	class DeviceUnique : public std::unique_ptr<T, DeviceDeleter<T, Deleter>>
+	class DeviceOwn : public std::unique_ptr<T, DeviceDeleter<T, Deleter>>
 	{
 	public:
 		using std::unique_ptr<T, DeviceDeleter<T, Deleter>>::unique_ptr;
 
-		DeviceUnique& operator=(T handle)
+		DeviceOwn& operator=(T handle)
 		{
 			this->reset(handle);
 			return *this;

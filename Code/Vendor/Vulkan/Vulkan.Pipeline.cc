@@ -1,8 +1,7 @@
 #include "PCH.hh"
 
 #include "Utils/Assert.hh"
-#include "Vendor/Vulkan/Vulkan.GPUContext.hh"
-#include "Vendor/Vulkan/Vulkan.RenderPass.hh"
+#include "Vulkan.GPUContext.hh"
 #include "Vulkan.Pipeline.hh"
 
 namespace ct
