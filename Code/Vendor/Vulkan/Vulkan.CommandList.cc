@@ -48,6 +48,12 @@ namespace ct
 		commandList.setViewport(0, viewports, Loader::get());
 	}
 
+	void CommandList::bindScissor(Rectangle rectangle)
+	{
+		std::array scissors {vk::Rect2D().setExtent({rectangle.width, rectangle.height})};
+		commandList.setScissor(0, scissors, Loader::get());
+	}
+
 	void CommandList::bindPipeline(Pipeline const& pipeline)
 	{
 		commandList.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline.handle(), Loader::get());

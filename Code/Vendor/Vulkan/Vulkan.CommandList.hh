@@ -17,6 +17,7 @@ namespace ct
 		void begin();
 		void beginRenderPass(RenderPass const& renderPass, FrameBuffer const& frameBuffer);
 		void bindViewport(Rectangle rectangle);
+		void bindScissor(Rectangle rectangle);
 		void bindPipeline(Pipeline const& pipeline);
 		void bindDescriptorSets(PipelineLayout const& pipeLayout, std::vector<vk::DescriptorSet> const& sets);
 		void draw();

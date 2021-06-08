@@ -16,6 +16,10 @@ namespace ct
 			if(messageSeverity < VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
 				return false;
 
+			std::string_view msg = pCallbackData->pMessage;
+			if(msg.starts_with("loaderAddLayerProperties"))
+				return false;
+
 			std::printf("\n%s\n", pCallbackData->pMessage);
 			return false;
 		}

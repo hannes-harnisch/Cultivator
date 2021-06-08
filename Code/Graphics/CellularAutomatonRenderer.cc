@@ -18,6 +18,7 @@ namespace ct
 					   "Failed to wait for fences.");
 
 		uint32_t imgIndex = swapChain.getNextImageIndex(imgGetSemaphores[currentFrame]);
+		recordCommands(imgIndex);
 
 		if(imgInFlightFences[imgIndex])
 		{
@@ -36,22 +37,22 @@ namespace ct
 	}
 
 	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle const size, Window const& window, Shader const& vertex) :
-		swapChain(window.handle(), window.getViewport()),
+		universeSize(size),
+		windowViewport(window.getViewport()),
 		front(size),
 		back(size),
 		sampler(makeSampler()),
 		descSetLayout(makeDescriptorSetLayout()),
 		pipelineLayout(std::vector {descSetLayout.get()}),
+		swapChain(window.handle(), windowViewport, presentPass),
 		frontBuffer(size, universeUpdatePass, front.imageView()),
 		backBuffer(size, universeUpdatePass, back.imageView()),
-		presentBuffer(window.getViewport(), presentPass, ),
 		gameOfLife(vertex, Shader("GameOfLife.frag.spv"), pipelineLayout, universeUpdatePass),
 		presentation(vertex, Shader("Presentation.frag.spv"), pipelineLayout, universeUpdatePass),
 		descPool(makeDescriptorPool()),
 		descSet(makeDescriptorSet())
 	{
 		makeSyncObjects();
-		recordCommands(size, window);
 	}
 
 	vk::Sampler CellularAutomatonRenderer::makeSampler()
@@ -94,23 +95,26 @@ namespace ct
 		imgInFlightFences.resize(swapChain.getImageCount());
 	}
 
-	void CellularAutomatonRenderer::recordCommands(Rectangle const size, Window const& window)
+	void CellularAutomatonRenderer::recordCommands(uint32_t imageIndex)
 	{
 		std::array frameBuf {&frontBuffer, &backBuffer};
 		int i = 0;
 		for(auto& com : commandLists)
 		{
+			com.reset();
 			com.begin();
 
 			com.beginRenderPass(universeUpdatePass, *frameBuf[i]);
-			com.bindViewport(size);
+			com.bindViewport(universeSize);
+			com.bindScissor(universeSize);
 			com.bindDescriptorSets(pipelineLayout, {descSet});
 			com.bindPipeline(gameOfLife);
 			com.draw();
 			com.endRenderPass();
 
-			com.beginRenderPass(presentPass, );
-			com.bindViewport(window.getViewport());
+			com.beginRenderPass(presentPass, swapChain.getFrameBuffer(imageIndex));
+			com.bindViewport(windowViewport);
+			com.bindScissor(windowViewport);
 			com.bindPipeline(presentation);
 			com.draw();
 			com.endRenderPass();
@@ -128,7 +132,7 @@ namespace ct
 					   .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
 					   .setStageFlags(vk::ShaderStageFlagBits::eFragment);
 
-		std::array bindings {dsl, dsl.setBinding(1)};
+		std::array bindings {dsl};
 
 		auto dslInfo	   = vk::DescriptorSetLayoutCreateInfo().setBindings(bindings);
 		auto [res, handle] = GPUContext::device().createDescriptorSetLayout(dslInfo, nullptr, Loader::get());

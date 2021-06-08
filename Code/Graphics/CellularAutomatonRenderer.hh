@@ -21,16 +21,17 @@ namespace ct
 	private:
 		constexpr static uint32_t MaxFrames = 2;
 
-		SwapChain swapChain;
+		Rectangle universeSize;
+		Rectangle windowViewport;
 		Texture front, back;
 		DeviceOwn<vk::Sampler, &vk::Device::destroySampler> sampler;
 		DeviceOwn<vk::DescriptorSetLayout, &vk::Device::destroyDescriptorSetLayout> descSetLayout;
 		PipelineLayout pipelineLayout;
 		RenderPass universeUpdatePass;
 		RenderPass presentPass;
+		SwapChain swapChain;
 		FrameBuffer frontBuffer;
 		FrameBuffer backBuffer;
-		FrameBuffer presentBuffer;
 		Pipeline gameOfLife;
 		Pipeline presentation;
 		DeviceOwn<vk::DescriptorPool, &vk::Device::destroyDescriptorPool> descPool;
@@ -46,7 +47,7 @@ namespace ct
 
 		vk::Sampler makeSampler();
 		void makeSyncObjects();
-		void recordCommands(Rectangle size, Window const& window);
+		void recordCommands(uint32_t imageIndex);
 		vk::DescriptorSetLayout makeDescriptorSetLayout();
 		vk::DescriptorPool makeDescriptorPool();
 		vk::DescriptorSet makeDescriptorSet();

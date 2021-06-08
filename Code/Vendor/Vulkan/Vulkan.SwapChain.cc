@@ -1,4 +1,4 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 
 #include "Utils/Assert.hh"
 #include "Vulkan.GPUContext.hh"
@@ -6,14 +6,15 @@
 
 namespace ct
 {
-	SwapChain::SwapChain(void* const nativeWindowHandle, Rectangle const viewport) :
+	SwapChain::SwapChain(void* const nativeWindowHandle, Rectangle const viewport, RenderPass const& renderPass) :
 		surface(nativeWindowHandle),
 		surfaceFormat(makeSurfaceFormat()),
 		presentMode(makePresentMode()),
 		extent(makeExtent(viewport)),
 		swapChain(makeSwapChain()),
 		swapChainImages(makeSwapChainImages()),
-		swapChainViews(makeSwapChainImageViews())
+		swapChainViews(makeSwapChainImageViews()),
+		frameBuffers(makeFrameBuffers(renderPass))
 	{}
 
 	uint32_t SwapChain::getNextImageIndex(vk::Semaphore imgGetSemaphore)
@@ -123,7 +124,7 @@ namespace ct
 
 	std::vector<DeviceOwn<vk::ImageView, &vk::Device::destroyImageView>> SwapChain::makeSwapChainImageViews()
 	{
-		std::vector<DeviceOwn<vk::ImageView, &vk::Device::destroyImageView>> views(swapChainImages.size());
+		std::vector<DeviceOwn<vk::ImageView, &vk::Device::destroyImageView>> views;
 		for(auto image : swapChainImages)
 		{
 			auto subresourceRange =
@@ -138,5 +139,15 @@ namespace ct
 			views.emplace_back(imageView);
 		}
 		return views;
+	}
+
+	std::vector<FrameBuffer> SwapChain::makeFrameBuffers(RenderPass const& renderPass)
+	{
+		std::vector<FrameBuffer> buffers;
+
+		for(auto&& view : swapChainViews)
+			buffers.emplace_back(Rectangle {extent.width, extent.height}, renderPass, view);
+
+		return buffers;
 	}
 }

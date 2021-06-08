@@ -1,5 +1,5 @@
-Texture2D Universe;
-SamplerState Sampler;
+Texture2D Universe : register(t0);
+SamplerState Sampler : register(s0);
 
 float4 main() : SV_Target
 {
