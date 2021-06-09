@@ -5,6 +5,7 @@
 #include "Vulkan.Pipeline.hh"
 #include "Vulkan.PipelineLayout.hh"
 #include "Vulkan.RenderPass.hh"
+#include "Vulkan.Texture.hh"
 #include "Vulkan.Unique.hh"
 
 namespace ct
@@ -20,6 +21,7 @@ namespace ct
 		void bindScissor(Rectangle rectangle);
 		void bindPipeline(Pipeline const& pipeline);
 		void bindDescriptorSets(PipelineLayout const& pipeLayout, std::vector<vk::DescriptorSet> const& sets);
+		void pushImageBarrier(Texture const& tex, vk::ImageLayout newLayout);
 		void draw();
 		void end();
 		void endRenderPass();

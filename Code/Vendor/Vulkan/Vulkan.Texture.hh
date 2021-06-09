@@ -12,13 +12,18 @@ namespace ct
 	public:
 		Texture(Rectangle size);
 
+		vk::Image image() const
+		{
+			return img;
+		}
+
 		vk::ImageView imageView() const
 		{
 			return imgView;
 		}
 
 	private:
-		DeviceOwn<vk::Image, &vk::Device::destroyImage> image;
+		DeviceOwn<vk::Image, &vk::Device::destroyImage> img;
 		DeviceOwn<vk::DeviceMemory, &vk::Device::freeMemory> memory;
 		DeviceOwn<vk::Sampler, &vk::Device::destroySampler> sampler;
 		DeviceOwn<vk::ImageView, &vk::Device::destroyImageView> imgView;

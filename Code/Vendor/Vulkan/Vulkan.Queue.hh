@@ -14,6 +14,7 @@ namespace ct
 
 		bool supportsSurface(Surface const& surface) const;
 		void submit(vk::CommandBuffer commandBuffer, vk::Semaphore imgGet, vk::Semaphore imgDone, vk::Fence fence);
+		void submitSync(vk::CommandBuffer commandBuffer);
 
 		uint32_t getFamily() const
 		{

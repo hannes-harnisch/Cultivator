@@ -6,10 +6,9 @@
 
 namespace ct
 {
-	RenderPass::RenderPass()
+	RenderPass::RenderPass(vk::ImageLayout initial, vk::ImageLayout final)
 	{
-		std::array attachments {
-			fillAttachmentDescription(vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eShaderReadOnlyOptimal)};
+		std::array attachments {fillAttachmentDescription(initial, final)};
 		std::array attachmentRefs {vk::AttachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal)};
 		std::array subpasses {vk::SubpassDescription().setColorAttachments(attachmentRefs)};
 		std::array subpassDependencies {vk::SubpassDependency()

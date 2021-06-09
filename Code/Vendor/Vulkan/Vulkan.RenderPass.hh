@@ -9,7 +9,7 @@ namespace ct
 	class RenderPass final
 	{
 	public:
-		RenderPass();
+		RenderPass(vk::ImageLayout initial, vk::ImageLayout final);
 
 		vk::RenderPass handle() const
 		{

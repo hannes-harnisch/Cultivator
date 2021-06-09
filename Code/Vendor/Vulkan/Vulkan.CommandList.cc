@@ -7,7 +7,9 @@ namespace ct
 {
 	CommandList::CommandList()
 	{
-		auto poolInfo		 = vk::CommandPoolCreateInfo().setQueueFamilyIndex(GPUContext::graphicsQueue().getFamily());
+		auto poolInfo = vk::CommandPoolCreateInfo()
+							.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
+							.setQueueFamilyIndex(GPUContext::graphicsQueue().getFamily());
 		auto [poolRes, pool] = GPUContext::device().createCommandPool(poolInfo, nullptr, Loader::get());
 		ctEnsureResult(poolRes, "Failed to create command pool.");
 		commandPool = pool;
@@ -62,6 +64,19 @@ namespace ct
 	void CommandList::bindDescriptorSets(PipelineLayout const& pipeLayout, std::vector<vk::DescriptorSet> const& sets)
 	{
 		commandList.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeLayout.handle(), 0, sets, {}, Loader::get());
+	}
+
+	void CommandList::pushImageBarrier(Texture const& tex, vk::ImageLayout newLayout)
+	{
+		auto subresourceRange =
+			vk::ImageSubresourceRange().setAspectMask(vk::ImageAspectFlagBits::eColor).setLevelCount(1).setLayerCount(1);
+		std::array imgBarriers {vk::ImageMemoryBarrier()
+									.setOldLayout(vk::ImageLayout::eUndefined)
+									.setNewLayout(newLayout)
+									.setImage(tex.image())
+									.setSubresourceRange(subresourceRange)};
+		commandList.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput,
+									vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, imgBarriers, Loader::get());
 	}
 
 	void CommandList::draw()

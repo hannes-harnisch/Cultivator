@@ -6,7 +6,7 @@
 
 namespace ct
 {
-	Texture::Texture(Rectangle size) : image(makeImage(size)), memory(allocateMemory()), imgView(makeImageView())
+	Texture::Texture(Rectangle size) : img(makeImage(size)), memory(allocateMemory()), imgView(makeImageView())
 	{}
 
 	vk::Image Texture::makeImage(Rectangle size)
@@ -26,14 +26,14 @@ namespace ct
 
 	vk::DeviceMemory Texture::allocateMemory()
 	{
-		auto memRequirements = GPUContext::device().getImageMemoryRequirements(image, Loader::get());
+		auto memRequirements = GPUContext::device().getImageMemoryRequirements(img, Loader::get());
 		uint32_t typeIndex	 = findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
 		auto allocInfo	   = vk::MemoryAllocateInfo().setAllocationSize(memRequirements.size).setMemoryTypeIndex(typeIndex);
 		auto [res, handle] = GPUContext::device().allocateMemory(allocInfo, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to allocate texture memory.");
 
-		ctAssertResult(GPUContext::device().bindImageMemory(image, handle, 0, Loader::get()),
+		ctAssertResult(GPUContext::device().bindImageMemory(img, handle, 0, Loader::get()),
 					   "Failed to bind memory to Vulkan texture.");
 		return handle;
 	}
@@ -43,7 +43,7 @@ namespace ct
 		auto subresourceRange =
 			vk::ImageSubresourceRange().setAspectMask(vk::ImageAspectFlagBits::eColor).setLevelCount(1).setLayerCount(1);
 		auto imageViewInfo = vk::ImageViewCreateInfo()
-								 .setImage(image)
+								 .setImage(img)
 								 .setViewType(vk::ImageViewType::e2D)
 								 .setFormat(vk::Format::eB8G8R8A8Srgb)
 								 .setSubresourceRange(subresourceRange);

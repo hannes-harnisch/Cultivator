@@ -35,22 +35,23 @@ namespace ct
 		Pipeline gameOfLife;
 		Pipeline presentation;
 		DeviceOwn<vk::DescriptorPool, &vk::Device::destroyDescriptorPool> descPool;
-		vk::DescriptorSet descSet;
+		vk::DescriptorSet frontDescSet;
+		vk::DescriptorSet backDescSet;
 		std::vector<vk::Fence> imgInFlightFences;
 		DeviceOwn<vk::Fence, &vk::Device::destroyFence> frameFences[MaxFrames];
 		DeviceOwn<vk::Semaphore, &vk::Device::destroySemaphore> imgDoneSemaphores[MaxFrames];
 		DeviceOwn<vk::Semaphore, &vk::Device::destroySemaphore> imgGetSemaphores[MaxFrames];
 		uint32_t currentFrame {};
-		CommandList commandLists[MaxFrames];
+		std::vector<CommandList> commandLists;
 
 		CellularAutomatonRenderer(Rectangle size, Window const& window, Shader const& vertex);
 
 		vk::Sampler makeSampler();
 		void makeSyncObjects();
+		void prepareTextures();
 		void recordCommands(uint32_t imageIndex);
 		vk::DescriptorSetLayout makeDescriptorSetLayout();
 		vk::DescriptorPool makeDescriptorPool();
-		vk::DescriptorSet makeDescriptorSet();
-		void updateDescriptorSets(Texture const& tex);
+		vk::DescriptorSet makeDescriptorSet(Texture const& tex);
 	};
 }

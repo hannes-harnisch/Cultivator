@@ -50,13 +50,13 @@ namespace ct
 
 	GPUContext::~GPUContext()
 	{
-		deviceHandle.destroy();
+		ctEnsureResult(deviceHandle.waitIdle(Loader::get()), "Failed to wait for idle device.");
 
+		deviceHandle.destroy({}, Loader::get());
 #if CT_DEBUG
 		instanceHandle.destroyDebugUtilsMessengerEXT(loggerHandle, {}, Loader::get());
 #endif
-
-		instanceHandle.destroy();
+		instanceHandle.destroy({}, Loader::get());
 	}
 
 	namespace

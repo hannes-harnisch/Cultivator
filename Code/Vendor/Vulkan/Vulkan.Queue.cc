@@ -30,7 +30,15 @@ namespace ct
 						  .setWaitDstStageMask(waitStages)
 						  .setCommandBuffers(commandBuffers)
 						  .setSignalSemaphores(signalSemaphores);
-		auto res = queue.submit(submit, fence, Loader::get());
-		ctAssertResult(res, "Failed to submit to queue.");
+
+		ctAssertResult(queue.submit(submit, fence, Loader::get()), "Failed to submit to queue.");
+	}
+
+	void Queue::submitSync(vk::CommandBuffer commandBuffer)
+	{
+		std::array commandBuffers {commandBuffer};
+		auto submit = vk::SubmitInfo().setCommandBuffers(commandBuffers);
+		ctAssertResult(queue.submit(submit, nullptr, Loader::get()), "Failed to submit to queue.");
+		ctAssertResult(queue.waitIdle(Loader::get()), "Failed to wait for queue idle.");
 	}
 }
