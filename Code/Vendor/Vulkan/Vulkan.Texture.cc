@@ -6,7 +6,7 @@
 
 namespace ct
 {
-	Texture::Texture(Rectangle size) : img(makeImage(size)), memory(allocateMemory()), imgView(makeImageView())
+	Texture::Texture(Rectangle size) : texSize(size), img(makeImage(size)), memory(allocateMemory()), imgView(makeImageView())
 	{}
 
 	vk::Image Texture::makeImage(Rectangle size)
@@ -18,7 +18,8 @@ namespace ct
 							 .setMipLevels(1)
 							 .setArrayLayers(1)
 							 .setSamples(vk::SampleCountFlagBits::e1)
-							 .setUsage(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled);
+							 .setUsage(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled |
+									   vk::ImageUsageFlagBits::eTransferDst);
 		auto [res, handle] = GPUContext::device().createImage(imageInfo, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan texture.");
 		return handle;

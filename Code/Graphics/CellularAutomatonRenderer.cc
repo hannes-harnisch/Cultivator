@@ -1,6 +1,7 @@
 #include "PCH.hh"
 
 #include "CellularAutomatonRenderer.hh"
+#include "Vendor/Vulkan/Vulkan.Buffer.hh"
 #include "Vendor/Vulkan/Vulkan.GPUContext.hh"
 
 namespace ct
@@ -15,7 +16,6 @@ namespace ct
 	}
 
 	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle const size, Window const& window, Shader const& vertex) :
-		universeSize(size),
 		windowViewport(window.getViewport()),
 		front(size),
 		back(size),
@@ -133,10 +133,32 @@ namespace ct
 
 	void CellularAutomatonRenderer::prepareTextures()
 	{
+		size_t size = 4 * back.size().area();
+		Buffer stage(size, vk::BufferUsageFlagBits::eTransferSrc,
+					 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+		void* stageTarget;
+		ctAssertResult(GPUContext::device().mapMemory(stage.memory(), 0, size, {}, &stageTarget, Loader::get()),
+					   "Failed to map memory.");
+		unsigned* pixels = static_cast<unsigned*>(stageTarget);
+		for(size_t i = 0; i < size / 4; ++i)
+			*pixels++ = std::rand() % 2 == 0 ? 0xFFFFFFFF : 0;
+
+		GPUContext::device().unmapMemory(stage.memory(), Loader::get());
+
 		CommandList list;
 		list.begin();
-		list.pushImageBarrier(front, vk::ImageLayout::eColorAttachmentOptimal);
-		list.pushImageBarrier(back, vk::ImageLayout::eShaderReadOnlyOptimal);
+		list.pushImageBarrier(front, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal);
+		list.pushImageBarrier(back, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+		list.end();
+		GPUContext::graphicsQueue().submitSync(list.handle());
+
+		list.begin();
+		list.copyBufferToTexture(stage, back);
+		list.end();
+		GPUContext::graphicsQueue().submitSync(list.handle());
+
+		list.begin();
+		list.pushImageBarrier(back, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 		list.end();
 		GPUContext::graphicsQueue().submitSync(list.handle());
 	}
@@ -171,17 +193,19 @@ namespace ct
 		auto& com = commandLists[imgIndex];
 
 		com.begin();
-		com.pushImageBarrier(currentFrame ? back : front, vk::ImageLayout::eColorAttachmentOptimal);
+		com.pushImageBarrier(currentFrame ? back : front, vk::ImageLayout::eShaderReadOnlyOptimal,
+							 vk::ImageLayout::eColorAttachmentOptimal);
 
-		com.beginRenderPass(universeSize, universeUpdatePass, currentFrame ? backBuffer : frontBuffer);
-		com.bindViewport(universeSize);
-		com.bindScissor(universeSize);
+		com.beginRenderPass(back.size(), universeUpdatePass, currentFrame ? backBuffer : frontBuffer);
+		com.bindViewport(back.size());
+		com.bindScissor(back.size());
 		com.bindDescriptorSets(pipelineLayout, {currentFrame ? frontDescSet : backDescSet});
 		com.bindPipeline(gameOfLife);
 		com.draw();
 		com.endRenderPass();
 
-		com.pushImageBarrier(currentFrame ? back : front, vk::ImageLayout::eShaderReadOnlyOptimal);
+		com.pushImageBarrier(currentFrame ? back : front, vk::ImageLayout::eColorAttachmentOptimal,
+							 vk::ImageLayout::eShaderReadOnlyOptimal);
 
 		com.beginRenderPass(windowViewport, presentPass, swapChain.getFrameBuffer(imgIndex));
 		com.bindViewport(windowViewport);

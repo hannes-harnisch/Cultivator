@@ -12,6 +12,11 @@ namespace ct
 	public:
 		Texture(Rectangle size);
 
+		Rectangle size() const
+		{
+			return texSize;
+		}
+
 		vk::Image image() const
 		{
 			return img;
@@ -23,6 +28,7 @@ namespace ct
 		}
 
 	private:
+		Rectangle texSize;
 		DeviceOwn<vk::Image, &vk::Device::destroyImage> img;
 		DeviceOwn<vk::DeviceMemory, &vk::Device::freeMemory> memory;
 		DeviceOwn<vk::Sampler, &vk::Device::destroySampler> sampler;

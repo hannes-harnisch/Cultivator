@@ -11,7 +11,6 @@ int getCell(float4 pos, int x, int y)
 
 float4 main(float4 pos : SV_Position) : SV_Target
 {
-	return float4(1, 0, 0, 1);
 	int nw		= getCell(pos, -1, 1);
 	int n		= getCell(pos, 0, 1);
 	int ne		= getCell(pos, 1, 1);

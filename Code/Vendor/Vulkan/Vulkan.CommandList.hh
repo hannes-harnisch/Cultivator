@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utils/Rectangle.hh"
+#include "Vulkan.Buffer.hh"
 #include "Vulkan.FrameBuffer.hh"
 #include "Vulkan.Pipeline.hh"
 #include "Vulkan.PipelineLayout.hh"
@@ -21,7 +22,8 @@ namespace ct
 		void bindScissor(Rectangle rectangle);
 		void bindPipeline(Pipeline const& pipeline);
 		void bindDescriptorSets(PipelineLayout const& pipeLayout, std::vector<vk::DescriptorSet> const& sets);
-		void pushImageBarrier(Texture const& tex, vk::ImageLayout newLayout);
+		void copyBufferToTexture(Buffer const& src, Texture const& dst);
+		void pushImageBarrier(Texture const& tex, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
 		void draw();
 		void end();
 		void endRenderPass();

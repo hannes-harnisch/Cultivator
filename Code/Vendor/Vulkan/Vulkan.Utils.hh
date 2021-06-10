@@ -1,12 +1,13 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
+#include "Utils/Assert.hh"
 #include "Vulkan.GPUContext.hh"
 
 namespace ct
 {
-	inline uint32_t findMemoryType(uint32_t filter, vk::MemoryPropertyFlagBits memProperties)
+	inline uint32_t findMemoryType(uint32_t filter, vk::MemoryPropertyFlags memProperties)
 	{
 		auto memProps = GPUContext::adapter().getMemoryProperties(Loader::get());
 

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "App/Window.hh"
 #include "Utils/Rectangle.hh"
@@ -22,7 +22,6 @@ namespace ct
 	private:
 		constexpr static uint32_t MaxFrames = 2;
 
-		Rectangle universeSize;
 		Rectangle windowViewport;
 		Texture front, back;
 		DeviceOwn<vk::Sampler, &vk::Device::destroySampler> sampler;

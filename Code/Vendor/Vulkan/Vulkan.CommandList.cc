@@ -67,17 +67,66 @@ namespace ct
 		commandList.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeLayout.handle(), 0, sets, {}, Loader::get());
 	}
 
-	void CommandList::pushImageBarrier(Texture const& tex, vk::ImageLayout newLayout)
+	void CommandList::copyBufferToTexture(Buffer const& src, Texture const& dst)
+	{
+		auto subresourceLayers = vk::ImageSubresourceLayers().setAspectMask(vk::ImageAspectFlagBits::eColor).setLayerCount(1);
+		std::array regions {vk::BufferImageCopy()
+								.setImageSubresource(subresourceLayers)
+								.setImageExtent({dst.size().width, dst.size().height, 1})};
+		commandList.copyBufferToImage(src.buffer(), dst.image(), vk::ImageLayout::eTransferDstOptimal, regions, Loader::get());
+	}
+
+	void CommandList::pushImageBarrier(Texture const& tex, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
 	{
 		auto subresourceRange =
 			vk::ImageSubresourceRange().setAspectMask(vk::ImageAspectFlagBits::eColor).setLevelCount(1).setLayerCount(1);
-		std::array imgBarriers {vk::ImageMemoryBarrier()
-									.setOldLayout(vk::ImageLayout::eUndefined)
-									.setNewLayout(newLayout)
-									.setImage(tex.image())
-									.setSubresourceRange(subresourceRange)};
-		commandList.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput,
-									vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, imgBarriers, Loader::get());
+		auto barrier = vk::ImageMemoryBarrier()
+						   .setOldLayout(oldLayout)
+						   .setNewLayout(newLayout)
+						   .setImage(tex.image())
+						   .setSubresourceRange(subresourceRange);
+
+		vk::PipelineStageFlagBits srcStage, dstStage;
+		if(oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eTransferDstOptimal)
+		{
+			barrier.srcAccessMask = {};
+			barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+			srcStage			  = vk::PipelineStageFlagBits::eTopOfPipe;
+			dstStage			  = vk::PipelineStageFlagBits::eTransfer;
+		}
+		else if(oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eColorAttachmentOptimal)
+		{
+			barrier.srcAccessMask = {};
+			barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+			srcStage			  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+			dstStage			  = vk::PipelineStageFlagBits::eFragmentShader;
+		}
+		else if(oldLayout == vk::ImageLayout::eShaderReadOnlyOptimal && newLayout == vk::ImageLayout::eColorAttachmentOptimal)
+		{
+			barrier.srcAccessMask = {};
+			barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+			srcStage			  = vk::PipelineStageFlagBits::eFragmentShader;
+			dstStage			  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+		}
+		else if(oldLayout == vk::ImageLayout::eColorAttachmentOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
+		{
+			barrier.srcAccessMask = {};
+			barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+			srcStage			  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+			dstStage			  = vk::PipelineStageFlagBits::eFragmentShader;
+		}
+		else if(oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
+		{
+			barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+			barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+			srcStage			  = vk::PipelineStageFlagBits::eTransfer;
+			dstStage			  = vk::PipelineStageFlagBits::eFragmentShader;
+		}
+		else
+			throw "Unsupported layout transition!";
+
+		std::array imgBarriers {barrier};
+		commandList.pipelineBarrier(srcStage, dstStage, {}, {}, {}, imgBarriers, Loader::get());
 	}
 
 	void CommandList::draw()
