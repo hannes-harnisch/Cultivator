@@ -22,7 +22,7 @@ namespace ct
 		auto [res, imgIndex] = GPUContext::device().acquireNextImageKHR(swapChain, std::numeric_limits<uint64_t>::max(),
 																		imgGetSemaphore, nullptr, Loader::get());
 		if(res == vk::Result::eErrorOutOfDateKHR)
-			throw "Swap chain resize not implemented.";
+			std::exit(EXIT_FAILURE);
 
 		return imgIndex;
 	}
@@ -37,7 +37,7 @@ namespace ct
 		auto result = GPUContext::presentQueue().handle().presentKHR(presentInfo, Loader::get());
 
 		if(result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
-			throw "Swap chain resize not handled.";
+			std::exit(EXIT_FAILURE);
 	}
 
 	vk::SurfaceFormatKHR SwapChain::makeSurfaceFormat()

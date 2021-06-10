@@ -16,7 +16,7 @@ namespace ct
 		CommandList();
 
 		void begin();
-		void beginRenderPass(RenderPass const& renderPass, FrameBuffer const& frameBuffer);
+		void beginRenderPass(Rectangle renderArea, RenderPass const& renderPass, FrameBuffer const& frameBuffer);
 		void bindViewport(Rectangle rectangle);
 		void bindScissor(Rectangle rectangle);
 		void bindPipeline(Pipeline const& pipeline);
@@ -25,7 +25,6 @@ namespace ct
 		void draw();
 		void end();
 		void endRenderPass();
-		void reset();
 
 		vk::CommandBuffer handle() const
 		{

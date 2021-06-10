@@ -25,17 +25,18 @@ namespace ct
 
 	void CommandList::begin()
 	{
-		auto info	= vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+		vk::CommandBufferBeginInfo info;
 		auto result = commandList.begin(info, Loader::get());
 		ctAssertResult(result, "Failed to begin Vulkan command list.");
 	}
 
-	void CommandList::beginRenderPass(RenderPass const& renderPass, FrameBuffer const& frameBuffer)
+	void CommandList::beginRenderPass(Rectangle const renderArea, RenderPass const& renderPass, FrameBuffer const& frameBuffer)
 	{
 		std::array clearValues {vk::ClearValue().setColor(vk::ClearColorValue().setFloat32({1.0f, 1.0f, 0.0f, 0.0f}))};
 		auto info = vk::RenderPassBeginInfo()
 						.setRenderPass(renderPass.handle())
 						.setFramebuffer(frameBuffer.handle())
+						.setRenderArea({{0, 0}, {renderArea.width, renderArea.height}})
 						.setClearValues(clearValues);
 
 		commandList.beginRenderPass(info, vk::SubpassContents::eInline, Loader::get());
@@ -81,7 +82,7 @@ namespace ct
 
 	void CommandList::draw()
 	{
-		commandList.draw(0, 0, 0, 0, Loader::get());
+		commandList.draw(3, 1, 0, 0, Loader::get());
 	}
 
 	void CommandList::end()
@@ -93,10 +94,5 @@ namespace ct
 	void CommandList::endRenderPass()
 	{
 		commandList.endRenderPass(Loader::get());
-	}
-
-	void CommandList::reset()
-	{
-		GPUContext::device().resetCommandPool(commandPool, {}, Loader::get());
 	}
 }

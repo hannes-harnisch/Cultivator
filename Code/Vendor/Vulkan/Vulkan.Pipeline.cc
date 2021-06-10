@@ -64,15 +64,8 @@ namespace ct
 
 	vk::PipelineColorBlendAttachmentState Pipeline::fillColorBlendAttachment()
 	{
-		return vk::PipelineColorBlendAttachmentState()
-			.setBlendEnable(true)
-			.setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
-			.setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
-			.setColorBlendOp(vk::BlendOp::eAdd)
-			.setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
-			.setDstAlphaBlendFactor(vk::BlendFactor::eZero)
-			.setAlphaBlendOp(vk::BlendOp::eAdd)
-			.setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
-							   vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
+		return vk::PipelineColorBlendAttachmentState().setBlendEnable(false).setColorWriteMask(
+			vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB |
+			vk::ColorComponentFlagBits::eA);
 	}
 }

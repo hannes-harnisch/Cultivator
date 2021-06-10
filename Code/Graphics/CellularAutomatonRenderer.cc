@@ -9,6 +9,11 @@ namespace ct
 		CellularAutomatonRenderer(size, window, Shader("ScreenQuad.vert.spv"))
 	{}
 
+	CellularAutomatonRenderer::~CellularAutomatonRenderer()
+	{
+		ctAssertResult(GPUContext::device().waitIdle(Loader::get()), "Failed to wait for idle device.");
+	}
+
 	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle const size, Window const& window, Shader const& vertex) :
 		universeSize(size),
 		windowViewport(window.getViewport()),
@@ -25,8 +30,8 @@ namespace ct
 		gameOfLife(vertex, Shader("GameOfLife.frag.spv"), pipelineLayout, universeUpdatePass),
 		presentation(vertex, Shader("Presentation.frag.spv"), pipelineLayout, universeUpdatePass),
 		descPool(makeDescriptorPool()),
-		frontDescSet(makeDescriptorSet(front)),
-		backDescSet(makeDescriptorSet(back)),
+		frontDescSet(makeDescriptorSetForSampler(front)),
+		backDescSet(makeDescriptorSetForSampler(back)),
 		commandLists(swapChain.getImageCount())
 	{
 		makeSyncObjects();
@@ -36,8 +41,8 @@ namespace ct
 	vk::Sampler CellularAutomatonRenderer::makeSampler()
 	{
 		auto samplerInfo = vk::SamplerCreateInfo()
-							   .setMagFilter(vk::Filter::eLinear)
-							   .setMinFilter(vk::Filter::eLinear)
+							   .setMagFilter(vk::Filter::eNearest)
+							   .setMinFilter(vk::Filter::eNearest)
 							   .setAddressModeU(vk::SamplerAddressMode::eClampToBorder)
 							   .setAddressModeV(vk::SamplerAddressMode::eClampToBorder)
 							   .setAddressModeW(vk::SamplerAddressMode::eClampToBorder)
@@ -79,7 +84,7 @@ namespace ct
 		return pool;
 	}
 
-	vk::DescriptorSet CellularAutomatonRenderer::makeDescriptorSet(Texture const& tex)
+	vk::DescriptorSet CellularAutomatonRenderer::makeDescriptorSetForSampler(Texture const& tex)
 	{
 		std::array setLayouts {descSetLayout.get()};
 		auto allocInfo	 = vk::DescriptorSetAllocateInfo().setDescriptorPool(descPool).setSetLayouts(setLayouts);
@@ -105,19 +110,23 @@ namespace ct
 	{
 		auto fenceInfo = vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled);
 		vk::SemaphoreCreateInfo semaphoreInfo;
-		for(int i {}; i < MaxFrames; ++i)
+		for(auto& sem : imgGetSemaphores)
 		{
-			auto [getSemRes, imageGetSemaphore] = GPUContext::device().createSemaphore(semaphoreInfo, nullptr, Loader::get());
-			ctEnsureResult(getSemRes, "Failed to create image-get semaphore.");
-			imgGetSemaphores[i] = imageGetSemaphore;
-
-			auto [doneSemRes, imageDoneSemaphore] = GPUContext::device().createSemaphore(semaphoreInfo, nullptr, Loader::get());
-			ctEnsureResult(doneSemRes, "Failed to create image-done semaphore.");
-			imgDoneSemaphores[i] = imageDoneSemaphore;
-
-			auto [fenceRes, fence] = GPUContext::device().createFence(fenceInfo, nullptr, Loader::get());
-			ctEnsureResult(fenceRes, "Failed to create fence.");
-			frameFences[i] = fence;
+			auto [res, semaphore] = GPUContext::device().createSemaphore(semaphoreInfo, nullptr, Loader::get());
+			ctEnsureResult(res, "Failed to create image-get semaphore.");
+			sem = semaphore;
+		}
+		for(auto& sem : imgDoneSemaphores)
+		{
+			auto [res, semaphore] = GPUContext::device().createSemaphore(semaphoreInfo, nullptr, Loader::get());
+			ctEnsureResult(res, "Failed to create image-done semaphore.");
+			sem = semaphore;
+		}
+		for(auto& fence : frameFences)
+		{
+			auto [res, handle] = GPUContext::device().createFence(fenceInfo, nullptr, Loader::get());
+			ctEnsureResult(res, "Failed to create fence.");
+			fence = handle;
 		}
 		imgInFlightFences.resize(swapChain.getImageCount());
 	}
@@ -164,7 +173,7 @@ namespace ct
 		com.begin();
 		com.pushImageBarrier(currentFrame ? back : front, vk::ImageLayout::eColorAttachmentOptimal);
 
-		com.beginRenderPass(universeUpdatePass, currentFrame ? backBuffer : frontBuffer);
+		com.beginRenderPass(universeSize, universeUpdatePass, currentFrame ? backBuffer : frontBuffer);
 		com.bindViewport(universeSize);
 		com.bindScissor(universeSize);
 		com.bindDescriptorSets(pipelineLayout, {currentFrame ? frontDescSet : backDescSet});
@@ -174,7 +183,7 @@ namespace ct
 
 		com.pushImageBarrier(currentFrame ? back : front, vk::ImageLayout::eShaderReadOnlyOptimal);
 
-		com.beginRenderPass(presentPass, swapChain.getFrameBuffer(imgIndex));
+		com.beginRenderPass(windowViewport, presentPass, swapChain.getFrameBuffer(imgIndex));
 		com.bindViewport(windowViewport);
 		com.bindScissor(windowViewport);
 		com.bindDescriptorSets(pipelineLayout, {currentFrame ? backDescSet : frontDescSet});

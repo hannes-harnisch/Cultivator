@@ -77,9 +77,14 @@ namespace ct
 		ensureInstanceExtensionsExist();
 		ensureLayersExist();
 
+		std::array enables {vk::ValidationFeatureEnableEXT::eBestPractices};
+		auto validationFeatures = vk::ValidationFeaturesEXT().setPNext(&loggerInfo).setEnabledValidationFeatures(enables);
+
 		auto appInfo	  = fillAppInfo();
 		auto instanceInfo = vk::InstanceCreateInfo()
-								.setPNext(&loggerInfo)
+#if CT_DEBUG
+								.setPNext(&loggerInfo) // &validationFeatures
+#endif
 								.setPApplicationInfo(&appInfo)
 								.setPEnabledLayerNames(RequiredLayers)
 								.setPEnabledExtensionNames(RequiredInstanceExtensions);

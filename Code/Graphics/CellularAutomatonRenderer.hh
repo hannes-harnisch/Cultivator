@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "App/Window.hh"
 #include "Utils/Rectangle.hh"
@@ -15,6 +15,7 @@ namespace ct
 	{
 	public:
 		CellularAutomatonRenderer(Rectangle size, Window const& window);
+		~CellularAutomatonRenderer();
 
 		void draw();
 
@@ -52,6 +53,6 @@ namespace ct
 		void recordCommands(uint32_t imageIndex);
 		vk::DescriptorSetLayout makeDescriptorSetLayout();
 		vk::DescriptorPool makeDescriptorPool();
-		vk::DescriptorSet makeDescriptorSet(Texture const& tex);
+		vk::DescriptorSet makeDescriptorSetForSampler(Texture const& tex);
 	};
 }
