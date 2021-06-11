@@ -12,7 +12,7 @@ workspace 'Cultivator'
 	floatingpoint		'Fast'
 	warnings			'Extra'
 	buildoptions		{ '/Zc:rvalueCast' }
-	files				{ 'Code/**.cc', 'Code/**.hh' }
+	files				{ 'Code/**.cc', 'Code/**.hh', 'Code/**.hlsli' }
 	removefiles			{ 'Code/**/**.*.*' }
 	files				{ 'Code/**.hlsl' }
 	objdir				( '.bin_int/' .. output_dir .. '/%{prj.name}' )
@@ -21,9 +21,9 @@ workspace 'Cultivator'
 	pchheader			'PCH.hh'
 	pchsource			'Code/PCH.cc'
 
-	filter 'files:**.hlsl'
+	filter 'files:**.*.hlsl'
 		buildmessage	'Compiling shader %{file.relpath}'
-		buildcommands	'C:/VulkanSDK/1.2.176.1/bin/dxc %{file.relpath} /Fo %{cfg.targetdir}/%{file.basename}.spv -spirv -T ^'
+		buildcommands	'C:/VulkanSDK/1.2.176.1/bin/dxc %{file.relpath} /Fo %{cfg.targetdir}/%{file.basename}.spv -spirv -O3 -T ^'
 		buildoutputs	'%{cfg.targetdir}/%{file.basename}.spv'
 
 	filter 'files:**.vert.hlsl'

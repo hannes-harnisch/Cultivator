@@ -90,7 +90,7 @@ namespace ct
 
 		vk::InstanceCreateInfo info;
 #if CT_DEBUG
-		info.pNext = &loggerInfo; // &validationFeatures
+		info.pNext = &loggerInfo;
 #endif
 		info.pApplicationInfo		 = &appInfo;
 		info.enabledLayerCount		 = count(RequiredLayers);

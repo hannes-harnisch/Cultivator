@@ -1,30 +1,12 @@
-#define ALIVE float4(1, 1, 1, 1)
-#define DEAD  float4(0, 0, 0, 1)
+#include "Neighborhood.hlsli"
 
-Texture2D Universe : register(t0);
-SamplerState Sampler : register(s0);
-
-int getCell(float4 pos, int x, int y)
+float4 main(float4 position : SV_Position) : SV_Target
 {
-	return Universe.Sample(Sampler, pos.xy, int2(x, y)).r;
-}
+	Neighborhood hood = getNeighborhood(position);
 
-float4 main(float4 pos : SV_Position) : SV_Target
-{
-	int nw		= getCell(pos, -1, 1);
-	int n		= getCell(pos, 0, 1);
-	int ne		= getCell(pos, 1, 1);
-	int w		= getCell(pos, -1, 0);
-	int current = getCell(pos, 0, 0);
-	int e		= getCell(pos, 1, 0);
-	int sw		= getCell(pos, -1, -1);
-	int s		= getCell(pos, 0, -1);
-	int se		= getCell(pos, 1, -1);
-
-	int sum = nw + n + ne + w + current + e + sw + s + se;
-	if(sum == 3)
+	if(hood.sum == 3)
 		return ALIVE;
-	else if(sum == 4 && current == 1)
+	else if(hood.sum == 4 && hood.current == 1)
 		return ALIVE;
 	else
 		return DEAD;

@@ -16,7 +16,7 @@ namespace ct
 		SingletonInstance->shouldTick = false;
 	}
 
-	App::App() : window(CT_APP_NAME, {600, 600}, 400, 400), renderer({100, 100}, window)
+	App::App() : window(CT_APP_NAME, {1920, 1080}, 0, 0), renderer({480, 270}, window)
 	{
 		window.show();
 	}

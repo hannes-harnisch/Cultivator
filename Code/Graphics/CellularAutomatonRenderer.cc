@@ -27,7 +27,7 @@ namespace ct
 		swapChain(window.handle(), windowViewport, presentPass),
 		frontBuffer(size, universeUpdatePass, front.imageView()),
 		backBuffer(size, universeUpdatePass, back.imageView()),
-		gameOfLife(vertex, Shader("GameOfLife.frag.spv"), pipelineLayout, universeUpdatePass),
+		gameOfLife(vertex, Shader("Seeds.frag.spv"), pipelineLayout, universeUpdatePass),
 		presentation(vertex, Shader("Presentation.frag.spv"), pipelineLayout, universeUpdatePass),
 		descPool(makeDescriptorPool()),
 		frontDescSet(makeDescriptorSetForSampler(front)),
@@ -41,13 +41,11 @@ namespace ct
 	vk::Sampler CellularAutomatonRenderer::makeSampler()
 	{
 		vk::SamplerCreateInfo info;
-		info.magFilter				 = vk::Filter::eNearest;
-		info.minFilter				 = vk::Filter::eNearest;
 		info.addressModeU			 = vk::SamplerAddressMode::eClampToBorder;
 		info.addressModeV			 = vk::SamplerAddressMode::eClampToBorder;
 		info.addressModeW			 = vk::SamplerAddressMode::eClampToBorder;
-		info.anisotropyEnable		 = false;
-		info.maxAnisotropy			 = 1.0f;
+		info.anisotropyEnable		 = true;
+		info.maxAnisotropy			 = 16.0f;
 		info.borderColor			 = vk::BorderColor::eIntOpaqueBlack;
 		info.unnormalizedCoordinates = false;
 		info.compareEnable			 = false;
@@ -146,6 +144,7 @@ namespace ct
 
 	void CellularAutomatonRenderer::prepareTextures()
 	{
+		std::srand(static_cast<unsigned>(std::time(nullptr)));
 		size_t size = static_cast<size_t>(4) * back.size().area();
 		Buffer stage(size, vk::BufferUsageFlagBits::eTransferSrc,
 					 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
@@ -154,14 +153,14 @@ namespace ct
 					   "Failed to map memory.");
 		unsigned* pixels = static_cast<unsigned*>(stageTarget);
 		for(size_t i = 0; i < size / 4; ++i)
-			*pixels++ = std::rand() % 2 == 0 ? 0xFFFFFFFF : 0;
+			*pixels++ = std::rand() % 400 == 0 ? 0xFFFFFFFF : 0;
 
 		GPUContext::device().unmapMemory(stage.memory(), Loader::get());
 
 		CommandList list;
 		list.begin();
-		list.pushImageBarrier(front, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal);
-		list.pushImageBarrier(back, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+		list.pushImageBarrier(front, vk::ImageLayout::eColorAttachmentOptimal);
+		list.pushImageBarrier(back, vk::ImageLayout::eTransferDstOptimal);
 		list.end();
 		GPUContext::graphicsQueue().submitSync(list.handle());
 
@@ -171,13 +170,16 @@ namespace ct
 		GPUContext::graphicsQueue().submitSync(list.handle());
 
 		list.begin();
-		list.pushImageBarrier(back, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+		list.pushImageBarrier(back, vk::ImageLayout::eShaderReadOnlyOptimal);
 		list.end();
 		GPUContext::graphicsQueue().submitSync(list.handle());
 	}
 
 	void CellularAutomatonRenderer::draw()
 	{
+		using namespace std::chrono_literals;
+		std::this_thread::sleep_for(1ms);
+
 		std::array frameFence {frameFences[currentFrame].get()};
 		ctAssertResult(GPUContext::device().waitForFences(frameFence, true, UINT64_MAX, Loader::get()),
 					   "Failed to wait for fences.");
@@ -206,8 +208,7 @@ namespace ct
 		auto& com = commandLists[imgIndex];
 
 		com.begin();
-		com.pushImageBarrier(currentFrame ? back : front, vk::ImageLayout::eShaderReadOnlyOptimal,
-							 vk::ImageLayout::eColorAttachmentOptimal);
+		com.pushImageBarrier(currentFrame ? back : front, vk::ImageLayout::eColorAttachmentOptimal);
 
 		com.beginRenderPass(back.size(), universeUpdatePass, currentFrame ? backBuffer : frontBuffer);
 		com.bindViewport(back.size());
@@ -217,8 +218,7 @@ namespace ct
 		com.draw();
 		com.endRenderPass();
 
-		com.pushImageBarrier(currentFrame ? back : front, vk::ImageLayout::eColorAttachmentOptimal,
-							 vk::ImageLayout::eShaderReadOnlyOptimal);
+		com.pushImageBarrier(currentFrame ? back : front, vk::ImageLayout::eShaderReadOnlyOptimal);
 
 		com.beginRenderPass(windowViewport, presentPass, swapChain.getFrameBuffer(imgIndex));
 		com.bindViewport(windowViewport);
