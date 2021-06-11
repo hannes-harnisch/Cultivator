@@ -21,23 +21,26 @@ namespace ct
 
 	void Queue::submit(vk::CommandBuffer commandBuffer, vk::Semaphore imgGet, vk::Semaphore imgDone, vk::Fence fence)
 	{
-		std::array waitSemaphores {imgGet};
-		std::array<vk::PipelineStageFlags, 1> waitStages {vk::PipelineStageFlagBits::eColorAttachmentOutput};
-		std::array commandBuffers {commandBuffer};
-		std::array signalSemaphores {imgDone};
-		auto submit = vk::SubmitInfo()
-						  .setWaitSemaphores(waitSemaphores)
-						  .setWaitDstStageMask(waitStages)
-						  .setCommandBuffers(commandBuffers)
-						  .setSignalSemaphores(signalSemaphores);
+		vk::PipelineStageFlags waitStages = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+
+		vk::SubmitInfo submit;
+		submit.waitSemaphoreCount	= 1;
+		submit.pWaitSemaphores		= &imgGet;
+		submit.pWaitDstStageMask	= &waitStages;
+		submit.commandBufferCount	= 1;
+		submit.pCommandBuffers		= &commandBuffer;
+		submit.signalSemaphoreCount = 1;
+		submit.pSignalSemaphores	= &imgDone;
 
 		ctAssertResult(queue.submit(submit, fence, Loader::get()), "Failed to submit to queue.");
 	}
 
 	void Queue::submitSync(vk::CommandBuffer commandBuffer)
 	{
-		std::array commandBuffers {commandBuffer};
-		auto submit = vk::SubmitInfo().setCommandBuffers(commandBuffers);
+		vk::SubmitInfo submit;
+		submit.commandBufferCount = 1;
+		submit.pCommandBuffers	  = &commandBuffer;
+
 		ctAssertResult(queue.submit(submit, nullptr, Loader::get()), "Failed to submit to queue.");
 		ctAssertResult(queue.waitIdle(Loader::get()), "Failed to wait for queue idle.");
 	}

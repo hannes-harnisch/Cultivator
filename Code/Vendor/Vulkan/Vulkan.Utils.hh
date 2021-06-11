@@ -7,6 +7,11 @@
 
 namespace ct
 {
+	uint32_t count(auto const& container)
+	{
+		return static_cast<uint32_t>(std::size(container));
+	}
+
 	inline uint32_t findMemoryType(uint32_t filter, vk::MemoryPropertyFlags memProperties)
 	{
 		auto memProps = GPUContext::adapter().getMemoryProperties(Loader::get());

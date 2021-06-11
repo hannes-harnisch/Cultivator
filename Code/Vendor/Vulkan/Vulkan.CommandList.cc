@@ -7,17 +7,19 @@ namespace ct
 {
 	CommandList::CommandList()
 	{
-		auto poolInfo = vk::CommandPoolCreateInfo()
-							.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
-							.setQueueFamilyIndex(GPUContext::graphicsQueue().getFamily());
+		vk::CommandPoolCreateInfo poolInfo;
+		poolInfo.flags			  = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+		poolInfo.queueFamilyIndex = GPUContext::graphicsQueue().getFamily();
+
 		auto [poolRes, pool] = GPUContext::device().createCommandPool(poolInfo, nullptr, Loader::get());
 		ctEnsureResult(poolRes, "Failed to create command pool.");
 		commandPool = pool;
 
-		auto bufferInfo = vk::CommandBufferAllocateInfo()
-							  .setCommandPool(commandPool)
-							  .setCommandBufferCount(1)
-							  .setLevel(vk::CommandBufferLevel::ePrimary);
+		vk::CommandBufferAllocateInfo bufferInfo;
+		bufferInfo.commandPool		  = commandPool;
+		bufferInfo.level			  = vk::CommandBufferLevel::ePrimary;
+		bufferInfo.commandBufferCount = 1;
+
 		auto [bufferRes, buffer] = GPUContext::device().allocateCommandBuffers(bufferInfo, Loader::get());
 		ctEnsureResult(bufferRes, "Failed to allocate command buffer.");
 		commandList = buffer[0];
@@ -32,29 +34,27 @@ namespace ct
 
 	void CommandList::beginRenderPass(Rectangle const renderArea, RenderPass const& renderPass, FrameBuffer const& frameBuffer)
 	{
-		std::array clearValues {vk::ClearValue().setColor(vk::ClearColorValue().setFloat32({1.0f, 1.0f, 0.0f, 0.0f}))};
-		auto info = vk::RenderPassBeginInfo()
-						.setRenderPass(renderPass.handle())
-						.setFramebuffer(frameBuffer.handle())
-						.setRenderArea({{0, 0}, {renderArea.width, renderArea.height}})
-						.setClearValues(clearValues);
+		vk::RenderPassBeginInfo info;
+		info.renderPass	 = renderPass.handle();
+		info.framebuffer = frameBuffer.handle();
+		info.renderArea	 = vk::Rect2D({}, {renderArea.width, renderArea.height});
 
 		commandList.beginRenderPass(info, vk::SubpassContents::eInline, Loader::get());
 	}
 
 	void CommandList::bindViewport(Rectangle rectangle)
 	{
-		std::array viewports {vk::Viewport()
-								  .setWidth(static_cast<float>(rectangle.width))
-								  .setHeight(static_cast<float>(rectangle.height))
-								  .setMaxDepth(1.0)};
-		commandList.setViewport(0, viewports, Loader::get());
+		vk::Viewport viewport;
+		viewport.width	  = rectangle.width;
+		viewport.height	  = rectangle.height;
+		viewport.maxDepth = 1;
+		commandList.setViewport(0, viewport, Loader::get());
 	}
 
 	void CommandList::bindScissor(Rectangle rectangle)
 	{
-		std::array scissors {vk::Rect2D().setExtent({rectangle.width, rectangle.height})};
-		commandList.setScissor(0, scissors, Loader::get());
+		vk::Rect2D scissor({}, {rectangle.width, rectangle.height});
+		commandList.setScissor(0, scissor, Loader::get());
 	}
 
 	void CommandList::bindPipeline(Pipeline const& pipeline)
@@ -69,22 +69,29 @@ namespace ct
 
 	void CommandList::copyBufferToTexture(Buffer const& src, Texture const& dst)
 	{
-		auto subresourceLayers = vk::ImageSubresourceLayers().setAspectMask(vk::ImageAspectFlagBits::eColor).setLayerCount(1);
-		std::array regions {vk::BufferImageCopy()
-								.setImageSubresource(subresourceLayers)
-								.setImageExtent({dst.size().width, dst.size().height, 1})};
-		commandList.copyBufferToImage(src.buffer(), dst.image(), vk::ImageLayout::eTransferDstOptimal, regions, Loader::get());
+		vk::ImageSubresourceLayers subresourceLayers;
+		subresourceLayers.aspectMask = vk::ImageAspectFlagBits::eColor;
+		subresourceLayers.layerCount = 1;
+
+		vk::BufferImageCopy region;
+		region.imageSubresource = subresourceLayers;
+		region.imageExtent		= vk::Extent3D(dst.size().width, dst.size().height, 1);
+
+		commandList.copyBufferToImage(src.buffer(), dst.image(), vk::ImageLayout::eTransferDstOptimal, region, Loader::get());
 	}
 
 	void CommandList::pushImageBarrier(Texture const& tex, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
 	{
-		auto subresourceRange =
-			vk::ImageSubresourceRange().setAspectMask(vk::ImageAspectFlagBits::eColor).setLevelCount(1).setLayerCount(1);
-		auto barrier = vk::ImageMemoryBarrier()
-						   .setOldLayout(oldLayout)
-						   .setNewLayout(newLayout)
-						   .setImage(tex.image())
-						   .setSubresourceRange(subresourceRange);
+		vk::ImageSubresourceRange subresourceRange;
+		subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+		subresourceRange.levelCount = 1;
+		subresourceRange.layerCount = 1;
+
+		vk::ImageMemoryBarrier barrier;
+		barrier.oldLayout		 = oldLayout;
+		barrier.newLayout		 = newLayout;
+		barrier.image			 = tex.image();
+		barrier.subresourceRange = subresourceRange;
 
 		vk::PipelineStageFlagBits srcStage, dstStage;
 		if(oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eTransferDstOptimal)
@@ -99,27 +106,6 @@ namespace ct
 			barrier.srcAccessMask = {};
 			barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 			srcStage			  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-			dstStage			  = vk::PipelineStageFlagBits::eFragmentShader;
-		}
-		else if(oldLayout == vk::ImageLayout::eShaderReadOnlyOptimal && newLayout == vk::ImageLayout::eColorAttachmentOptimal)
-		{
-			barrier.srcAccessMask = {};
-			barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-			srcStage			  = vk::PipelineStageFlagBits::eFragmentShader;
-			dstStage			  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-		}
-		else if(oldLayout == vk::ImageLayout::eColorAttachmentOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
-		{
-			barrier.srcAccessMask = {};
-			barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-			srcStage			  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-			dstStage			  = vk::PipelineStageFlagBits::eFragmentShader;
-		}
-		else if(oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
-		{
-			barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-			barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-			srcStage			  = vk::PipelineStageFlagBits::eTransfer;
 			dstStage			  = vk::PipelineStageFlagBits::eFragmentShader;
 		}
 		else

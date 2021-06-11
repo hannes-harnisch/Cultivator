@@ -8,32 +8,43 @@ namespace ct
 {
 	RenderPass::RenderPass(vk::ImageLayout initial, vk::ImageLayout final)
 	{
-		std::array attachments {fillAttachmentDescription(initial, final)};
-		std::array attachmentRefs {vk::AttachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal)};
-		std::array subpasses {vk::SubpassDescription().setColorAttachments(attachmentRefs)};
-		std::array subpassDependencies {vk::SubpassDependency()
-											.setSrcSubpass(VK_SUBPASS_EXTERNAL)
-											.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
-											.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
-											.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)};
-		auto renderPassInfo =
-			vk::RenderPassCreateInfo().setAttachments(attachments).setSubpasses(subpasses).setDependencies(subpassDependencies);
+		vk::AttachmentReference attachmentRef(0, vk::ImageLayout::eColorAttachmentOptimal);
+		vk::SubpassDescription subpass;
+		subpass.colorAttachmentCount = 1;
+		subpass.pColorAttachments	 = &attachmentRef;
 
-		auto [res, handle] = GPUContext::device().createRenderPass(renderPassInfo, nullptr, Loader::get());
+		vk::SubpassDependency subpassDependency;
+		subpassDependency.srcSubpass	= VK_SUBPASS_EXTERNAL;
+		subpassDependency.srcStageMask	= vk::PipelineStageFlagBits::eColorAttachmentOutput;
+		subpassDependency.dstStageMask	= vk::PipelineStageFlagBits::eColorAttachmentOutput;
+		subpassDependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+
+		auto attachmentDesc = fillAttachmentDescription(initial, final);
+
+		vk::RenderPassCreateInfo info;
+		info.attachmentCount = 1;
+		info.pAttachments	 = &attachmentDesc;
+		info.subpassCount	 = 1;
+		info.pSubpasses		 = &subpass;
+		info.dependencyCount = 1;
+		info.pDependencies	 = &subpassDependency;
+
+		auto [res, handle] = GPUContext::device().createRenderPass(info, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan render pass.");
 		renderPass = handle;
 	}
 
 	vk::AttachmentDescription RenderPass::fillAttachmentDescription(vk::ImageLayout initial, vk::ImageLayout final)
 	{
-		return vk::AttachmentDescription()
-			.setFormat(vk::Format::eB8G8R8A8Srgb)
-			.setSamples(vk::SampleCountFlagBits::e1)
-			.setLoadOp(vk::AttachmentLoadOp::eClear)
-			.setStoreOp(vk::AttachmentStoreOp::eStore)
-			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-			.setInitialLayout(initial)
-			.setFinalLayout(final);
+		vk::AttachmentDescription desc;
+		desc.format			= vk::Format::eB8G8R8A8Srgb;
+		desc.samples		= vk::SampleCountFlagBits::e1;
+		desc.loadOp			= vk::AttachmentLoadOp::eClear;
+		desc.storeOp		= vk::AttachmentStoreOp::eStore;
+		desc.stencilLoadOp	= vk::AttachmentLoadOp::eDontCare;
+		desc.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+		desc.initialLayout	= initial;
+		desc.finalLayout	= final;
+		return desc;
 	}
 }

@@ -3,6 +3,7 @@
 #include "Utils/Assert.hh"
 #include "Vulkan.GPUContext.hh"
 #include "Vulkan.SwapChain.hh"
+#include "Vulkan.Utils.hh"
 
 namespace ct
 {
@@ -29,12 +30,15 @@ namespace ct
 
 	void SwapChain::present(uint32_t imageIndex, vk::Semaphore imgDoneSemaphore)
 	{
-		std::array swapChains {swapChain.get()};
-		std::array imageDoneSemaphores {imgDoneSemaphore};
+		auto chain = swapChain.get();
+		vk::PresentInfoKHR info;
+		info.waitSemaphoreCount = 1;
+		info.pWaitSemaphores	= &imgDoneSemaphore;
+		info.swapchainCount		= 1;
+		info.pSwapchains		= &chain;
+		info.pImageIndices		= &imageIndex;
 
-		auto presentInfo =
-			vk::PresentInfoKHR().setWaitSemaphores(imageDoneSemaphores).setSwapchains(swapChains).setPImageIndices(&imageIndex);
-		auto result = GPUContext::presentQueue().handle().presentKHR(presentInfo, Loader::get());
+		auto result = GPUContext::presentQueue().handle().presentKHR(info, Loader::get());
 
 		if(result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
 			std::exit(EXIT_FAILURE);
@@ -72,6 +76,7 @@ namespace ct
 		uint32_t imageCount = caps.minImageCount + 1;
 		if(caps.maxImageCount > 0 && imageCount > caps.maxImageCount)
 			imageCount = caps.maxImageCount;
+
 		swapChainImages.resize(imageCount);
 
 		if(caps.currentExtent != std::numeric_limits<uint32_t>::max())
@@ -88,10 +93,12 @@ namespace ct
 
 		uint32_t const graphicsFamily = GPUContext::graphicsQueue().getFamily();
 		uint32_t const presentFamily  = GPUContext::presentQueue().getFamily();
+		std::array indices {graphicsFamily, presentFamily};
 		if(graphicsFamily != presentFamily)
 		{
-			std::array indices {graphicsFamily, presentFamily};
-			swapChainInfo.setImageSharingMode(vk::SharingMode::eConcurrent).setQueueFamilyIndices(indices);
+			swapChainInfo.imageSharingMode		= vk::SharingMode::eConcurrent;
+			swapChainInfo.queueFamilyIndexCount = count(indices);
+			swapChainInfo.pQueueFamilyIndices	= indices.data();
 		}
 
 		auto [res, handle] = GPUContext::device().createSwapchainKHR(swapChainInfo, nullptr, Loader::get());
@@ -101,18 +108,19 @@ namespace ct
 
 	vk::SwapchainCreateInfoKHR SwapChain::fillSwapChainInfo()
 	{
-		return vk::SwapchainCreateInfoKHR()
-			.setSurface(surface.handle())
-			.setMinImageCount(uint32_t(swapChainImages.size()))
-			.setImageFormat(surfaceFormat.format)
-			.setImageColorSpace(surfaceFormat.colorSpace)
-			.setImageExtent(extent)
-			.setImageArrayLayers(1)
-			.setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
-			.setPreTransform(vk::SurfaceTransformFlagBitsKHR::eIdentity)
-			.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
-			.setPresentMode(presentMode)
-			.setClipped(true);
+		vk::SwapchainCreateInfoKHR info;
+		info.surface		  = surface.handle();
+		info.minImageCount	  = count(swapChainImages);
+		info.imageFormat	  = surfaceFormat.format;
+		info.imageColorSpace  = surfaceFormat.colorSpace;
+		info.imageExtent	  = extent;
+		info.imageArrayLayers = 1;
+		info.imageUsage		  = vk::ImageUsageFlagBits::eColorAttachment;
+		info.preTransform	  = vk::SurfaceTransformFlagBitsKHR::eIdentity;
+		info.compositeAlpha	  = vk::CompositeAlphaFlagBitsKHR::eOpaque;
+		info.presentMode	  = presentMode;
+		info.clipped		  = true;
+		return info;
 	}
 
 	std::vector<vk::Image> SwapChain::makeSwapChainImages()
@@ -127,13 +135,17 @@ namespace ct
 		std::vector<DeviceOwn<vk::ImageView, &vk::Device::destroyImageView>> views;
 		for(auto image : swapChainImages)
 		{
-			auto subresourceRange =
-				vk::ImageSubresourceRange().setAspectMask(vk::ImageAspectFlagBits::eColor).setLevelCount(1).setLayerCount(1);
-			auto imageViewInfo = vk::ImageViewCreateInfo()
-									 .setImage(image)
-									 .setViewType(vk::ImageViewType::e2D)
-									 .setFormat(surfaceFormat.format)
-									 .setSubresourceRange(subresourceRange);
+			vk::ImageSubresourceRange subresourceRange;
+			subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+			subresourceRange.levelCount = 1;
+			subresourceRange.layerCount = 1;
+
+			vk::ImageViewCreateInfo imageViewInfo;
+			imageViewInfo.image			   = image;
+			imageViewInfo.viewType		   = vk::ImageViewType::e2D;
+			imageViewInfo.format		   = surfaceFormat.format;
+			imageViewInfo.subresourceRange = subresourceRange;
+
 			auto [res, imageView] = GPUContext::device().createImageView(imageViewInfo, nullptr, Loader::get());
 			ctEnsureResult(res, "Failed to create swap chain image views.");
 			views.emplace_back(imageView);

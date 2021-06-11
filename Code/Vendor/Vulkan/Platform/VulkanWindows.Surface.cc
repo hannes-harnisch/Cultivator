@@ -1,4 +1,4 @@
-﻿#include "PCH.hh"
+#include "PCH.hh"
 
 #include "../Vulkan.Surface.hh"
 #include "Utils/Assert.hh"
@@ -8,9 +8,10 @@ namespace ct
 {
 	Surface::Surface(void* nativeWindowHandle)
 	{
-		auto info = vk::Win32SurfaceCreateInfoKHR()
-						.setHinstance(windows::AppContext::nativeInstanceHandle())
-						.setHwnd(static_cast<HWND>(nativeWindowHandle));
+		vk::Win32SurfaceCreateInfoKHR info;
+		info.hinstance = windows::AppContext::nativeInstanceHandle();
+		info.hwnd	   = static_cast<HWND>(nativeWindowHandle);
+
 		auto [res, handle] = GPUContext::instance().createWin32SurfaceKHR(info, nullptr, Loader::get());
 		ctEnsureResult(res, "Could not create Vulkan surface for Windows.");
 		surface = handle;

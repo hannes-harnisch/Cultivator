@@ -3,6 +3,7 @@
 #include "Utils/Assert.hh"
 #include "Vulkan.GPUContext.hh"
 #include "Vulkan.Surface.hh"
+#include "Vulkan.Utils.hh"
 
 namespace ct
 {
@@ -26,14 +27,15 @@ namespace ct
 
 		vk::DebugUtilsMessengerCreateInfoEXT fillLoggerInfo()
 		{
-			return vk::DebugUtilsMessengerCreateInfoEXT()
-				.setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-									vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-									vk::DebugUtilsMessageSeverityFlagBitsEXT::eError)
-				.setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-								vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-								vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance)
-				.setPfnUserCallback(logDebug);
+			vk::DebugUtilsMessengerCreateInfoEXT info;
+			info.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+								   vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+								   vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
+			info.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+							   vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+							   vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+			info.pfnUserCallback = logDebug;
+			return info;
 		}
 	}
 
@@ -63,12 +65,13 @@ namespace ct
 	{
 		vk::ApplicationInfo fillAppInfo()
 		{
-			return vk::ApplicationInfo()
-				.setPApplicationName(CT_APP_NAME)
-				.setApplicationVersion(VK_MAKE_VERSION(0, 0, 1))
-				.setPEngineName(CT_APP_NAME)
-				.setEngineVersion(VK_MAKE_VERSION(0, 0, 1))
-				.setApiVersion(VK_API_VERSION_1_0);
+			vk::ApplicationInfo info;
+			info.pApplicationName	= CT_APP_NAME;
+			info.applicationVersion = VK_MAKE_VERSION(0, 0, 1);
+			info.pEngineName		= CT_APP_NAME;
+			info.engineVersion		= VK_MAKE_VERSION(0, 0, 1);
+			info.apiVersion			= VK_API_VERSION_1_0;
+			return info;
 		}
 	}
 
@@ -77,18 +80,25 @@ namespace ct
 		ensureInstanceExtensionsExist();
 		ensureLayersExist();
 
-		std::array enables {vk::ValidationFeatureEnableEXT::eBestPractices};
-		auto validationFeatures = vk::ValidationFeaturesEXT().setPNext(&loggerInfo).setEnabledValidationFeatures(enables);
+		auto enabled = vk::ValidationFeatureEnableEXT::eBestPractices;
+		vk::ValidationFeaturesEXT features;
+		features.pNext						   = &loggerInfo;
+		features.enabledValidationFeatureCount = 1;
+		features.pEnabledValidationFeatures	   = &enabled;
 
-		auto appInfo	  = fillAppInfo();
-		auto instanceInfo = vk::InstanceCreateInfo()
+		auto appInfo = fillAppInfo();
+
+		vk::InstanceCreateInfo info;
 #if CT_DEBUG
-								.setPNext(&loggerInfo) // &validationFeatures
+		info.pNext = &loggerInfo; // &validationFeatures
 #endif
-								.setPApplicationInfo(&appInfo)
-								.setPEnabledLayerNames(RequiredLayers)
-								.setPEnabledExtensionNames(RequiredInstanceExtensions);
-		auto [res, instance] = vk::createInstance(instanceInfo);
+		info.pApplicationInfo		 = &appInfo;
+		info.enabledLayerCount		 = count(RequiredLayers);
+		info.ppEnabledLayerNames	 = RequiredLayers.data();
+		info.enabledExtensionCount	 = count(RequiredInstanceExtensions);
+		info.ppEnabledExtensionNames = RequiredInstanceExtensions.data();
+
+		auto [res, instance] = vk::createInstance(info);
 		ctEnsureResult(res, "Failed to create Vulkan instance.");
 		instanceHandle = instance;
 	}
@@ -176,6 +186,7 @@ namespace ct
 
 			uint32_t index {};
 			auto dummy = Surface::makeDummy();
+
 			for(auto& queueFamily : adapter.getQueueFamilyProperties(Loader::get()))
 			{
 				if(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
@@ -207,13 +218,20 @@ namespace ct
 		if(families.Graphics != families.Present)
 			queueInfos.push_back(presentQueueInfo);
 
-		auto features	= vk::PhysicalDeviceFeatures().setShaderImageGatherExtended(true).setSamplerAnisotropy(true);
-		auto deviceInfo = vk::DeviceCreateInfo()
-							  .setQueueCreateInfos(queueInfos)
-							  .setPEnabledLayerNames(RequiredLayers)
-							  .setPEnabledExtensionNames(RequiredDeviceExtensions)
-							  .setPEnabledFeatures(&features);
-		auto [res, device] = adapterHandle.createDevice(deviceInfo, nullptr, Loader::get());
+		vk::PhysicalDeviceFeatures features;
+		features.shaderImageGatherExtended = true;
+		features.samplerAnisotropy		   = true;
+
+		vk::DeviceCreateInfo info;
+		info.queueCreateInfoCount	 = count(queueInfos);
+		info.pQueueCreateInfos		 = queueInfos.data();
+		info.enabledLayerCount		 = count(RequiredLayers);
+		info.ppEnabledLayerNames	 = RequiredLayers.data();
+		info.enabledExtensionCount	 = count(RequiredDeviceExtensions);
+		info.ppEnabledExtensionNames = RequiredDeviceExtensions.data();
+		info.pEnabledFeatures		 = &features;
+
+		auto [res, device] = adapterHandle.createDevice(info, nullptr, Loader::get());
 		ctEnsureResult(res, "Failed to create Vulkan device.");
 		deviceHandle = device;
 

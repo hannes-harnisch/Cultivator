@@ -40,75 +40,88 @@ namespace ct
 
 	vk::Sampler CellularAutomatonRenderer::makeSampler()
 	{
-		auto samplerInfo = vk::SamplerCreateInfo()
-							   .setMagFilter(vk::Filter::eNearest)
-							   .setMinFilter(vk::Filter::eNearest)
-							   .setAddressModeU(vk::SamplerAddressMode::eClampToBorder)
-							   .setAddressModeV(vk::SamplerAddressMode::eClampToBorder)
-							   .setAddressModeW(vk::SamplerAddressMode::eClampToBorder)
-							   .setAnisotropyEnable(false)
-							   .setMaxAnisotropy(1.0f)
-							   .setBorderColor(vk::BorderColor::eIntOpaqueBlack)
-							   .setUnnormalizedCoordinates(false)
-							   .setCompareEnable(false)
-							   .setCompareOp(vk::CompareOp::eAlways);
-		auto [res, handle] = GPUContext::device().createSampler(samplerInfo, nullptr, Loader::get());
+		vk::SamplerCreateInfo info;
+		info.magFilter				 = vk::Filter::eNearest;
+		info.minFilter				 = vk::Filter::eNearest;
+		info.addressModeU			 = vk::SamplerAddressMode::eClampToBorder;
+		info.addressModeV			 = vk::SamplerAddressMode::eClampToBorder;
+		info.addressModeW			 = vk::SamplerAddressMode::eClampToBorder;
+		info.anisotropyEnable		 = false;
+		info.maxAnisotropy			 = 1.0f;
+		info.borderColor			 = vk::BorderColor::eIntOpaqueBlack;
+		info.unnormalizedCoordinates = false;
+		info.compareEnable			 = false;
+		info.compareOp				 = vk::CompareOp::eAlways;
+
+		auto [res, handle] = GPUContext::device().createSampler(info, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create sampler.");
 		return handle;
 	}
 
 	vk::DescriptorSetLayout CellularAutomatonRenderer::makeDescriptorSetLayout()
 	{
-		auto dsl = vk::DescriptorSetLayoutBinding()
-					   .setBinding(0)
-					   .setDescriptorCount(1)
-					   .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-					   .setStageFlags(vk::ShaderStageFlagBits::eFragment);
+		vk::DescriptorSetLayoutBinding binding;
+		binding.binding			= 0;
+		binding.descriptorCount = 1;
+		binding.descriptorType	= vk::DescriptorType::eCombinedImageSampler;
+		binding.stageFlags		= vk::ShaderStageFlagBits::eFragment;
 
-		std::array bindings {dsl};
+		vk::DescriptorSetLayoutCreateInfo info;
+		info.bindingCount = 1;
+		info.pBindings	  = &binding;
 
-		auto dslInfo	   = vk::DescriptorSetLayoutCreateInfo().setBindings(bindings);
-		auto [res, handle] = GPUContext::device().createDescriptorSetLayout(dslInfo, nullptr, Loader::get());
+		auto [res, handle] = GPUContext::device().createDescriptorSetLayout(info, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create descriptor set layout.");
 		return handle;
 	}
 
 	vk::DescriptorPool CellularAutomatonRenderer::makeDescriptorPool()
 	{
-		std::array poolSizes {
-			vk::DescriptorPoolSize().setType(vk::DescriptorType::eCombinedImageSampler).setDescriptorCount(1)};
+		vk::DescriptorPoolSize poolSize;
+		poolSize.type			 = vk::DescriptorType::eCombinedImageSampler;
+		poolSize.descriptorCount = 1;
 
-		auto poolInfo	 = vk::DescriptorPoolCreateInfo().setPoolSizes(poolSizes).setMaxSets(2);
-		auto [res, pool] = GPUContext::device().createDescriptorPool(poolInfo, nullptr, Loader::get());
+		vk::DescriptorPoolCreateInfo info;
+		info.maxSets	   = 2;
+		info.poolSizeCount = 1;
+		info.pPoolSizes	   = &poolSize;
+
+		auto [res, pool] = GPUContext::device().createDescriptorPool(info, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create descriptor pool.");
 		return pool;
 	}
 
 	vk::DescriptorSet CellularAutomatonRenderer::makeDescriptorSetForSampler(Texture const& tex)
 	{
-		std::array setLayouts {descSetLayout.get()};
-		auto allocInfo	 = vk::DescriptorSetAllocateInfo().setDescriptorPool(descPool).setSetLayouts(setLayouts);
-		auto [res, sets] = GPUContext::device().allocateDescriptorSets(allocInfo, Loader::get());
+		auto layout = descSetLayout.get();
+		vk::DescriptorSetAllocateInfo alloc;
+		alloc.descriptorPool	 = descPool;
+		alloc.descriptorSetCount = 1;
+		alloc.pSetLayouts		 = &layout;
+		auto [res, sets]		 = GPUContext::device().allocateDescriptorSets(alloc, Loader::get());
 		ctAssertResult(res, "Failed to allocate descriptor sets.");
 
-		auto descImgInfo = vk::DescriptorImageInfo()
-							   .setSampler(sampler)
-							   .setImageView(tex.imageView())
-							   .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
-		std::array descWrites {vk::WriteDescriptorSet()
-								   .setDstSet(sets[0])
-								   .setDstBinding(0)
-								   .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-								   .setDescriptorCount(1)
-								   .setImageInfo(descImgInfo)};
-		GPUContext::device().updateDescriptorSets(descWrites, {}, Loader::get());
+		vk::DescriptorImageInfo info;
+		info.sampler	 = sampler;
+		info.imageView	 = tex.imageView();
+		info.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+
+		vk::WriteDescriptorSet descWrite;
+		descWrite.dstSet		  = sets[0];
+		descWrite.dstBinding	  = 0;
+		descWrite.descriptorCount = 1;
+		descWrite.descriptorType  = vk::DescriptorType::eCombinedImageSampler;
+		descWrite.pImageInfo	  = &info;
+		GPUContext::device().updateDescriptorSets(descWrite, {}, Loader::get());
 
 		return sets[0];
 	}
 
 	void CellularAutomatonRenderer::makeSyncObjects()
 	{
-		auto fenceInfo = vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled);
+		vk::FenceCreateInfo fenceInfo;
+		fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+
 		vk::SemaphoreCreateInfo semaphoreInfo;
 		for(auto& sem : imgGetSemaphores)
 		{
@@ -133,7 +146,7 @@ namespace ct
 
 	void CellularAutomatonRenderer::prepareTextures()
 	{
-		size_t size = 4 * back.size().area();
+		size_t size = static_cast<size_t>(4) * back.size().area();
 		Buffer stage(size, vk::BufferUsageFlagBits::eTransferSrc,
 					 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 		void* stageTarget;

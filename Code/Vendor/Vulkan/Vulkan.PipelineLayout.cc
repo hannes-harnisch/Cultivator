@@ -2,13 +2,17 @@
 
 #include "Vulkan.GPUContext.hh"
 #include "Vulkan.PipelineLayout.hh"
+#include "Vulkan.Utils.hh"
 
 namespace ct
 {
 	PipelineLayout::PipelineLayout(std::vector<vk::DescriptorSetLayout> const& descriptorLayouts)
 	{
-		auto layoutInfo	   = vk::PipelineLayoutCreateInfo().setSetLayouts(descriptorLayouts);
-		auto [res, layout] = GPUContext::device().createPipelineLayout(layoutInfo, nullptr, Loader::get());
+		vk::PipelineLayoutCreateInfo info;
+		info.setLayoutCount = count(descriptorLayouts);
+		info.pSetLayouts	= descriptorLayouts.data();
+
+		auto [res, layout] = GPUContext::device().createPipelineLayout(info, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan pipeline layout.");
 		pipelineLayout = layout;
 	}
