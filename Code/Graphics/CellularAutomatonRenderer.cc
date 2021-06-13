@@ -27,7 +27,7 @@ namespace ct
 		swapChain(window.handle(), windowViewport, presentPass),
 		frontBuffer(size, simulationPass, front.imageView()),
 		backBuffer(size, simulationPass, back.imageView()),
-		gameOfLife(vertex, Shader("BriansBrain.frag.spv"), pipelineLayout, simulationPass),
+		gameOfLife(vertex, Shader("DayAndNight.frag.spv"), pipelineLayout, simulationPass),
 		presentation(vertex, Shader("Presentation.frag.spv"), pipelineLayout, simulationPass),
 		descPool(makeDescriptorPool()),
 		frontDescSet(makeDescriptorSetForSampler(front)),
@@ -148,15 +148,16 @@ namespace ct
 		size_t size = static_cast<size_t>(4) * back.size().area();
 		Buffer stage(size, vk::BufferUsageFlagBits::eTransferSrc,
 					 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+
 		void* stageTarget;
 		ctAssertResult(GPUContext::device().mapMemory(stage.memory(), 0, size, {}, &stageTarget, Loader::get()),
 					   "Failed to map memory.");
+
 		unsigned* pixels = static_cast<unsigned*>(stageTarget);
 		for(size_t i = 0; i < size / 4; ++i)
 		{
-			*pixels++ = std::rand() % 50 == 0 ? 0xFFFFFFFF : 0;
+			*pixels++ = std::rand() % 2 == 0 ? 0xFFFFFFFF : 0;
 		}
-
 		GPUContext::device().unmapMemory(stage.memory(), Loader::get());
 
 		CommandList list;
@@ -180,29 +181,26 @@ namespace ct
 	void CellularAutomatonRenderer::draw()
 	{
 		using namespace std::chrono_literals;
-		std::this_thread::sleep_for(10ms);
+		std::this_thread::sleep_for(1ms);
 
-		std::array frameFence {frameFences[currentFrame].get()};
-		ctAssertResult(GPUContext::device().waitForFences(frameFence, true, UINT64_MAX, Loader::get()),
+		ctAssertResult(GPUContext::device().waitForFences(frameFences[curFrame].get(), true, UINT64_MAX, Loader::get()),
 					   "Failed to wait for fences.");
 
-		uint32_t imgIndex = swapChain.getNextImageIndex(imgGetSemaphores[currentFrame]);
+		uint32_t imgIndex = swapChain.getNextImageIndex(imgGetSemaphores[curFrame]);
 		recordCommands(imgIndex);
 
 		if(imgInFlightFences[imgIndex])
-		{
-			std::array imgFence {imgInFlightFences[imgIndex]};
-			ctAssertResult(GPUContext::device().waitForFences(imgFence, true, UINT64_MAX, Loader::get()),
+			ctAssertResult(GPUContext::device().waitForFences(imgInFlightFences[imgIndex], true, UINT64_MAX, Loader::get()),
 						   "Failed to wait for fences.");
-		}
-		imgInFlightFences[imgIndex] = frameFences[currentFrame];
-		GPUContext::device().resetFences(frameFence, Loader::get());
 
-		GPUContext::graphicsQueue().submit(commandLists[imgIndex].handle(), imgGetSemaphores[currentFrame],
-										   imgDoneSemaphores[currentFrame], frameFences[currentFrame]);
+		imgInFlightFences[imgIndex] = frameFences[curFrame];
+		GPUContext::device().resetFences(frameFences[curFrame].get(), Loader::get());
 
-		swapChain.present(imgIndex, imgDoneSemaphores[currentFrame]);
-		currentFrame = (currentFrame + 1) % MaxFrames;
+		GPUContext::graphicsQueue().submit(commandLists[imgIndex].handle(), imgGetSemaphores[curFrame],
+										   imgDoneSemaphores[curFrame], frameFences[curFrame]);
+
+		swapChain.present(imgIndex, imgDoneSemaphores[curFrame]);
+		curFrame = (curFrame + 1) % MaxFrames;
 	}
 
 	void CellularAutomatonRenderer::recordCommands(uint32_t imgIndex)
@@ -210,22 +208,22 @@ namespace ct
 		auto& com = commandLists[imgIndex];
 
 		com.begin();
-		com.pushImageBarrier(currentFrame ? back : front, vk::ImageLayout::eColorAttachmentOptimal);
+		com.pushImageBarrier(curFrame ? back : front, vk::ImageLayout::eColorAttachmentOptimal);
 
-		com.beginRenderPass(back.size(), simulationPass, currentFrame ? backBuffer : frontBuffer);
+		com.beginRenderPass(back.size(), simulationPass, curFrame ? backBuffer : frontBuffer);
 		com.bindViewport(back.size());
 		com.bindScissor(back.size());
-		com.bindDescriptorSets(pipelineLayout, {currentFrame ? frontDescSet : backDescSet});
+		com.bindDescriptorSets(pipelineLayout, {curFrame ? frontDescSet : backDescSet});
 		com.bindPipeline(gameOfLife);
 		com.draw();
 		com.endRenderPass();
 
-		com.pushImageBarrier(currentFrame ? back : front, vk::ImageLayout::eShaderReadOnlyOptimal);
+		com.pushImageBarrier(curFrame ? back : front, vk::ImageLayout::eShaderReadOnlyOptimal);
 
 		com.beginRenderPass(windowViewport, presentPass, swapChain.getFrameBuffer(imgIndex));
 		com.bindViewport(windowViewport);
 		com.bindScissor(windowViewport);
-		com.bindDescriptorSets(pipelineLayout, {currentFrame ? backDescSet : frontDescSet});
+		com.bindDescriptorSets(pipelineLayout, {curFrame ? backDescSet : frontDescSet});
 		com.bindPipeline(presentation);
 		com.draw();
 		com.endRenderPass();

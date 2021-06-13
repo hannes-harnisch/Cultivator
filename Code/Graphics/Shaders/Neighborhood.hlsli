@@ -1,6 +1,6 @@
 #define DEAD  0
-#define ALIVE 1
-#define DYING 2
+#define DYING 0.5
+#define ALIVE 1.0
 
 Texture2D Universe : register(t0);
 
@@ -9,6 +9,11 @@ struct Neighborhood
 	uint current;
 	uint living;
 };
+
+bool floatCmp(float a, float b)
+{
+	return abs(a - b) < 1e-1;
+}
 
 uint getCell(float4 pos, int x, int y)
 {

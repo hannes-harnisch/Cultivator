@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "App/Window.hh"
 #include "Utils/Rectangle.hh"
@@ -41,7 +41,7 @@ namespace ct
 		DeviceOwn<vk::Fence, &vk::Device::destroyFence> frameFences[MaxFrames];
 		DeviceOwn<vk::Semaphore, &vk::Device::destroySemaphore> imgDoneSemaphores[MaxFrames];
 		DeviceOwn<vk::Semaphore, &vk::Device::destroySemaphore> imgGetSemaphores[MaxFrames];
-		uint32_t currentFrame {};
+		uint32_t curFrame {};
 		std::vector<CommandList> commandLists;
 
 		CellularAutomatonRenderer(Rectangle size, Window const& window, Shader const& vertex);

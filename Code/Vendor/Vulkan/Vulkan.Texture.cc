@@ -11,17 +11,17 @@ namespace ct
 
 	vk::Image Texture::makeImage(Rectangle size)
 	{
-		vk::ImageCreateInfo imageInfo;
-		imageInfo.imageType	  = vk::ImageType::e2D;
-		imageInfo.format	  = vk::Format::eB8G8R8A8Srgb;
-		imageInfo.extent	  = vk::Extent3D(size.width, size.height, 1);
-		imageInfo.mipLevels	  = 1;
-		imageInfo.arrayLayers = 1;
-		imageInfo.samples	  = vk::SampleCountFlagBits::e1;
-		imageInfo.usage =
+		vk::ImageCreateInfo info;
+		info.imageType	 = vk::ImageType::e2D;
+		info.format		 = vk::Format::eB8G8R8A8Srgb;
+		info.extent		 = vk::Extent3D(size.width, size.height, 1);
+		info.mipLevels	 = 1;
+		info.arrayLayers = 1;
+		info.samples	 = vk::SampleCountFlagBits::e1;
+		info.usage =
 			vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
 
-		auto [res, handle] = GPUContext::device().createImage(imageInfo, nullptr, Loader::get());
+		auto [res, handle] = GPUContext::device().createImage(info, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan texture.");
 		return handle;
 	}
@@ -31,10 +31,10 @@ namespace ct
 		auto memRequirements = GPUContext::device().getImageMemoryRequirements(img, Loader::get());
 		uint32_t typeIndex	 = findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-		vk::MemoryAllocateInfo allocInfo;
-		allocInfo.allocationSize  = memRequirements.size;
-		allocInfo.memoryTypeIndex = typeIndex;
-		auto [res, handle]		  = GPUContext::device().allocateMemory(allocInfo, nullptr, Loader::get());
+		vk::MemoryAllocateInfo info;
+		info.allocationSize	 = memRequirements.size;
+		info.memoryTypeIndex = typeIndex;
+		auto [res, handle]	 = GPUContext::device().allocateMemory(info, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to allocate texture memory.");
 
 		ctAssertResult(GPUContext::device().bindImageMemory(img, handle, 0, Loader::get()),
@@ -44,18 +44,18 @@ namespace ct
 
 	vk::ImageView Texture::makeImageView()
 	{
-		vk::ImageSubresourceRange subresourceRange;
-		subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-		subresourceRange.levelCount = 1;
-		subresourceRange.layerCount = 1;
+		vk::ImageSubresourceRange range;
+		range.aspectMask = vk::ImageAspectFlagBits::eColor;
+		range.levelCount = 1;
+		range.layerCount = 1;
 
-		vk::ImageViewCreateInfo imageViewInfo;
-		imageViewInfo.image			   = img;
-		imageViewInfo.viewType		   = vk::ImageViewType::e2D;
-		imageViewInfo.format		   = vk::Format::eB8G8R8A8Srgb;
-		imageViewInfo.subresourceRange = subresourceRange;
+		vk::ImageViewCreateInfo info;
+		info.image			  = img;
+		info.viewType		  = vk::ImageViewType::e2D;
+		info.format			  = vk::Format::eB8G8R8A8Srgb;
+		info.subresourceRange = range;
 
-		auto [res, handle] = GPUContext::device().createImageView(imageViewInfo, nullptr, Loader::get());
+		auto [res, handle] = GPUContext::device().createImageView(info, nullptr, Loader::get());
 		ctAssertResult(res, "Failed to create Vulkan image view.");
 		return handle;
 	}
