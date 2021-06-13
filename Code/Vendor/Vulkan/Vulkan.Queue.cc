@@ -19,18 +19,18 @@ namespace ct
 		return supports;
 	}
 
-	void Queue::submit(vk::CommandBuffer commandBuffer, vk::Semaphore imgGet, vk::Semaphore imgDone, vk::Fence fence)
+	void Queue::submit(vk::CommandBuffer commandBuffer, vk::Semaphore wait, vk::Semaphore signal, vk::Fence fence)
 	{
 		vk::PipelineStageFlags waitStages = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
 		vk::SubmitInfo submit;
 		submit.waitSemaphoreCount	= 1;
-		submit.pWaitSemaphores		= &imgGet;
+		submit.pWaitSemaphores		= &wait;
 		submit.pWaitDstStageMask	= &waitStages;
 		submit.commandBufferCount	= 1;
 		submit.pCommandBuffers		= &commandBuffer;
 		submit.signalSemaphoreCount = 1;
-		submit.pSignalSemaphores	= &imgDone;
+		submit.pSignalSemaphores	= &signal;
 
 		ctAssertResult(queue.submit(submit, fence, Loader::get()), "Failed to submit to queue.");
 	}

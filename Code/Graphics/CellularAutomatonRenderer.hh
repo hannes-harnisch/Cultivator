@@ -27,7 +27,7 @@ namespace ct
 		DeviceOwn<vk::Sampler, &vk::Device::destroySampler> sampler;
 		DeviceOwn<vk::DescriptorSetLayout, &vk::Device::destroyDescriptorSetLayout> descSetLayout;
 		PipelineLayout pipelineLayout;
-		RenderPass universeUpdatePass;
+		RenderPass simulationPass;
 		RenderPass presentPass;
 		SwapChain swapChain;
 		FrameBuffer frontBuffer;

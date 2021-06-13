@@ -1,31 +1,51 @@
-#define ALIVE float4(1, 1, 1, 1)
-#define DEAD  float4(0, 0, 0, 1)
+#define DEAD  0
+#define ALIVE 1
+#define DYING 2
 
 Texture2D Universe : register(t0);
 
 struct Neighborhood
 {
-	int current;
-	int sum;
+	uint current;
+	uint living;
 };
 
-int getCell(float4 pos, int x, int y)
+uint getCell(float4 pos, int x, int y)
 {
-	return Universe.Load(pos.xyz, int2(x, y)).r;
+	return Universe.Load(int3(pos.xy, 0), int2(x, y)).x;
 }
 
 Neighborhood getNeighborhood(float4 pos)
 {
 	Neighborhood hood;
-	int nw		 = getCell(pos, -1, 1);
-	int n		 = getCell(pos, 0, 1);
-	int ne		 = getCell(pos, 1, 1);
-	int w		 = getCell(pos, -1, 0);
-	hood.current = getCell(pos, 0, 0);
-	int e		 = getCell(pos, 1, 0);
-	int sw		 = getCell(pos, -1, -1);
-	int s		 = getCell(pos, 0, -1);
-	int se		 = getCell(pos, 1, -1);
-	hood.sum	 = nw + n + ne + w + hood.current + e + sw + s + se;
+	hood.current = Universe.Load(int3(pos.xy, 0)).x;
+	hood.living	 = 0;
+
+	uint sw = getCell(pos, -1, -1);
+	uint s	= getCell(pos, 0, -1);
+	uint se = getCell(pos, 1, -1);
+	uint w	= getCell(pos, -1, 0);
+	uint e	= getCell(pos, 1, 0);
+	uint nw = getCell(pos, -1, 1);
+	uint n	= getCell(pos, 0, 1);
+	uint ne = getCell(pos, 1, 1);
+
+	if(sw == ALIVE)
+		hood.living++;
+	if(s == ALIVE)
+		hood.living++;
+	if(se == ALIVE)
+		hood.living++;
+	if(w == ALIVE)
+		hood.living++;
+	if(e == ALIVE)
+		hood.living++;
+	if(nw == ALIVE)
+		hood.living++;
+	if(n == ALIVE)
+		hood.living++;
+	if(ne == ALIVE)
+		hood.living++;
+
 	return hood;
 }

@@ -22,13 +22,13 @@ namespace ct
 		sampler(makeSampler()),
 		descSetLayout(makeDescriptorSetLayout()),
 		pipelineLayout(std::vector {descSetLayout.get()}),
-		universeUpdatePass(vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eShaderReadOnlyOptimal),
+		simulationPass(vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eShaderReadOnlyOptimal),
 		presentPass(vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR),
 		swapChain(window.handle(), windowViewport, presentPass),
-		frontBuffer(size, universeUpdatePass, front.imageView()),
-		backBuffer(size, universeUpdatePass, back.imageView()),
-		gameOfLife(vertex, Shader("Seeds.frag.spv"), pipelineLayout, universeUpdatePass),
-		presentation(vertex, Shader("Presentation.frag.spv"), pipelineLayout, universeUpdatePass),
+		frontBuffer(size, simulationPass, front.imageView()),
+		backBuffer(size, simulationPass, back.imageView()),
+		gameOfLife(vertex, Shader("BriansBrain.frag.spv"), pipelineLayout, simulationPass),
+		presentation(vertex, Shader("Presentation.frag.spv"), pipelineLayout, simulationPass),
 		descPool(makeDescriptorPool()),
 		frontDescSet(makeDescriptorSetForSampler(front)),
 		backDescSet(makeDescriptorSetForSampler(back)),
@@ -153,7 +153,9 @@ namespace ct
 					   "Failed to map memory.");
 		unsigned* pixels = static_cast<unsigned*>(stageTarget);
 		for(size_t i = 0; i < size / 4; ++i)
-			*pixels++ = std::rand() % 400 == 0 ? 0xFFFFFFFF : 0;
+		{
+			*pixels++ = std::rand() % 50 == 0 ? 0xFFFFFFFF : 0;
+		}
 
 		GPUContext::device().unmapMemory(stage.memory(), Loader::get());
 
@@ -178,7 +180,7 @@ namespace ct
 	void CellularAutomatonRenderer::draw()
 	{
 		using namespace std::chrono_literals;
-		std::this_thread::sleep_for(1ms);
+		std::this_thread::sleep_for(10ms);
 
 		std::array frameFence {frameFences[currentFrame].get()};
 		ctAssertResult(GPUContext::device().waitForFences(frameFence, true, UINT64_MAX, Loader::get()),
@@ -210,7 +212,7 @@ namespace ct
 		com.begin();
 		com.pushImageBarrier(currentFrame ? back : front, vk::ImageLayout::eColorAttachmentOptimal);
 
-		com.beginRenderPass(back.size(), universeUpdatePass, currentFrame ? backBuffer : frontBuffer);
+		com.beginRenderPass(back.size(), simulationPass, currentFrame ? backBuffer : frontBuffer);
 		com.bindViewport(back.size());
 		com.bindScissor(back.size());
 		com.bindDescriptorSets(pipelineLayout, {currentFrame ? frontDescSet : backDescSet});
