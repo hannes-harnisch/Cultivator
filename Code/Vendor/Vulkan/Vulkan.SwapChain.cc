@@ -20,8 +20,7 @@ namespace ct
 
 	uint32_t SwapChain::getNextImageIndex(vk::Semaphore imgGetSemaphore)
 	{
-		auto [res, imgIndex] = GPUContext::device().acquireNextImageKHR(swapChain, std::numeric_limits<uint64_t>::max(),
-																		imgGetSemaphore, nullptr, Loader::get());
+		auto [res, imgIndex] = GPUContext::device().acquireNextImageKHR(swapChain, UINT64_MAX, imgGetSemaphore, nullptr);
 		if(res == vk::Result::eErrorOutOfDateKHR)
 			std::exit(EXIT_FAILURE);
 
@@ -38,7 +37,7 @@ namespace ct
 		info.pSwapchains		= &chain;
 		info.pImageIndices		= &imageIndex;
 
-		auto result = GPUContext::presentQueue().handle().presentKHR(info, Loader::get());
+		auto result = GPUContext::presentQueue().handle().presentKHR(info);
 
 		if(result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
 			std::exit(EXIT_FAILURE);
@@ -46,7 +45,7 @@ namespace ct
 
 	vk::SurfaceFormatKHR SwapChain::makeSurfaceFormat()
 	{
-		auto [res, formats] = GPUContext::adapter().getSurfaceFormatsKHR(surface.handle(), Loader::get());
+		auto [res, formats] = GPUContext::adapter().getSurfaceFormatsKHR(surface.handle());
 		ctEnsureResult(res, "Failed to create Vulkan surface formats.");
 
 		for(auto format : formats)
@@ -58,7 +57,7 @@ namespace ct
 
 	vk::PresentModeKHR SwapChain::makePresentMode()
 	{
-		auto [res, modes] = GPUContext::adapter().getSurfacePresentModesKHR(surface.handle(), Loader::get());
+		auto [res, modes] = GPUContext::adapter().getSurfacePresentModesKHR(surface.handle());
 		ctEnsureResult(res, "Failed to create Vulkan surface presentation modes.");
 
 		for(auto mode : modes)
@@ -70,7 +69,7 @@ namespace ct
 
 	vk::Extent2D SwapChain::makeExtent(Rectangle const viewport)
 	{
-		auto [res, caps] = GPUContext::adapter().getSurfaceCapabilitiesKHR(surface.handle(), Loader::get());
+		auto [res, caps] = GPUContext::adapter().getSurfaceCapabilitiesKHR(surface.handle());
 		ctEnsureResult(res, "Failed to create Vulkan surface capabilities.");
 
 		uint32_t imageCount = caps.minImageCount + 1;
@@ -101,7 +100,7 @@ namespace ct
 			swapChainInfo.pQueueFamilyIndices	= indices.data();
 		}
 
-		auto [res, handle] = GPUContext::device().createSwapchainKHR(swapChainInfo, nullptr, Loader::get());
+		auto [res, handle] = GPUContext::device().createSwapchainKHR(swapChainInfo);
 		ctEnsureResult(res, "Failed to create Vulkan swap chain.");
 		return handle;
 	}
@@ -125,7 +124,7 @@ namespace ct
 
 	std::vector<vk::Image> SwapChain::makeSwapChainImages()
 	{
-		auto [res, images] = GPUContext::device().getSwapchainImagesKHR(swapChain, Loader::get());
+		auto [res, images] = GPUContext::device().getSwapchainImagesKHR(swapChain);
 		ctEnsureResult(res, "Failed to get swap chain images.");
 		return images;
 	}
@@ -146,7 +145,7 @@ namespace ct
 			imageViewInfo.format		   = surfaceFormat.format;
 			imageViewInfo.subresourceRange = subresourceRange;
 
-			auto [res, imageView] = GPUContext::device().createImageView(imageViewInfo, nullptr, Loader::get());
+			auto [res, imageView] = GPUContext::device().createImageView(imageViewInfo);
 			ctEnsureResult(res, "Failed to create swap chain image views.");
 			views.emplace_back(imageView);
 		}

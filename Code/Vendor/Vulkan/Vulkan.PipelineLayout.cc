@@ -12,7 +12,7 @@ namespace ct
 		info.setLayoutCount = count(descriptorLayouts);
 		info.pSetLayouts	= descriptorLayouts.data();
 
-		auto [res, layout] = GPUContext::device().createPipelineLayout(info, nullptr, Loader::get());
+		auto [res, layout] = GPUContext::device().createPipelineLayout(info);
 		ctAssertResult(res, "Failed to create Vulkan pipeline layout.");
 		pipelineLayout = layout;
 	}

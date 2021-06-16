@@ -14,7 +14,7 @@ namespace ct
 		shaderInfo.codeSize = bytecode.size();
 		shaderInfo.pCode	= reinterpret_cast<uint32_t*>(bytecode.data());
 
-		auto [res, handle] = GPUContext::device().createShaderModule(shaderInfo, nullptr, Loader::get());
+		auto [res, handle] = GPUContext::device().createShaderModule(shaderInfo);
 		ctAssertResult(res, "Failed to create Vulkan shader module.");
 		shader = handle;
 	}

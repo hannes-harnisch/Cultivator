@@ -69,8 +69,11 @@ namespace ct
 
 		static constexpr std::array RequiredDeviceExtensions {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
+		vk::DynamicLoader dl;
 		vk::Instance instanceHandle;
+#if CT_DEBUG
 		vk::DebugUtilsMessengerEXT loggerHandle;
+#endif
 		vk::PhysicalDevice adapterHandle;
 		vk::Device deviceHandle;
 		vk::PhysicalDeviceProperties deviceProps;
@@ -78,30 +81,11 @@ namespace ct
 		Queue presentQueueHandle;
 
 		void initializeInstance(vk::DebugUtilsMessengerCreateInfoEXT const& loggerInfo);
-		void initializeLoaderWithoutDevice();
-		void initializeLogger(vk::DebugUtilsMessengerCreateInfoEXT const& loggerInfo);
 		void ensureInstanceExtensionsExist();
 		void ensureLayersExist();
 		void initializeAdapter();
 		void initializeDeviceAndQueues();
 		void ensureFeaturesExist(vk::PhysicalDeviceFeatures const& requiredFeatures);
 		void ensureDeviceExtensionsExist();
-		void recreateLoaderWithDevice();
-	};
-
-	class Loader final
-	{
-		friend GPUContext;
-
-	public:
-		static vk::DispatchLoaderDynamic& get()
-		{
-			return loader;
-		}
-
-		Loader() = delete;
-
-	private:
-		static inline vk::DispatchLoaderDynamic loader;
 	};
 }

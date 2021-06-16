@@ -57,7 +57,7 @@ namespace ct
 		pipelineInfo.renderPass			 = renderPass.handle();
 		pipelineInfo.basePipelineIndex	 = -1;
 
-		auto [res, pipe] = GPUContext::device().createGraphicsPipeline({}, pipelineInfo, nullptr, Loader::get());
+		auto [res, pipe] = GPUContext::device().createGraphicsPipeline({}, pipelineInfo);
 		ctAssertResult(res, "Failed to create Vulkan pipeline.");
 		return pipe;
 	}

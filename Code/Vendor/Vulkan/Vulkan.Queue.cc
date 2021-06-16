@@ -7,14 +7,13 @@
 
 namespace ct
 {
-	Queue::Queue(uint32_t familyIndex) :
-		familyIndex(familyIndex), queue(GPUContext::device().getQueue(familyIndex, 0, Loader::get()))
+	Queue::Queue(uint32_t familyIndex) : familyIndex(familyIndex), queue(GPUContext::device().getQueue(familyIndex, 0))
 	{}
 
 	bool Queue::supportsSurface(Surface const& surface) const
 	{
 		auto handle			 = surface.handle();
-		auto [res, supports] = GPUContext::adapter().getSurfaceSupportKHR(familyIndex, handle, Loader::get());
+		auto [res, supports] = GPUContext::adapter().getSurfaceSupportKHR(familyIndex, handle);
 		ctEnsureResult(res, "Failed to query for Vulkan surface support.");
 		return supports;
 	}
@@ -32,7 +31,7 @@ namespace ct
 		submit.signalSemaphoreCount = 1;
 		submit.pSignalSemaphores	= &signal;
 
-		ctAssertResult(queue.submit(submit, fence, Loader::get()), "Failed to submit to queue.");
+		ctAssertResult(queue.submit(submit, fence), "Failed to submit to queue.");
 	}
 
 	void Queue::submitSync(vk::CommandBuffer commandBuffer)
@@ -41,7 +40,7 @@ namespace ct
 		submit.commandBufferCount = 1;
 		submit.pCommandBuffers	  = &commandBuffer;
 
-		ctAssertResult(queue.submit(submit, nullptr, Loader::get()), "Failed to submit to queue.");
-		ctAssertResult(queue.waitIdle(Loader::get()), "Failed to wait for queue idle.");
+		ctAssertResult(queue.submit(submit, nullptr), "Failed to submit to queue.");
+		ctAssertResult(queue.waitIdle(), "Failed to wait for queue idle.");
 	}
 }

@@ -12,7 +12,7 @@ namespace ct
 		info.hinstance = windows::AppContext::nativeInstanceHandle();
 		info.hwnd	   = static_cast<HWND>(nativeWindowHandle);
 
-		auto [res, handle] = GPUContext::instance().createWin32SurfaceKHR(info, nullptr, Loader::get());
+		auto [res, handle] = GPUContext::instance().createWin32SurfaceKHR(info);
 		ctEnsureResult(res, "Could not create Vulkan surface for Windows.");
 		surface = handle;
 	}

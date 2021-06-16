@@ -13,7 +13,7 @@ namespace ct
 		using pointer = T;
 		void operator()(T handle) const
 		{
-			(GPUContext::device().*Deleter)(handle, {}, Loader::get());
+			(GPUContext::device().*Deleter)(handle, {}, VULKAN_HPP_DEFAULT_DISPATCHER);
 		}
 	};
 

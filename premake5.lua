@@ -11,7 +11,6 @@ workspace 'Cultivator'
 	staticruntime		'On'
 	floatingpoint		'Fast'
 	warnings			'Extra'
-	buildoptions		{ '/Zc:rvalueCast' }
 	files				{ 'Code/**.cc', 'Code/**.hh', 'Code/**.hlsli' }
 	removefiles			{ 'Code/**/**.*.*' }
 	files				{ 'Code/**.hlsl' }
@@ -36,8 +35,6 @@ workspace 'Cultivator'
 		systemversion	'latest'
 		files			{ 'Code/**/Windows.*.*', 'Code/**/Direct3D.*.*', 'Code/**/Vulkan.*.*', 'Code/**/VulkanWindows.*.*' }
 		includedirs		'C:/VulkanSDK/1.2.176.1/Include'
-		libdirs			'C:/VulkanSDK/1.2.176.1/Lib'
-		links			'Vulkan-1.lib'
 		defines			{ 'CT_SYSTEM_WINDOWS', 'CT_SYSTEM=windows' }
 
 	filter 'configurations:Debug'
@@ -48,8 +45,6 @@ workspace 'Cultivator'
 	filter 'configurations:Release'
 		runtime			'Release'
 		optimize		'Speed'
-		buildoptions	'/Ob3'
-		flags			{ 'LinkTimeOptimization' }
 
 project 'Cultivator'
 	location			'Code'

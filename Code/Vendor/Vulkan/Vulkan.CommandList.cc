@@ -10,7 +10,7 @@ namespace ct
 		vk::CommandPoolCreateInfo poolInfo;
 		poolInfo.queueFamilyIndex = GPUContext::graphicsQueue().getFamily();
 
-		auto [poolRes, pool] = GPUContext::device().createCommandPool(poolInfo, nullptr, Loader::get());
+		auto [poolRes, pool] = GPUContext::device().createCommandPool(poolInfo);
 		ctEnsureResult(poolRes, "Failed to create command pool.");
 		commandPool = pool;
 	}
@@ -22,12 +22,12 @@ namespace ct
 		bufferInfo.level			  = vk::CommandBufferLevel::ePrimary;
 		bufferInfo.commandBufferCount = 1;
 
-		auto [bufferRes, buffer] = GPUContext::device().allocateCommandBuffers(bufferInfo, Loader::get());
+		auto [bufferRes, buffer] = GPUContext::device().allocateCommandBuffers(bufferInfo);
 		ctEnsureResult(bufferRes, "Failed to allocate command buffer.");
 		commandList = buffer[0];
 
 		vk::CommandBufferBeginInfo info;
-		auto result = commandList.begin(info, Loader::get());
+		auto result = commandList.begin(info);
 		ctAssertResult(result, "Failed to begin Vulkan command list.");
 	}
 
@@ -43,7 +43,7 @@ namespace ct
 		info.clearValueCount = 1;
 		info.pClearValues	 = &clear;
 
-		commandList.beginRenderPass(info, vk::SubpassContents::eInline, Loader::get());
+		commandList.beginRenderPass(info, vk::SubpassContents::eInline);
 	}
 
 	void CommandList::bindViewport(Rectangle rectangle)
@@ -52,23 +52,23 @@ namespace ct
 		viewport.width	  = static_cast<float>(rectangle.width);
 		viewport.height	  = static_cast<float>(rectangle.height);
 		viewport.maxDepth = 1;
-		commandList.setViewport(0, viewport, Loader::get());
+		commandList.setViewport(0, viewport);
 	}
 
 	void CommandList::bindScissor(Rectangle rectangle)
 	{
 		vk::Rect2D scissor({}, {rectangle.width, rectangle.height});
-		commandList.setScissor(0, scissor, Loader::get());
+		commandList.setScissor(0, scissor);
 	}
 
 	void CommandList::bindPipeline(Pipeline const& pipeline)
 	{
-		commandList.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline.handle(), Loader::get());
+		commandList.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline.handle());
 	}
 
 	void CommandList::bindDescriptorSets(PipelineLayout const& pipeLayout, std::vector<vk::DescriptorSet> const& sets)
 	{
-		commandList.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeLayout.handle(), 0, sets, {}, Loader::get());
+		commandList.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeLayout.handle(), 0, sets, {});
 	}
 
 	void CommandList::copyBufferToTexture(Buffer const& src, Texture const& dst)
@@ -81,7 +81,7 @@ namespace ct
 		region.imageSubresource = subresourceLayers;
 		region.imageExtent		= vk::Extent3D(dst.size().width, dst.size().height, 1);
 
-		commandList.copyBufferToImage(src.buffer(), dst.image(), vk::ImageLayout::eTransferDstOptimal, region, Loader::get());
+		commandList.copyBufferToImage(src.buffer(), dst.image(), vk::ImageLayout::eTransferDstOptimal, region);
 	}
 
 	void CommandList::transitionTexture(Texture const& tex, vk::ImageLayout newLayout)
@@ -120,29 +120,29 @@ namespace ct
 		else
 			throw "Unsupported layout transition!";
 
-		commandList.pipelineBarrier(srcStage, dstStage, {}, {}, {}, barrier, Loader::get());
+		commandList.pipelineBarrier(srcStage, dstStage, {}, {}, {}, barrier);
 	}
 
 	void CommandList::draw()
 	{
-		commandList.draw(3, 1, 0, 0, Loader::get());
+		commandList.draw(3, 1, 0, 0);
 	}
 
 	void CommandList::end()
 	{
-		auto res = commandList.end(Loader::get());
+		auto res = commandList.end();
 		ctAssertResult(res, "Failed to end Vulkan command list.");
 	}
 
 	void CommandList::endRenderPass()
 	{
-		commandList.endRenderPass(Loader::get());
+		commandList.endRenderPass();
 	}
 
 	void CommandList::reset()
 	{
-		GPUContext::device().freeCommandBuffers(commandPool, commandList, Loader::get());
-		auto res = GPUContext::device().resetCommandPool(commandPool, {}, Loader::get());
+		GPUContext::device().freeCommandBuffers(commandPool, commandList);
+		auto res = GPUContext::device().resetCommandPool(commandPool, {});
 		ctAssertResult(res, "Failed to reset command buffer.");
 	}
 }

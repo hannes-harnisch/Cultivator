@@ -12,7 +12,7 @@ namespace ct
 
 	CellularAutomatonRenderer::~CellularAutomatonRenderer()
 	{
-		ctAssertResult(GPUContext::device().waitIdle(Loader::get()), "Failed to wait for idle device.");
+		ctAssertResult(GPUContext::device().waitIdle(), "Failed to wait for idle device.");
 	}
 
 	CellularAutomatonRenderer::CellularAutomatonRenderer(Rectangle const size, Window const& window, Shader const& vertex) :
@@ -51,7 +51,7 @@ namespace ct
 		info.compareEnable			 = false;
 		info.compareOp				 = vk::CompareOp::eAlways;
 
-		auto [res, handle] = GPUContext::device().createSampler(info, nullptr, Loader::get());
+		auto [res, handle] = GPUContext::device().createSampler(info);
 		ctAssertResult(res, "Failed to create sampler.");
 		return handle;
 	}
@@ -68,7 +68,7 @@ namespace ct
 		info.bindingCount = 1;
 		info.pBindings	  = &binding;
 
-		auto [res, handle] = GPUContext::device().createDescriptorSetLayout(info, nullptr, Loader::get());
+		auto [res, handle] = GPUContext::device().createDescriptorSetLayout(info);
 		ctAssertResult(res, "Failed to create descriptor set layout.");
 		return handle;
 	}
@@ -84,7 +84,7 @@ namespace ct
 		info.poolSizeCount = 1;
 		info.pPoolSizes	   = &poolSize;
 
-		auto [res, pool] = GPUContext::device().createDescriptorPool(info, nullptr, Loader::get());
+		auto [res, pool] = GPUContext::device().createDescriptorPool(info);
 		ctAssertResult(res, "Failed to create descriptor pool.");
 		return pool;
 	}
@@ -96,7 +96,7 @@ namespace ct
 		alloc.descriptorPool	 = descPool;
 		alloc.descriptorSetCount = 1;
 		alloc.pSetLayouts		 = &layout;
-		auto [res, sets]		 = GPUContext::device().allocateDescriptorSets(alloc, Loader::get());
+		auto [res, sets]		 = GPUContext::device().allocateDescriptorSets(alloc);
 		ctAssertResult(res, "Failed to allocate descriptor sets.");
 
 		vk::DescriptorImageInfo info;
@@ -110,7 +110,7 @@ namespace ct
 		descWrite.descriptorCount = 1;
 		descWrite.descriptorType  = vk::DescriptorType::eCombinedImageSampler;
 		descWrite.pImageInfo	  = &info;
-		GPUContext::device().updateDescriptorSets(descWrite, {}, Loader::get());
+		GPUContext::device().updateDescriptorSets(descWrite, {});
 
 		return sets[0];
 	}
@@ -123,19 +123,19 @@ namespace ct
 		vk::SemaphoreCreateInfo semaphoreInfo;
 		for(auto& sem : imgGetSemaphores)
 		{
-			auto [res, semaphore] = GPUContext::device().createSemaphore(semaphoreInfo, nullptr, Loader::get());
+			auto [res, semaphore] = GPUContext::device().createSemaphore(semaphoreInfo);
 			ctEnsureResult(res, "Failed to create image-get semaphore.");
 			sem = semaphore;
 		}
 		for(auto& sem : imgDoneSemaphores)
 		{
-			auto [res, semaphore] = GPUContext::device().createSemaphore(semaphoreInfo, nullptr, Loader::get());
+			auto [res, semaphore] = GPUContext::device().createSemaphore(semaphoreInfo);
 			ctEnsureResult(res, "Failed to create image-done semaphore.");
 			sem = semaphore;
 		}
 		for(auto& fence : frameFences)
 		{
-			auto [res, handle] = GPUContext::device().createFence(fenceInfo, nullptr, Loader::get());
+			auto [res, handle] = GPUContext::device().createFence(fenceInfo);
 			ctEnsureResult(res, "Failed to create fence.");
 			fence = handle;
 		}
@@ -150,15 +150,14 @@ namespace ct
 					 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
 		void* stageTarget;
-		ctAssertResult(GPUContext::device().mapMemory(stage.memory(), 0, size, {}, &stageTarget, Loader::get()),
-					   "Failed to map memory.");
+		ctAssertResult(GPUContext::device().mapMemory(stage.memory(), 0, size, {}, &stageTarget), "Failed to map memory.");
 
 		unsigned* pixels = static_cast<unsigned*>(stageTarget);
 		for(size_t i = 0; i < size / 4; ++i)
 		{
 			*pixels++ = std::rand() % 2 == 0 ? 0xFFFFFFFF : 0;
 		}
-		GPUContext::device().unmapMemory(stage.memory(), Loader::get());
+		GPUContext::device().unmapMemory(stage.memory());
 
 		CommandList list;
 		list.begin();
@@ -183,18 +182,18 @@ namespace ct
 		using namespace std::chrono_literals;
 		std::this_thread::sleep_for(1ms);
 
-		ctAssertResult(GPUContext::device().waitForFences(frameFences[curFrame].get(), true, UINT64_MAX, Loader::get()),
+		ctAssertResult(GPUContext::device().waitForFences(frameFences[curFrame].get(), true, UINT64_MAX),
 					   "Failed to wait for fences.");
 
 		uint32_t imgIndex = swapChain.getNextImageIndex(imgGetSemaphores[curFrame]);
 		recordCommands(imgIndex);
 
 		if(imgInFlightFences[imgIndex])
-			ctAssertResult(GPUContext::device().waitForFences(imgInFlightFences[imgIndex], true, UINT64_MAX, Loader::get()),
+			ctAssertResult(GPUContext::device().waitForFences(imgInFlightFences[imgIndex], true, UINT64_MAX),
 						   "Failed to wait for fences.");
 
 		imgInFlightFences[imgIndex] = frameFences[curFrame];
-		GPUContext::device().resetFences(frameFences[curFrame].get(), Loader::get());
+		GPUContext::device().resetFences(frameFences[curFrame].get());
 
 		GPUContext::graphicsQueue().submit(commandLists[imgIndex].handle(), imgGetSemaphores[curFrame],
 										   imgDoneSemaphores[curFrame], frameFences[curFrame]);

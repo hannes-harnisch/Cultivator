@@ -39,7 +39,7 @@ namespace ct
 		info.dependencyCount = 1;
 		info.pDependencies	 = &subpassDependency;
 
-		auto [res, handle] = GPUContext::device().createRenderPass(info, nullptr, Loader::get());
+		auto [res, handle] = GPUContext::device().createRenderPass(info);
 		ctAssertResult(res, "Failed to create Vulkan render pass.");
 		renderPass = handle;
 	}

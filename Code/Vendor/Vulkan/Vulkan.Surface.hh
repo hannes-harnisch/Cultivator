@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
@@ -18,7 +18,7 @@ namespace ct
 
 		~Surface()
 		{
-			GPUContext::instance().destroySurfaceKHR(surface, {}, Loader::get());
+			GPUContext::instance().destroySurfaceKHR(surface);
 		}
 
 		Surface& operator=(Surface&& other) noexcept

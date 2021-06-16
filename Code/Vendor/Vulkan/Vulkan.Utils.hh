@@ -14,7 +14,7 @@ namespace ct
 
 	inline uint32_t findMemoryType(uint32_t filter, vk::MemoryPropertyFlags memProperties)
 	{
-		auto memProps = GPUContext::adapter().getMemoryProperties(Loader::get());
+		auto memProps = GPUContext::adapter().getMemoryProperties();
 
 		for(uint32_t i {}; i < memProps.memoryTypeCount; ++i)
 		{
