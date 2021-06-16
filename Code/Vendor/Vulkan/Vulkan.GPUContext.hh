@@ -84,6 +84,7 @@ namespace ct
 		void ensureLayersExist();
 		void initializeAdapter();
 		void initializeDeviceAndQueues();
+		void ensureFeaturesExist(vk::PhysicalDeviceFeatures const& requiredFeatures);
 		void ensureDeviceExtensionsExist();
 		void recreateLoaderWithDevice();
 	};

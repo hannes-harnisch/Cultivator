@@ -8,13 +8,15 @@ namespace ct
 	CommandList::CommandList()
 	{
 		vk::CommandPoolCreateInfo poolInfo;
-		poolInfo.flags			  = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 		poolInfo.queueFamilyIndex = GPUContext::graphicsQueue().getFamily();
 
 		auto [poolRes, pool] = GPUContext::device().createCommandPool(poolInfo, nullptr, Loader::get());
 		ctEnsureResult(poolRes, "Failed to create command pool.");
 		commandPool = pool;
+	}
 
+	void CommandList::begin()
+	{
 		vk::CommandBufferAllocateInfo bufferInfo;
 		bufferInfo.commandPool		  = commandPool;
 		bufferInfo.level			  = vk::CommandBufferLevel::ePrimary;
@@ -23,10 +25,7 @@ namespace ct
 		auto [bufferRes, buffer] = GPUContext::device().allocateCommandBuffers(bufferInfo, Loader::get());
 		ctEnsureResult(bufferRes, "Failed to allocate command buffer.");
 		commandList = buffer[0];
-	}
 
-	void CommandList::begin()
-	{
 		vk::CommandBufferBeginInfo info;
 		auto result = commandList.begin(info, Loader::get());
 		ctAssertResult(result, "Failed to begin Vulkan command list.");
@@ -85,7 +84,7 @@ namespace ct
 		commandList.copyBufferToImage(src.buffer(), dst.image(), vk::ImageLayout::eTransferDstOptimal, region, Loader::get());
 	}
 
-	void CommandList::pushImageBarrier(Texture const& tex, vk::ImageLayout newLayout)
+	void CommandList::transitionTexture(Texture const& tex, vk::ImageLayout newLayout)
 	{
 		vk::ImageSubresourceRange subresourceRange;
 		subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -131,12 +130,19 @@ namespace ct
 
 	void CommandList::end()
 	{
-		auto result = commandList.end(Loader::get());
-		ctAssertResult(result, "Failed to end Vulkan command list.");
+		auto res = commandList.end(Loader::get());
+		ctAssertResult(res, "Failed to end Vulkan command list.");
 	}
 
 	void CommandList::endRenderPass()
 	{
 		commandList.endRenderPass(Loader::get());
+	}
+
+	void CommandList::reset()
+	{
+		GPUContext::device().freeCommandBuffers(commandPool, commandList, Loader::get());
+		auto res = GPUContext::device().resetCommandPool(commandPool, {}, Loader::get());
+		ctAssertResult(res, "Failed to reset command buffer.");
 	}
 }

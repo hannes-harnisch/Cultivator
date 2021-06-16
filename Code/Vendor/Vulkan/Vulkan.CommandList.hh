@@ -23,10 +23,11 @@ namespace ct
 		void bindPipeline(Pipeline const& pipeline);
 		void bindDescriptorSets(PipelineLayout const& pipeLayout, std::vector<vk::DescriptorSet> const& sets);
 		void copyBufferToTexture(Buffer const& src, Texture const& dst);
-		void pushImageBarrier(Texture const& tex, vk::ImageLayout newLayout);
+		void transitionTexture(Texture const& tex, vk::ImageLayout newLayout);
 		void draw();
 		void end();
 		void endRenderPass();
+		void reset();
 
 		vk::CommandBuffer handle() const
 		{

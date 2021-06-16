@@ -162,8 +162,8 @@ namespace ct
 
 		CommandList list;
 		list.begin();
-		list.pushImageBarrier(front, vk::ImageLayout::eColorAttachmentOptimal);
-		list.pushImageBarrier(back, vk::ImageLayout::eTransferDstOptimal);
+		list.transitionTexture(front, vk::ImageLayout::eColorAttachmentOptimal);
+		list.transitionTexture(back, vk::ImageLayout::eTransferDstOptimal);
 		list.end();
 		GPUContext::graphicsQueue().submitSync(list.handle());
 
@@ -173,7 +173,7 @@ namespace ct
 		GPUContext::graphicsQueue().submitSync(list.handle());
 
 		list.begin();
-		list.pushImageBarrier(back, vk::ImageLayout::eShaderReadOnlyOptimal);
+		list.transitionTexture(back, vk::ImageLayout::eShaderReadOnlyOptimal);
 		list.end();
 		GPUContext::graphicsQueue().submitSync(list.handle());
 	}
@@ -207,8 +207,9 @@ namespace ct
 	{
 		auto& com = commandLists[imgIndex];
 
+		com.reset();
 		com.begin();
-		com.pushImageBarrier(curFrame ? back : front, vk::ImageLayout::eColorAttachmentOptimal);
+		com.transitionTexture(curFrame ? back : front, vk::ImageLayout::eColorAttachmentOptimal);
 
 		com.beginRenderPass(back.size(), simulationPass, curFrame ? backBuffer : frontBuffer);
 		com.bindViewport(back.size());
@@ -218,7 +219,7 @@ namespace ct
 		com.draw();
 		com.endRenderPass();
 
-		com.pushImageBarrier(curFrame ? back : front, vk::ImageLayout::eShaderReadOnlyOptimal);
+		com.transitionTexture(curFrame ? back : front, vk::ImageLayout::eShaderReadOnlyOptimal);
 
 		com.beginRenderPass(windowViewport, presentPass, swapChain.getFrameBuffer(imgIndex));
 		com.bindViewport(windowViewport);

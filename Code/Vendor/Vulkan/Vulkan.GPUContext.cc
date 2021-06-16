@@ -90,7 +90,7 @@ namespace ct
 
 		vk::InstanceCreateInfo info;
 #if CT_DEBUG
-		info.pNext = &loggerInfo;
+		info.pNext = &features;
 #endif
 		info.pApplicationInfo		 = &appInfo;
 		info.enabledLayerCount		 = count(RequiredLayers);
@@ -218,9 +218,10 @@ namespace ct
 		if(families.Graphics != families.Present)
 			queueInfos.push_back(presentQueueInfo);
 
-		vk::PhysicalDeviceFeatures features;
-		features.shaderImageGatherExtended = true;
-		features.samplerAnisotropy		   = true;
+		vk::PhysicalDeviceFeatures requiredFeatures;
+		requiredFeatures.shaderImageGatherExtended = true;
+		requiredFeatures.samplerAnisotropy		   = true;
+		ensureFeaturesExist(requiredFeatures);
 
 		vk::DeviceCreateInfo info;
 		info.queueCreateInfoCount	 = count(queueInfos);
@@ -229,7 +230,7 @@ namespace ct
 		info.ppEnabledLayerNames	 = RequiredLayers.data();
 		info.enabledExtensionCount	 = count(RequiredDeviceExtensions);
 		info.ppEnabledExtensionNames = RequiredDeviceExtensions.data();
-		info.pEnabledFeatures		 = &features;
+		info.pEnabledFeatures		 = &requiredFeatures;
 
 		auto [res, device] = adapterHandle.createDevice(info, nullptr, Loader::get());
 		ctEnsureResult(res, "Failed to create Vulkan device.");
@@ -237,6 +238,24 @@ namespace ct
 
 		graphicsQueueHandle = Queue(families.Graphics);
 		presentQueueHandle	= Queue(families.Present);
+	}
+
+	void GPUContext::ensureFeaturesExist(vk::PhysicalDeviceFeatures const& requiredFeatures)
+	{
+		auto const& requiredFeaturesArray =
+			reinterpret_cast<vk::Bool32 const(&)[sizeof(vk::PhysicalDeviceFeatures) / sizeof(vk::Bool32)]>(requiredFeatures);
+
+		auto availableFeatures = adapterHandle.getFeatures(Loader::get());
+		auto const& availableFeaturesArray =
+			reinterpret_cast<vk::Bool32 const(&)[sizeof(vk::PhysicalDeviceFeatures) / sizeof(vk::Bool32)]>(availableFeatures);
+		auto available = std::begin(availableFeaturesArray);
+
+		for(auto required : requiredFeaturesArray)
+		{
+			if(required)
+				ctEnsure(*available, "Required feature not available.");
+			++available;
+		}
 	}
 
 	void GPUContext::ensureDeviceExtensionsExist()
