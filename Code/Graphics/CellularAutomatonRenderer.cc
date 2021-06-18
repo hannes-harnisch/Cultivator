@@ -27,7 +27,7 @@ namespace ct
 		swapChain(window.handle(), windowViewport, presentPass),
 		frontBuffer(size, simulationPass, front.imageView()),
 		backBuffer(size, simulationPass, back.imageView()),
-		gameOfLife(vertex, Shader("DayAndNight.frag.spv"), pipelineLayout, simulationPass),
+		gameOfLife(vertex, Shader("GameOfLife.frag.spv"), pipelineLayout, simulationPass),
 		presentation(vertex, Shader("Presentation.frag.spv"), pipelineLayout, simulationPass),
 		descPool(makeDescriptorPool()),
 		frontDescSet(makeDescriptorSetForSampler(front)),
@@ -155,7 +155,7 @@ namespace ct
 		unsigned* pixels = static_cast<unsigned*>(stageTarget);
 		for(size_t i = 0; i < size / 4; ++i)
 		{
-			*pixels++ = std::rand() % 2 == 0 ? 0xFFFFFFFF : 0;
+			*pixels++ = std::rand() % 3 != 0 ? 0xFFFFFFFF : 0;
 		}
 		GPUContext::device().unmapMemory(stage.memory());
 

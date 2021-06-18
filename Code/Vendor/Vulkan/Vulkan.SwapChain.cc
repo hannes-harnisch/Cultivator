@@ -156,7 +156,7 @@ namespace ct
 	{
 		std::vector<FrameBuffer> buffers;
 
-		for(auto&& view : swapChainViews)
+		for(vk::ImageView view : swapChainViews)
 			buffers.emplace_back(Rectangle {extent.width, extent.height}, renderPass, view);
 
 		return buffers;

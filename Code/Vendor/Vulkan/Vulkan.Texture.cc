@@ -6,8 +6,12 @@
 
 namespace ct
 {
-	Texture::Texture(Rectangle size) : texSize(size), img(makeImage(size)), memory(allocateMemory()), imgView(makeImageView())
-	{}
+	Texture::Texture(Rectangle size) : texSize(size)
+	{
+		img = makeImage(size);
+		memory = allocateMemory();
+		imgView = makeImageView();
+	}
 
 	vk::Image Texture::makeImage(Rectangle size)
 	{

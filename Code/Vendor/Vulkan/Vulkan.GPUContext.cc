@@ -240,17 +240,13 @@ namespace ct
 
 	void GPUContext::ensureFeaturesExist(vk::PhysicalDeviceFeatures const& required)
 	{
-		union
-		{
-			vk::PhysicalDeviceFeatures features {};
-			vk::Bool32 array[sizeof(vk::PhysicalDeviceFeatures) / sizeof(vk::Bool32)];
-		} requiredFeatures, availableFeatures;
+		using FeatureArray = std::array<vk::Bool32, sizeof(vk::PhysicalDeviceFeatures) / sizeof(vk::Bool32)>;
 
-		requiredFeatures.features  = required;
-		availableFeatures.features = adapterHandle.getFeatures();
+		auto requiredFeatures  = std::bit_cast<FeatureArray>(required);
+		auto availableFeatures = std::bit_cast<FeatureArray>(adapterHandle.getFeatures());
 
-		auto available = std::begin(availableFeatures.array);
-		for(auto featureRequired : requiredFeatures.array)
+		auto available = std::begin(availableFeatures);
+		for(auto featureRequired : requiredFeatures)
 		{
 			if(featureRequired)
 				ctEnsure(*available, "Required feature not available.");

@@ -2,7 +2,7 @@ output_dir				= '%{cfg.buildcfg}_%{cfg.architecture}_%{cfg.system}'
 
 workspace 'Cultivator'
 	architecture		'x64'
-	configurations		{ 'Debug', 'Release' }
+	configurations		{ 'Debug', 'Development', 'Release' }
 	flags				{ 'MultiProcessorCompile' }
 	startproject		'Cultivator'
 	language			'C++'
@@ -37,14 +37,22 @@ workspace 'Cultivator'
 		includedirs		'C:/VulkanSDK/1.2.176.1/Include'
 		defines			{ 'CT_SYSTEM_WINDOWS', 'CT_SYSTEM=windows' }
 
-	filter 'configurations:Debug'
+	filter 'Debug'
 		runtime			'Debug'
 		symbols			'On'
 		defines			'CT_DEBUG'
 
-	filter 'configurations:Release'
+	filter 'Development'
+		runtime			'Debug'
+		symbols			'On'
+		optimize		'Speed'
+		flags			'LinkTimeOptimization'
+		defines			'CT_DEBUG'
+
+	filter 'Release'
 		runtime			'Release'
 		optimize		'Speed'
+		flags			'LinkTimeOptimization'
 
 project 'Cultivator'
 	location			'Code'
@@ -52,8 +60,11 @@ project 'Cultivator'
 	entrypoint			'mainCRTStartup'
 	defines				'CT_APP_NAME="%{prj.name}"'
 
-	filter 'configurations:Debug'
+	filter 'Debug'
 		kind			'ConsoleApp'
 
-	filter 'configurations:Release'
+	filter 'Development'
+		kind			'ConsoleApp'
+
+	filter 'Release'
 		kind			'WindowedApp'
