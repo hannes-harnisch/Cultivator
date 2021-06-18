@@ -13,19 +13,18 @@ namespace ct
 		auto [poolRes, pool] = GPUContext::device().createCommandPool(poolInfo);
 		ctEnsureResult(poolRes, "Failed to create command pool.");
 		commandPool = pool;
-	}
 
-	void CommandList::begin()
-	{
 		vk::CommandBufferAllocateInfo bufferInfo;
 		bufferInfo.commandPool		  = commandPool;
-		bufferInfo.level			  = vk::CommandBufferLevel::ePrimary;
 		bufferInfo.commandBufferCount = 1;
 
 		auto [bufferRes, buffer] = GPUContext::device().allocateCommandBuffers(bufferInfo);
 		ctEnsureResult(bufferRes, "Failed to allocate command buffer.");
 		commandList = buffer[0];
+	}
 
+	void CommandList::begin()
+	{
 		vk::CommandBufferBeginInfo info;
 		auto result = commandList.begin(info);
 		ctAssertResult(result, "Failed to begin Vulkan command list.");
@@ -141,7 +140,6 @@ namespace ct
 
 	void CommandList::reset()
 	{
-		GPUContext::device().freeCommandBuffers(commandPool, commandList);
 		auto res = GPUContext::device().resetCommandPool(commandPool, {});
 		ctAssertResult(res, "Failed to reset command buffer.");
 	}

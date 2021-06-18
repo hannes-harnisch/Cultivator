@@ -78,7 +78,7 @@ namespace ct
 
 		swapChainImages.resize(imageCount);
 
-		if(caps.currentExtent != std::numeric_limits<uint32_t>::max())
+		if(caps.currentExtent != vk::Extent2D(UINT32_MAX, UINT32_MAX))
 			return caps.currentExtent;
 		else
 			return {std::clamp(viewport.width, caps.minImageExtent.width, caps.maxImageExtent.width),

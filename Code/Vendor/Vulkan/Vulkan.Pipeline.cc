@@ -23,7 +23,7 @@ namespace ct
 								 fillShaderStageInfo(vk::ShaderStageFlagBits::eFragment, fragment)};
 
 		vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
-		vk::PipelineInputAssemblyStateCreateInfo assemblyInfo({}, vk::PrimitiveTopology::eTriangleList);
+		vk::PipelineInputAssemblyStateCreateInfo assemblyInfo {.topology = vk::PrimitiveTopology::eTriangleList};
 
 		vk::PipelineViewportStateCreateInfo viewportInfo;
 		viewportInfo.viewportCount = 1;

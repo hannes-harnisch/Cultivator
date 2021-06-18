@@ -159,6 +159,7 @@ namespace ct
 
 			if(deviceProps.deviceType == vk::PhysicalDeviceType::eIntegratedGpu)
 				adapterHandle = adapter;
+
 			if(deviceProps.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
 			{
 				adapterHandle = adapter;
@@ -206,8 +207,10 @@ namespace ct
 
 		auto families = queryQueueFamilies(adapterHandle);
 		std::array queuePriorities {1.0f};
-		vk::DeviceQueueCreateInfo graphicsQueueInfo({}, families.Graphics, queuePriorities);
-		vk::DeviceQueueCreateInfo presentQueueInfo({}, families.Present, queuePriorities);
+		vk::DeviceQueueCreateInfo graphicsQueueInfo {
+			.queueFamilyIndex = families.Graphics, .queueCount = 1, .pQueuePriorities = queuePriorities.data()};
+		vk::DeviceQueueCreateInfo presentQueueInfo {
+			.queueFamilyIndex = families.Present, .queueCount = 1, .pQueuePriorities = queuePriorities.data()};
 
 		std::vector queueInfos {graphicsQueueInfo};
 		if(families.Graphics != families.Present)
@@ -235,19 +238,21 @@ namespace ct
 		presentQueueHandle	= Queue(families.Present);
 	}
 
-	void GPUContext::ensureFeaturesExist(vk::PhysicalDeviceFeatures const& requiredFeatures)
+	void GPUContext::ensureFeaturesExist(vk::PhysicalDeviceFeatures const& required)
 	{
-		auto const& requiredFeaturesArray =
-			reinterpret_cast<vk::Bool32 const(&)[sizeof(vk::PhysicalDeviceFeatures) / sizeof(vk::Bool32)]>(requiredFeatures);
-
-		auto availableFeatures = adapterHandle.getFeatures();
-		auto const& availableFeaturesArray =
-			reinterpret_cast<vk::Bool32 const(&)[sizeof(vk::PhysicalDeviceFeatures) / sizeof(vk::Bool32)]>(availableFeatures);
-		auto available = std::begin(availableFeaturesArray);
-
-		for(auto required : requiredFeaturesArray)
+		union
 		{
-			if(required)
+			vk::PhysicalDeviceFeatures features {};
+			vk::Bool32 array[sizeof(vk::PhysicalDeviceFeatures) / sizeof(vk::Bool32)];
+		} requiredFeatures, availableFeatures;
+
+		requiredFeatures.features  = required;
+		availableFeatures.features = adapterHandle.getFeatures();
+
+		auto available = std::begin(availableFeatures.array);
+		for(auto featureRequired : requiredFeatures.array)
+		{
+			if(featureRequired)
 				ctEnsure(*available, "Required feature not available.");
 			++available;
 		}
