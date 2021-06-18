@@ -20,7 +20,7 @@ namespace ct
 		}
 
 	private:
-		DeviceOwn<vk::Buffer, &vk::Device::destroyBuffer> buf;
 		DeviceOwn<vk::DeviceMemory, &vk::Device::freeMemory> mem;
+		DeviceOwn<vk::Buffer, &vk::Device::destroyBuffer> buf;
 	};
 }

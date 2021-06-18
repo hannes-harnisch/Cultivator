@@ -25,6 +25,9 @@ namespace ct
 
 	void CommandList::begin()
 	{
+		auto res = GPUContext::device().resetCommandPool(commandPool, {});
+		ctAssertResult(res, "Failed to reset command buffer.");
+
 		vk::CommandBufferBeginInfo info;
 		auto result = commandList.begin(info);
 		ctAssertResult(result, "Failed to begin Vulkan command list.");
@@ -136,11 +139,5 @@ namespace ct
 	void CommandList::endRenderPass()
 	{
 		commandList.endRenderPass();
-	}
-
-	void CommandList::reset()
-	{
-		auto res = GPUContext::device().resetCommandPool(commandPool, {});
-		ctAssertResult(res, "Failed to reset command buffer.");
 	}
 }

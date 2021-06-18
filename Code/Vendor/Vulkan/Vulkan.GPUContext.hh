@@ -45,7 +45,7 @@ namespace ct
 
 		GPUContext(GPUContext const&) = delete;
 		GPUContext& operator=(GPUContext const&) = delete;
-
+		
 	private:
 		static inline std::vector<char const*> const RequiredLayers
 		{

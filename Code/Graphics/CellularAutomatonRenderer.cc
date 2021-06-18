@@ -206,7 +206,6 @@ namespace ct
 	{
 		auto& com = commandLists[imgIndex];
 
-		com.reset();
 		com.begin();
 		com.transitionTexture(curFrame ? back : front, vk::ImageLayout::eColorAttachmentOptimal);
 

@@ -27,7 +27,6 @@ namespace ct
 		void draw();
 		void end();
 		void endRenderPass();
-		void reset();
 
 		vk::CommandBuffer handle() const
 		{
