@@ -9,7 +9,8 @@ namespace ct
 	RenderPass::RenderPass(vk::ImageLayout initial, vk::ImageLayout final)
 	{
 		vk::AttachmentReference attachmentRef;
-		attachmentRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
+		attachmentRef.attachment = 0;
+		attachmentRef.layout	 = vk::ImageLayout::eColorAttachmentOptimal;
 
 		vk::SubpassDescription subpass;
 		subpass.colorAttachmentCount = 1;

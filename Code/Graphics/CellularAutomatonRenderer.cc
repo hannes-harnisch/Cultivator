@@ -155,7 +155,7 @@ namespace ct
 		unsigned* pixels = static_cast<unsigned*>(stageTarget);
 		for(size_t i = 0; i < size / 4; ++i)
 		{
-			*pixels++ = std::rand() % 3 != 0 ? 0xFFFFFFFF : 0;
+			*pixels++ = std::rand() % 2 == 0 ? 0xFFFFFFFF : 0;
 		}
 		GPUContext::device().unmapMemory(stage.memory());
 

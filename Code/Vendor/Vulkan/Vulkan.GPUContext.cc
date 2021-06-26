@@ -41,7 +41,7 @@ namespace ct
 
 	GPUContext::GPUContext()
 	{
-		PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+		auto vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
 		auto loggerInfo = fillLoggerInfo();
