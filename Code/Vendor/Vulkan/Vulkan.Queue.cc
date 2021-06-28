@@ -22,24 +22,24 @@ namespace ct
 	{
 		vk::PipelineStageFlags waitStages = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
-		vk::SubmitInfo submit;
-		submit.waitSemaphoreCount	= 1;
-		submit.pWaitSemaphores		= &wait;
-		submit.pWaitDstStageMask	= &waitStages;
-		submit.commandBufferCount	= 1;
-		submit.pCommandBuffers		= &commandBuffer;
-		submit.signalSemaphoreCount = 1;
-		submit.pSignalSemaphores	= &signal;
-
+		vk::SubmitInfo submit {
+			.waitSemaphoreCount	  = 1,
+			.pWaitSemaphores	  = &wait,
+			.pWaitDstStageMask	  = &waitStages,
+			.commandBufferCount	  = 1,
+			.pCommandBuffers	  = &commandBuffer,
+			.signalSemaphoreCount = 1,
+			.pSignalSemaphores	  = &signal,
+		};
 		ctAssertResult(queue.submit(submit, fence), "Failed to submit to queue.");
 	}
 
 	void Queue::submitSync(vk::CommandBuffer commandBuffer)
 	{
-		vk::SubmitInfo submit;
-		submit.commandBufferCount = 1;
-		submit.pCommandBuffers	  = &commandBuffer;
-
+		vk::SubmitInfo submit {
+			.commandBufferCount = 1,
+			.pCommandBuffers	= &commandBuffer,
+		};
 		ctAssertResult(queue.submit(submit, nullptr), "Failed to submit to queue.");
 		ctAssertResult(queue.waitIdle(), "Failed to wait for queue idle.");
 	}

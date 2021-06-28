@@ -8,38 +8,38 @@ namespace ct
 {
 	RenderPass::RenderPass(vk::ImageLayout initial, vk::ImageLayout final)
 	{
-		vk::AttachmentReference attachmentRef;
-		attachmentRef.attachment = 0;
-		attachmentRef.layout	 = vk::ImageLayout::eColorAttachmentOptimal;
-
-		vk::SubpassDescription subpass;
-		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments	 = &attachmentRef;
-
-		vk::SubpassDependency subpassDependency;
-		subpassDependency.srcSubpass	= VK_SUBPASS_EXTERNAL;
-		subpassDependency.srcStageMask	= vk::PipelineStageFlagBits::eColorAttachmentOutput;
-		subpassDependency.dstStageMask	= vk::PipelineStageFlagBits::eColorAttachmentOutput;
-		subpassDependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-
-		vk::AttachmentDescription attachment;
-		attachment.format		  = vk::Format::eB8G8R8A8Srgb;
-		attachment.samples		  = vk::SampleCountFlagBits::e1;
-		attachment.loadOp		  = vk::AttachmentLoadOp::eDontCare;
-		attachment.storeOp		  = vk::AttachmentStoreOp::eStore;
-		attachment.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
-		attachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-		attachment.initialLayout  = initial;
-		attachment.finalLayout	  = final;
-
-		vk::RenderPassCreateInfo info;
-		info.attachmentCount = 1;
-		info.pAttachments	 = &attachment;
-		info.subpassCount	 = 1;
-		info.pSubpasses		 = &subpass;
-		info.dependencyCount = 1;
-		info.pDependencies	 = &subpassDependency;
-
+		vk::AttachmentReference colorAttach {
+			.attachment = 0,
+			.layout		= vk::ImageLayout::eColorAttachmentOptimal,
+		};
+		vk::SubpassDescription subpass {
+			.colorAttachmentCount = 1,
+			.pColorAttachments	  = &colorAttach,
+		};
+		vk::SubpassDependency subpassDependency {
+			.srcSubpass	   = VK_SUBPASS_EXTERNAL,
+			.srcStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			.dstStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite,
+		};
+		vk::AttachmentDescription attachment {
+			.format			= vk::Format::eB8G8R8A8Srgb,
+			.samples		= vk::SampleCountFlagBits::e1,
+			.loadOp			= vk::AttachmentLoadOp::eDontCare,
+			.storeOp		= vk::AttachmentStoreOp::eStore,
+			.stencilLoadOp	= vk::AttachmentLoadOp::eDontCare,
+			.stencilStoreOp = vk::AttachmentStoreOp::eDontCare,
+			.initialLayout	= initial,
+			.finalLayout	= final,
+		};
+		vk::RenderPassCreateInfo info {
+			.attachmentCount = 1,
+			.pAttachments	 = &attachment,
+			.subpassCount	 = 1,
+			.pSubpasses		 = &subpass,
+			.dependencyCount = 1,
+			.pDependencies	 = &subpassDependency,
+		};
 		auto [res, handle] = GPUContext::device().createRenderPass(info);
 		ctAssertResult(res, "Failed to create Vulkan render pass.");
 		renderPass = handle;

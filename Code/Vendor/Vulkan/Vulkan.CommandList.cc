@@ -7,17 +7,17 @@ namespace ct
 {
 	CommandList::CommandList()
 	{
-		vk::CommandPoolCreateInfo poolInfo;
-		poolInfo.queueFamilyIndex = GPUContext::graphicsQueue().getFamily();
-
+		vk::CommandPoolCreateInfo poolInfo {
+			.queueFamilyIndex = GPUContext::graphicsQueue().getFamily(),
+		};
 		auto [poolRes, pool] = GPUContext::device().createCommandPool(poolInfo);
 		ctEnsureResult(poolRes, "Failed to create command pool.");
 		commandPool = pool;
 
-		vk::CommandBufferAllocateInfo bufferInfo;
-		bufferInfo.commandPool		  = commandPool;
-		bufferInfo.commandBufferCount = 1;
-
+		vk::CommandBufferAllocateInfo bufferInfo {
+			.commandPool		= commandPool,
+			.commandBufferCount = 1,
+		};
 		auto [bufferRes, buffer] = GPUContext::device().allocateCommandBuffers(bufferInfo);
 		ctEnsureResult(bufferRes, "Failed to allocate command buffer.");
 		commandList = buffer[0];
@@ -38,22 +38,23 @@ namespace ct
 		vk::ClearValue clear;
 		clear.color = vk::ClearColorValue(std::array {1.0f, 0.0f, 1.0f, 1.0f});
 
-		vk::RenderPassBeginInfo info;
-		info.renderPass		 = renderPass.handle();
-		info.framebuffer	 = frameBuffer.handle();
-		info.renderArea		 = vk::Rect2D({}, {renderArea.width, renderArea.height});
-		info.clearValueCount = 1;
-		info.pClearValues	 = &clear;
-
+		vk::RenderPassBeginInfo info {
+			.renderPass		 = renderPass.handle(),
+			.framebuffer	 = frameBuffer.handle(),
+			.renderArea		 = vk::Rect2D({}, {renderArea.width, renderArea.height}),
+			.clearValueCount = 1,
+			.pClearValues	 = &clear,
+		};
 		commandList.beginRenderPass(info, vk::SubpassContents::eInline);
 	}
 
 	void CommandList::bindViewport(Rectangle rectangle)
 	{
-		vk::Viewport viewport;
-		viewport.width	  = static_cast<float>(rectangle.width);
-		viewport.height	  = static_cast<float>(rectangle.height);
-		viewport.maxDepth = 1;
+		vk::Viewport viewport {
+			.width	  = static_cast<float>(rectangle.width),
+			.height	  = static_cast<float>(rectangle.height),
+			.maxDepth = 1,
+		};
 		commandList.setViewport(0, viewport);
 	}
 
@@ -75,29 +76,30 @@ namespace ct
 
 	void CommandList::copyBufferToTexture(Buffer const& src, Texture const& dst)
 	{
-		vk::ImageSubresourceLayers subresourceLayers;
-		subresourceLayers.aspectMask = vk::ImageAspectFlagBits::eColor;
-		subresourceLayers.layerCount = 1;
-
-		vk::BufferImageCopy region;
-		region.imageSubresource = subresourceLayers;
-		region.imageExtent		= vk::Extent3D(dst.size().width, dst.size().height, 1);
-
+		vk::ImageSubresourceLayers subresourceLayers {
+			.aspectMask = vk::ImageAspectFlagBits::eColor,
+			.layerCount = 1,
+		};
+		vk::BufferImageCopy region {
+			.imageSubresource = subresourceLayers,
+			.imageExtent	  = vk::Extent3D(dst.size().width, dst.size().height, 1),
+		};
 		commandList.copyBufferToImage(src.buffer(), dst.image(), vk::ImageLayout::eTransferDstOptimal, region);
 	}
 
 	void CommandList::transitionTexture(Texture const& tex, vk::ImageLayout newLayout)
 	{
-		vk::ImageSubresourceRange subresourceRange;
-		subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-		subresourceRange.levelCount = 1;
-		subresourceRange.layerCount = 1;
-
-		vk::ImageMemoryBarrier barrier;
-		barrier.oldLayout		 = vk::ImageLayout::eUndefined;
-		barrier.newLayout		 = newLayout;
-		barrier.image			 = tex.image();
-		barrier.subresourceRange = subresourceRange;
+		vk::ImageSubresourceRange subresourceRange {
+			.aspectMask = vk::ImageAspectFlagBits::eColor,
+			.levelCount = 1,
+			.layerCount = 1,
+		};
+		vk::ImageMemoryBarrier barrier {
+			.oldLayout		  = vk::ImageLayout::eUndefined,
+			.newLayout		  = newLayout,
+			.image			  = tex.image(),
+			.subresourceRange = subresourceRange,
+		};
 
 		vk::PipelineStageFlagBits srcStage, dstStage;
 		if(newLayout == vk::ImageLayout::eTransferDstOptimal)

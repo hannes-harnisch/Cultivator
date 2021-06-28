@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.hh"
 
@@ -27,7 +27,6 @@ namespace ct
 									PipelineLayout const& layout,
 									RenderPass const& renderPass);
 		vk::PipelineShaderStageCreateInfo fillShaderStageInfo(vk::ShaderStageFlagBits stage, Shader const& shader);
-		vk::PipelineRasterizationStateCreateInfo fillRasterizerInfo();
 		vk::PipelineColorBlendAttachmentState fillColorBlendAttachment();
 	};
 }

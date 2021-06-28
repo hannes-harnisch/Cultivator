@@ -8,10 +8,10 @@ namespace ct
 {
 	PipelineLayout::PipelineLayout(std::vector<vk::DescriptorSetLayout> const& descriptorLayouts)
 	{
-		vk::PipelineLayoutCreateInfo info;
-		info.setLayoutCount = count(descriptorLayouts);
-		info.pSetLayouts	= descriptorLayouts.data();
-
+		vk::PipelineLayoutCreateInfo info {
+			.setLayoutCount = count(descriptorLayouts),
+			.pSetLayouts	= descriptorLayouts.data(),
+		};
 		auto [res, layout] = GPUContext::device().createPipelineLayout(info);
 		ctAssertResult(res, "Failed to create Vulkan pipeline layout.");
 		pipelineLayout = layout;
