@@ -10,8 +10,8 @@ Currently comes with implementations of the Game of Life, Highlife, Day and Nigh
 ## Examples
 
 <p>
-  <img src="https://github.com/hannes-harnisch/hannes-harnisch/blob/main/CultivatorDayAndNight.gif" width="49%">
-  <img src="https://github.com/hannes-harnisch/hannes-harnisch/blob/main/CultivatorGameOfLife.gif" width="49%">
-  <img src="https://github.com/hannes-harnisch/hannes-harnisch/blob/main/CultivatorHighlife.gif" width="49%">
-  <img src="https://github.com/hannes-harnisch/hannes-harnisch/blob/main/CultivatorLifeWithoutDeath.gif" width="49%">
+  <a href="https://github.com/hannes-harnisch/hannes-harnisch/blob/main/Originals/CultivatorDayAndNight.gif"><img src="https://github.com/hannes-harnisch/hannes-harnisch/blob/main/CultivatorDayAndNight.gif" width="49%"></a>
+  <a href="https://github.com/hannes-harnisch/hannes-harnisch/blob/main/Originals/CultivatorGameOfLife.gif"><img src="https://github.com/hannes-harnisch/hannes-harnisch/blob/main/CultivatorGameOfLife.gif" width="49%"></a>
+  <a href="https://github.com/hannes-harnisch/hannes-harnisch/blob/main/Originals/CultivatorHighlife.gif"><img src="https://github.com/hannes-harnisch/hannes-harnisch/blob/main/CultivatorHighlife.gif" width="49%"></a>
+  <a href="https://github.com/hannes-harnisch/hannes-harnisch/blob/main/Originals/CultivatorLifeWithoutDeath.gif"><img src="https://github.com/hannes-harnisch/hannes-harnisch/blob/main/CultivatorLifeWithoutDeath.gif" width="49%"></a>
 </p>
