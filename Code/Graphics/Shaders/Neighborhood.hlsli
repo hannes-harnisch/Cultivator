@@ -17,7 +17,7 @@ bool floatCmp(float a, float b)
 
 uint getCell(float4 pos, int x, int y)
 {
-	return Universe.Load(int3(pos.xy, 0), int2(x, y)).x;
+	return Universe.Load(int3(pos.xy + int2(x, y), 0)).x;
 }
 
 Neighborhood getNeighborhood(float4 pos)

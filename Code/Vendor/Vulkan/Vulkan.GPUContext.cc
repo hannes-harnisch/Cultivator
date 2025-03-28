@@ -16,7 +16,7 @@ namespace ct
 			return false;
 
 		std::string_view msg = pCallbackData->pMessage;
-		if(msg.starts_with("loaderAddLayerProperties"))
+		if(pCallbackData->messageIdNumber == 0x675dc32e)
 			return false;
 
 		std::printf("\n%s\n", pCallbackData->pMessage);

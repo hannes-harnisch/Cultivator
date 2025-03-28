@@ -17,8 +17,10 @@ namespace ct
 
 		auto memoryRequirements = GPUContext::device().getBufferMemoryRequirements(buf);
 
+		static constexpr VkDeviceSize MinimumRecommended = 1048576;
+
 		vk::MemoryAllocateInfo allocInfo {
-			.allocationSize	 = memoryRequirements.size,
+			.allocationSize	 = std::max(memoryRequirements.size, MinimumRecommended),
 			.memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits, properties),
 		};
 		auto [allocRes, memHandle] = GPUContext::device().allocateMemory(allocInfo);

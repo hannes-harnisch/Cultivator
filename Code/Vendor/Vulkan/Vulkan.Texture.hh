@@ -31,7 +31,6 @@ namespace ct
 		Rectangle texSize;
 		DeviceOwn<vk::DeviceMemory, &vk::Device::freeMemory> memory;
 		DeviceOwn<vk::Image, &vk::Device::destroyImage> img;
-		DeviceOwn<vk::Sampler, &vk::Device::destroySampler> sampler;
 		DeviceOwn<vk::ImageView, &vk::Device::destroyImageView> imgView;
 
 		vk::Image makeImage(Rectangle size);
