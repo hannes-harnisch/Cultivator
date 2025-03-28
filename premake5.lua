@@ -22,7 +22,7 @@ workspace 'Cultivator'
 
 	filter 'files:**.*.hlsl'
 		buildmessage	'Compiling shader %{file.relpath}'
-		buildcommands	'C:/VulkanSDK/1.2.176.1/bin/dxc %{file.relpath} /Fo %{cfg.targetdir}/%{file.basename}.spv -spirv -O3 -T ^'
+		buildcommands	'C:/VulkanSDK/1.2.189.2/bin/dxc %{file.relpath} /Fo %{cfg.targetdir}/%{file.basename}.spv -spirv -O3 -T ^'
 		buildoutputs	'%{cfg.targetdir}/%{file.basename}.spv'
 
 	filter 'files:**.vert.hlsl'
@@ -34,7 +34,7 @@ workspace 'Cultivator'
 	filter 'system:Windows'
 		systemversion	'latest'
 		files			{ 'Code/**/Windows.*.*', 'Code/**/Direct3D.*.*', 'Code/**/Vulkan.*.*', 'Code/**/VulkanWindows.*.*' }
-		includedirs		'C:/VulkanSDK/1.2.176.1/Include'
+		includedirs		'C:/VulkanSDK/1.2.189.2/Include'
 		defines			{ 'CT_SYSTEM_WINDOWS', 'CT_SYSTEM=windows' }
 
 	filter 'Debug'

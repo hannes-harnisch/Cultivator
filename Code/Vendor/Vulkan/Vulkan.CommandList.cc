@@ -35,15 +35,12 @@ namespace ct
 
 	void CommandList::beginRenderPass(Rectangle const renderArea, RenderPass const& renderPass, FrameBuffer const& frameBuffer)
 	{
-		vk::ClearValue clear;
-		clear.color = vk::ClearColorValue(std::array {1.0f, 0.0f, 1.0f, 1.0f});
-
 		vk::RenderPassBeginInfo info {
 			.renderPass		 = renderPass.handle(),
 			.framebuffer	 = frameBuffer.handle(),
 			.renderArea		 = vk::Rect2D({}, {renderArea.width, renderArea.height}),
-			.clearValueCount = 1,
-			.pClearValues	 = &clear,
+			.clearValueCount = 0,
+			.pClearValues	 = nullptr,
 		};
 		commandList.beginRenderPass(info, vk::SubpassContents::eInline);
 	}

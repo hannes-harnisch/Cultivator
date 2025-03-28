@@ -35,8 +35,10 @@ namespace ct
 		auto memRequirements = GPUContext::device().getImageMemoryRequirements(img);
 		uint32_t typeIndex	 = findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
+		static constexpr VkDeviceSize MinimumRecommended = 1048576;
+
 		vk::MemoryAllocateInfo info {
-			.allocationSize	 = memRequirements.size,
+			.allocationSize	 = std::max(memRequirements.size, MinimumRecommended),
 			.memoryTypeIndex = typeIndex,
 		};
 		auto [res, handle] = GPUContext::device().allocateMemory(info);

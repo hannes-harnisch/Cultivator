@@ -77,7 +77,7 @@ namespace ct
 	{
 		vk::DescriptorPoolSize poolSize {
 			.type			 = vk::DescriptorType::eCombinedImageSampler,
-			.descriptorCount = 1,
+			.descriptorCount = 2,
 		};
 		vk::DescriptorPoolCreateInfo info {
 			.maxSets	   = 2,
@@ -97,7 +97,7 @@ namespace ct
 			.descriptorSetCount = 1,
 			.pSetLayouts		= &layout,
 		};
-		auto [res, sets]		 = GPUContext::device().allocateDescriptorSets(alloc);
+		auto [res, sets] = GPUContext::device().allocateDescriptorSets(alloc);
 		ctAssertResult(res, "Failed to allocate descriptor sets.");
 
 		vk::DescriptorImageInfo info {
