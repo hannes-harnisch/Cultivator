@@ -1,8 +1,10 @@
-.bin/
-.bin_int/
-.vs/
+/.cmake/
+/.idea/
+/.vs/
+/build/
+/CMakeFiles/
+/cmake-build-*
+/out/
 
-*.filters
-*.sln
-*.user
-*.vcxproj
+CMakeCache.txt
+CMakeUserPresets.json
