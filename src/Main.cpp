@@ -4,6 +4,12 @@
 
 namespace cltv {
 
+#ifdef NDEBUG
+const bool EnableDebugLayer = false;
+#else
+const bool EnableDebugLayer = true;
+#endif
+
 class Cultivator final : public Application {
 public:
 	Cultivator() :
@@ -14,7 +20,8 @@ public:
 		Window window(this, "Cultivator", {1366, 768}, 100, 100);
 		window.show();
 
-		AutomatonRenderer renderer(window, {480, 720});
+		DeviceContext context(window, EnableDebugLayer);
+		AutomatonRenderer renderer(&context, window, {480, 720});
 
 		while (_should_run) {
 			renderer.draw_frame();

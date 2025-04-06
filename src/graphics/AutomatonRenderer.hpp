@@ -2,23 +2,28 @@
 
 #include "app/Window.hpp"
 #include "graphics/vulkan/DeviceContext.hpp"
-#include "graphics/vulkan/texture.hpp"
+#include "graphics/vulkan/RenderPass.hpp"
+#include "graphics/vulkan/RenderTarget.hpp"
+#include "graphics/vulkan/SwapChain.hpp"
 #include "util/RectSize.hpp"
 
 namespace cltv {
 
 class AutomatonRenderer {
 public:
-	AutomatonRenderer(Window& window, RectSize size);
+	AutomatonRenderer(const DeviceContext* ctx, Window& window, RectSize size);
 	~AutomatonRenderer();
 
 	void draw_frame();
 
 private:
-	DeviceContext _ctx;
+	const DeviceContext* _ctx;
 	RectSize _window_size;
-	Texture _front_texture;
-	Texture _back_texture;
+	RenderPass _simulation_pass;
+	RenderPass _presentation_pass;
+	SwapChain _swap_chain;
+	RenderTarget _front_target;
+	RenderTarget _back_target;
 };
 
 } // namespace cltv

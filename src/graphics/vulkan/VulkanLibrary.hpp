@@ -35,6 +35,9 @@ public:
 	macro_vk_fn(vkGetPhysicalDeviceMemoryProperties);
 	macro_vk_fn(vkGetPhysicalDeviceQueueFamilyProperties);
 	macro_vk_fn(vkGetPhysicalDeviceSurfaceSupportKHR);
+	macro_vk_fn(vkGetPhysicalDeviceSurfaceFormatsKHR);
+	macro_vk_fn(vkGetPhysicalDeviceSurfacePresentModesKHR);
+	macro_vk_fn(vkGetPhysicalDeviceSurfaceCapabilitiesKHR);
 #if CLTV_SYSTEM_WINDOWS
 	macro_vk_fn(vkCreateWin32SurfaceKHR);
 #elif CLTV_SYSTEM_LINUX
@@ -48,14 +51,23 @@ public:
 	macro_vk_fn(vkDeviceWaitIdle);
 	macro_vk_fn(vkDestroyDevice);
 	macro_vk_fn(vkGetDeviceQueue);
+	macro_vk_fn(vkCreateRenderPass);
+	macro_vk_fn(vkDestroyRenderPass);
+	macro_vk_fn(vkCreateSwapchainKHR);
+	macro_vk_fn(vkDestroySwapchainKHR);
+	macro_vk_fn(vkGetSwapchainImagesKHR);
+	macro_vk_fn(vkCreateImageView);
+	macro_vk_fn(vkDestroyImageView);
+	macro_vk_fn(vkCreateFramebuffer);
+	macro_vk_fn(vkDestroyFramebuffer);
 	macro_vk_fn(vkCreateImage);
 	macro_vk_fn(vkDestroyImage);
 	macro_vk_fn(vkGetImageMemoryRequirements);
 	macro_vk_fn(vkAllocateMemory);
 	macro_vk_fn(vkFreeMemory);
 	macro_vk_fn(vkBindImageMemory);
-	macro_vk_fn(vkCreateImageView);
-	macro_vk_fn(vkDestroyImageView);
+	macro_vk_fn(vkQueueSubmit);
+	macro_vk_fn(vkQueueWaitIdle);
 
 #undef macro_vk_fn
 
