@@ -19,14 +19,14 @@ SwapChain::~SwapChain() {
 
 void SwapChain::destroy(const DeviceContext& ctx) {
 	for (VkFramebuffer framebuffer : _framebuffers) {
-		ctx._lib.vkDestroyFramebuffer(ctx._device, framebuffer, nullptr);
+		ctx.lib.vkDestroyFramebuffer(ctx.device(), framebuffer, nullptr);
 	}
 	for (VkImageView image_view : _image_views) {
-		ctx._lib.vkDestroyImageView(ctx._device, image_view, nullptr);
+		ctx.lib.vkDestroyImageView(ctx.device(), image_view, nullptr);
 	}
 	// swapchain owns the VkImages, we don't need to destroy them
 
-	ctx._lib.vkDestroySwapchainKHR(ctx._device, _swapchain, nullptr);
+	ctx.lib.vkDestroySwapchainKHR(ctx.device(), _swapchain, nullptr);
 	_swapchain = VK_NULL_HANDLE;
 
 	_surface.destroy(ctx);
@@ -34,11 +34,11 @@ void SwapChain::destroy(const DeviceContext& ctx) {
 
 void SwapChain::init_surface_format(const DeviceContext& ctx) {
 	uint32_t count;
-	VkResult result = ctx._lib.vkGetPhysicalDeviceSurfaceFormatsKHR(ctx._physical_device, _surface.get(), &count, nullptr);
+	VkResult result = ctx.lib.vkGetPhysicalDeviceSurfaceFormatsKHR(ctx.physical_device(), _surface.get(), &count, nullptr);
 	require_vk_result(result, "failed to get physical device surface format count");
 
 	std::vector<VkSurfaceFormatKHR> formats(count);
-	result = ctx._lib.vkGetPhysicalDeviceSurfaceFormatsKHR(ctx._physical_device, _surface.get(), &count, formats.data());
+	result = ctx.lib.vkGetPhysicalDeviceSurfaceFormatsKHR(ctx.physical_device(), _surface.get(), &count, formats.data());
 	require_vk_result(result, "failed to get physical device surface formats");
 
 	static constexpr VkSurfaceFormatKHR Desired {
@@ -57,11 +57,11 @@ void SwapChain::init_surface_format(const DeviceContext& ctx) {
 
 void SwapChain::init_present_mode(const DeviceContext& ctx) {
 	uint32_t count;
-	VkResult result = ctx._lib.vkGetPhysicalDeviceSurfacePresentModesKHR(ctx._physical_device, _surface.get(), &count, nullptr);
+	VkResult result = ctx.lib.vkGetPhysicalDeviceSurfacePresentModesKHR(ctx.physical_device(), _surface.get(), &count, nullptr);
 	require_vk_result(result, "failed to get physical device present mode count");
 
 	std::vector<VkPresentModeKHR> modes(count);
-	result = ctx._lib.vkGetPhysicalDeviceSurfacePresentModesKHR(ctx._physical_device, _surface.get(), &count, modes.data());
+	result = ctx.lib.vkGetPhysicalDeviceSurfacePresentModesKHR(ctx.physical_device(), _surface.get(), &count, modes.data());
 	require_vk_result(result, "failed to get physical device present modes");
 
 	static constexpr VkPresentModeKHR Desired = VK_PRESENT_MODE_MAILBOX_KHR;
@@ -74,7 +74,7 @@ void SwapChain::init_present_mode(const DeviceContext& ctx) {
 
 void SwapChain::init_extent_and_swapchain(const DeviceContext& ctx, RectSize size) {
 	VkSurfaceCapabilitiesKHR caps;
-	VkResult result = ctx._lib.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(ctx._physical_device, _surface.get(), &caps);
+	VkResult result = ctx.lib.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(ctx.physical_device(), _surface.get(), &caps);
 	require_vk_result(result, "failed to get physical device surface capabilities");
 
 	uint32_t min_image_count = caps.minImageCount + 1;
@@ -90,12 +90,12 @@ void SwapChain::init_extent_and_swapchain(const DeviceContext& ctx, RectSize siz
 	}
 
 	VkBool32 supported;
-	result = ctx._lib.vkGetPhysicalDeviceSurfaceSupportKHR(ctx._physical_device, ctx._presentation_queue.family, _surface.get(),
-														   &supported);
+	result = ctx.lib.vkGetPhysicalDeviceSurfaceSupportKHR(ctx.physical_device(), ctx.presentation_queue.family, _surface.get(),
+														  &supported);
 	require_vk_result(result, "failed to query physical device surface support");
 	require(supported, "surface not supported for swap chain");
 
-	const uint32_t queue_indices[] {ctx._graphics_queue.family, ctx._presentation_queue.family};
+	const uint32_t queue_indices[] {ctx.graphics_queue.family, ctx.presentation_queue.family};
 	const bool concurrent = queue_indices[0] != queue_indices[1];
 
 	VkSwapchainCreateInfoKHR swapchain_info {
@@ -118,17 +118,17 @@ void SwapChain::init_extent_and_swapchain(const DeviceContext& ctx, RectSize siz
 		.clipped			   = VK_TRUE,
 		.oldSwapchain		   = VK_NULL_HANDLE,
 	};
-	result = ctx._lib.vkCreateSwapchainKHR(ctx._device, &swapchain_info, nullptr, &_swapchain);
+	result = ctx.lib.vkCreateSwapchainKHR(ctx.device(), &swapchain_info, nullptr, &_swapchain);
 	require_vk_result(result, "failed to create Vulkan swapchain");
 }
 
 void SwapChain::init_images(const DeviceContext& ctx, const RenderPass& render_pass) {
 	uint32_t count;
-	VkResult result = ctx._lib.vkGetSwapchainImagesKHR(ctx._device, _swapchain, &count, nullptr);
+	VkResult result = ctx.lib.vkGetSwapchainImagesKHR(ctx.device(), _swapchain, &count, nullptr);
 	require_vk_result(result, "failed to get Vulkan swapchain image count");
 
 	_images.resize(count);
-	result = ctx._lib.vkGetSwapchainImagesKHR(ctx._device, _swapchain, &count, _images.data());
+	result = ctx.lib.vkGetSwapchainImagesKHR(ctx.device(), _swapchain, &count, _images.data());
 	require_vk_result(result, "failed to get Vulkan swapchain images");
 
 	for (VkImage image : _images) {
@@ -150,7 +150,7 @@ void SwapChain::init_images(const DeviceContext& ctx, const RenderPass& render_p
 														 .layerCount	 = 1},
 		};
 		VkImageView image_view;
-		result = ctx._lib.vkCreateImageView(ctx._device, &image_view_info, nullptr, &image_view);
+		result = ctx.lib.vkCreateImageView(ctx.device(), &image_view_info, nullptr, &image_view);
 		require_vk_result(result, "failed to create image view for swapchain image");
 		_image_views.emplace_back(image_view);
 
@@ -166,7 +166,7 @@ void SwapChain::init_images(const DeviceContext& ctx, const RenderPass& render_p
 			.layers			 = 1,
 		};
 		VkFramebuffer framebuffer;
-		result = ctx._lib.vkCreateFramebuffer(ctx._device, &framebuffer_info, nullptr, &framebuffer);
+		result = ctx.lib.vkCreateFramebuffer(ctx.device(), &framebuffer_info, nullptr, &framebuffer);
 		require_vk_result(result, "failed to create Vulkan framebuffer for swapchain");
 		_framebuffers.emplace_back(framebuffer);
 	}

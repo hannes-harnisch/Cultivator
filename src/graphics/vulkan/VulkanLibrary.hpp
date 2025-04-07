@@ -60,6 +60,18 @@ public:
 	macro_vk_fn(vkDestroyImageView);
 	macro_vk_fn(vkCreateFramebuffer);
 	macro_vk_fn(vkDestroyFramebuffer);
+	macro_vk_fn(vkCreateShaderModule);
+	macro_vk_fn(vkDestroyShaderModule);
+	macro_vk_fn(vkCreateDescriptorSetLayout);
+	macro_vk_fn(vkDestroyDescriptorSetLayout);
+	macro_vk_fn(vkCreatePipelineLayout);
+	macro_vk_fn(vkDestroyPipelineLayout);
+	macro_vk_fn(vkCreateGraphicsPipelines);
+	macro_vk_fn(vkDestroyPipeline);
+	macro_vk_fn(vkCreateSampler);
+	macro_vk_fn(vkDestroySampler);
+	macro_vk_fn(vkCreateDescriptorPool);
+	macro_vk_fn(vkDestroyDescriptorPool);
 	macro_vk_fn(vkCreateImage);
 	macro_vk_fn(vkDestroyImage);
 	macro_vk_fn(vkGetImageMemoryRequirements);
@@ -72,7 +84,7 @@ public:
 #undef macro_vk_fn
 
 private:
-	SharedLibrary _lib;
+	SharedLibrary lib;
 };
 
 } // namespace cltv

@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef CLTV_SYSTEM_WINDOWS
+#if CLTV_SYSTEM_WINDOWS
 	#include "util/windows/WindowsDef.hpp"
 #endif
 
@@ -21,7 +21,7 @@ public:
 
 	static void show_error_window(std::string_view title, std::string_view message);
 
-#ifdef CLTV_SYSTEM_WINDOWS
+#if CLTV_SYSTEM_WINDOWS
 	HINSTANCE get_instance_handle() const;
 	ATOM get_window_class() const;
 #endif

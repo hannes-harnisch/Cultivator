@@ -14,7 +14,7 @@ public:
 	}
 
 	void destroy(const DeviceContext& ctx) {
-		ctx._lib.vkDestroySurfaceKHR(ctx._instance, _surface, nullptr);
+		ctx.lib.vkDestroySurfaceKHR(ctx.instance(), _surface, nullptr);
 		_surface = VK_NULL_HANDLE;
 	}
 

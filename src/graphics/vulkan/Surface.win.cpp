@@ -12,7 +12,7 @@ Surface::Surface(const DeviceContext& ctx, Window& window) {
 		.hinstance = window.get_instance_handle(),
 		.hwnd	   = window.get_hwnd(),
 	};
-	VkResult result = ctx._lib.vkCreateWin32SurfaceKHR(ctx._instance, &surface_info, nullptr, &_surface);
+	VkResult result = ctx.lib.vkCreateWin32SurfaceKHR(ctx.instance(), &surface_info, nullptr, &_surface);
 	require_vk_result(result, "failed to create Vulkan surface");
 }
 

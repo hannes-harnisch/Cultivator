@@ -52,7 +52,7 @@ RenderPass::RenderPass(const DeviceContext& ctx, VkImageLayout initial, VkImageL
 		.dependencyCount = 1,
 		.pDependencies	 = &subpass_dependency,
 	};
-	VkResult result = ctx._lib.vkCreateRenderPass(ctx._device, &render_pass_info, nullptr, &_render_pass);
+	VkResult result = ctx.lib.vkCreateRenderPass(ctx.device(), &render_pass_info, nullptr, &_render_pass);
 	require_vk_result(result, "failed to create Vulkan render pass");
 }
 
@@ -61,7 +61,7 @@ RenderPass::~RenderPass() {
 }
 
 void RenderPass::destroy(const DeviceContext& ctx) {
-	ctx._lib.vkDestroyRenderPass(ctx._device, _render_pass, nullptr);
+	ctx.lib.vkDestroyRenderPass(ctx.device(), _render_pass, nullptr);
 	_render_pass = VK_NULL_HANDLE;
 }
 

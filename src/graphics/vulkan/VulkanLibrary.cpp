@@ -26,8 +26,8 @@ SharedLibrary find_driver_lib() {
 } // namespace
 
 VulkanLibrary::VulkanLibrary() :
-	_lib(find_driver_lib()) {
-	vkGetInstanceProcAddr = _lib.load_symbol<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+	lib(find_driver_lib()) {
+	vkGetInstanceProcAddr = lib.load_symbol<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
 
 #define macro_vk_fn(name) name = reinterpret_cast<PFN_##name>(vkGetInstanceProcAddr(nullptr, #name))
 
@@ -81,6 +81,18 @@ void VulkanLibrary::load_device_functions(VkDevice device) {
 	macro_vk_fn(vkDestroyImageView);
 	macro_vk_fn(vkCreateFramebuffer);
 	macro_vk_fn(vkDestroyFramebuffer);
+	macro_vk_fn(vkCreateShaderModule);
+	macro_vk_fn(vkDestroyShaderModule);
+	macro_vk_fn(vkCreateDescriptorSetLayout);
+	macro_vk_fn(vkDestroyDescriptorSetLayout);
+	macro_vk_fn(vkCreatePipelineLayout);
+	macro_vk_fn(vkDestroyPipelineLayout);
+	macro_vk_fn(vkCreateGraphicsPipelines);
+	macro_vk_fn(vkDestroyPipeline);
+	macro_vk_fn(vkCreateSampler);
+	macro_vk_fn(vkDestroySampler);
+	macro_vk_fn(vkCreateDescriptorPool);
+	macro_vk_fn(vkDestroyDescriptorPool);
 	macro_vk_fn(vkCreateImage);
 	macro_vk_fn(vkDestroyImage);
 	macro_vk_fn(vkGetImageMemoryRequirements);

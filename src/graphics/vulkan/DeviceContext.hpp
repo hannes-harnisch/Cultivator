@@ -12,12 +12,9 @@ public:
 		VkQueue queue	= VK_NULL_HANDLE;
 	};
 
-	VulkanLibrary _lib;
-	VkInstance _instance			  = VK_NULL_HANDLE;
-	VkPhysicalDevice _physical_device = VK_NULL_HANDLE;
-	VkDevice _device				  = VK_NULL_HANDLE;
-	Queue _graphics_queue;
-	Queue _presentation_queue;
+	VulkanLibrary lib;
+	Queue graphics_queue;
+	Queue presentation_queue;
 
 	DeviceContext(Window& window, bool enable_debug_layer);
 
@@ -35,8 +32,23 @@ public:
 	std::optional<uint32_t> find_memory_type_index(uint32_t supported_type_mask,
 												   VkMemoryPropertyFlags desired_properties) const;
 
+	VkInstance instance() const {
+		return _instance;
+	}
+
+	VkPhysicalDevice physical_device() const {
+		return _physical_device;
+	}
+
+	VkDevice device() const {
+		return _device;
+	}
+
 private:
+	VkInstance _instance							 = VK_NULL_HANDLE;
 	VkDebugUtilsMessengerEXT _messenger				 = VK_NULL_HANDLE;
+	VkPhysicalDevice _physical_device				 = VK_NULL_HANDLE;
+	VkDevice _device								 = VK_NULL_HANDLE;
 	VkPhysicalDeviceMemoryProperties _mem_properties = {};
 
 	void check_layers() const;

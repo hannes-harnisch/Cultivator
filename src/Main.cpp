@@ -21,7 +21,7 @@ public:
 		window.show();
 
 		DeviceContext context(window, EnableDebugLayer);
-		AutomatonRenderer renderer(&context, window, {480, 720});
+		AutomatonRenderer renderer(&context, window, {480, 720}, "GameOfLife.frag.spv");
 
 		while (_should_run) {
 			renderer.draw_frame();
