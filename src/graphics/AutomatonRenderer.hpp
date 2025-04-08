@@ -1,7 +1,7 @@
 #pragma once
 
 #include "app/Window.hpp"
-#include "graphics/vulkan/CommandBuffer.hpp"
+#include "graphics/vulkan/CommandList.hpp"
 #include "graphics/vulkan/DeviceContext.hpp"
 #include "graphics/vulkan/Pipeline.hpp"
 #include "graphics/vulkan/RenderPass.hpp"
@@ -44,7 +44,7 @@ private:
 	VkSemaphore _img_acquire_semaphores[MaxFrames];
 	std::vector<VkFence> _image_in_flight_fences;
 	uint32_t _current_frame = 0;
-	std::vector<CommandBuffer> _cmd_buffers;
+	std::deque<CommandList> _cmd_lists;
 
 	void prepare_render_targets();
 

@@ -14,6 +14,10 @@ public:
 		return _size;
 	}
 
+	VkImage get_image() const {
+		return _image;
+	}
+
 	VkImageView get_image_view() const {
 		return _image_view;
 	}

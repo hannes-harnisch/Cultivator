@@ -1,5 +1,6 @@
 #include "AutomatonRenderer.hpp"
 
+#include "graphics/vulkan/Buffer.hpp"
 #include "graphics/vulkan/Util.hpp"
 #include "util/Util.hpp"
 
@@ -27,8 +28,11 @@ AutomatonRenderer::AutomatonRenderer(const DeviceContext* ctx, Window& window, R
 	_frame_fences {create_fence(), create_fence()},
 	_img_release_semaphores {create_semaphore(), create_semaphore()},
 	_img_acquire_semaphores {create_semaphore(), create_semaphore()},
-	_image_in_flight_fences(_swap_chain.get_image_count()),
-	_cmd_buffers() {
+	_image_in_flight_fences(_swap_chain.get_image_count()) {
+	for (size_t i = 0; i < _swap_chain.get_image_count(); ++i) {
+		_cmd_lists.emplace_back(_ctx);
+	}
+
 	prepare_render_targets();
 }
 
@@ -63,6 +67,35 @@ void AutomatonRenderer::prepare_render_targets() {
 	::srand(static_cast<unsigned>(::time(nullptr)));
 
 	const size_t size = 4 * static_cast<size_t>(_back_target.get_size().area());
+	Buffer staging_buffer(_ctx, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+						  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+	void* staging_target;
+	VkResult result = _ctx->lib.vkMapMemory(_ctx->device(), staging_buffer.get_memory(), 0, size, 0, &staging_target);
+	require_vk_result(result, "failed to map memory");
+
+	uint32_t* pixels = reinterpret_cast<uint32_t*>(staging_target);
+	for (size_t i = 0; i < size / sizeof(uint32_t); ++i) {
+		*pixels++ = ::rand() % 2 == 0 ? 0xFFFFFFFF : 0;
+	}
+	_ctx->lib.vkUnmapMemory(_ctx->device(), staging_buffer.get_memory());
+
+	CommandList cmd(_ctx);
+	cmd.begin();
+	cmd.transition_render_target(_front_target, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	cmd.transition_render_target(_back_target, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	cmd.end();
+	_ctx->submit_to_queue_blocking(_ctx->graphics_queue, cmd.get());
+
+	cmd.begin();
+	cmd.copy_buffer_to_render_target(staging_buffer, _back_target);
+	cmd.end();
+	_ctx->submit_to_queue_blocking(_ctx->graphics_queue, cmd.get());
+
+	cmd.begin();
+	cmd.transition_render_target(_back_target, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	cmd.end();
+	_ctx->submit_to_queue_blocking(_ctx->graphics_queue, cmd.get());
 }
 
 VkShaderModule AutomatonRenderer::create_shader_module(const char* path) const {

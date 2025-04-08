@@ -99,6 +99,8 @@ void VulkanLibrary::load_device_functions(VkDevice device) {
 	macro_vk_fn(vkAllocateCommandBuffers);
 	macro_vk_fn(vkResetCommandPool);
 	macro_vk_fn(vkBeginCommandBuffer);
+	macro_vk_fn(vkCmdPipelineBarrier);
+	macro_vk_fn(vkCmdCopyBufferToImage);
 	macro_vk_fn(vkEndCommandBuffer);
 	macro_vk_fn(vkQueueSubmit);
 	macro_vk_fn(vkQueueWaitIdle);

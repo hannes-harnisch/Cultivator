@@ -42,8 +42,9 @@ static VKAPI_ATTR VkBool32 VKAPI_PTR debug_callback(VkDebugUtilsMessageSeverityF
 													void*) {
 	if (pCallbackData->messageIdNumber != 0x675dc32e) { // ignore enabling VK_EXT_debug_utils
 		std::cerr << pCallbackData->pMessage;
+		std::cerr << "\n\n";
 	}
-	return false;
+	return VK_FALSE;
 }
 
 DeviceContext::DeviceContext(Window& window, bool enable_debug_layer) :
