@@ -12,6 +12,10 @@ public:
 
 	void destroy(const DeviceContext& ctx);
 
+	VkImageView get_image_view() const {
+		return _image_view;
+	}
+
 private:
 	RectSize _size;
 	VkDeviceMemory _memory	   = VK_NULL_HANDLE;

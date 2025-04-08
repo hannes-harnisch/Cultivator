@@ -60,9 +60,6 @@ DeviceContext::DeviceContext(Window& window, bool enable_debug_layer) :
 }
 
 DeviceContext::~DeviceContext() {
-	VkResult result = lib.vkDeviceWaitIdle(_device);
-	require_vk_result(result, "failed to wait for device idle state");
-
 	lib.vkDestroyDevice(_device, nullptr);
 	if (_messenger != VK_NULL_HANDLE) {
 		lib.vkDestroyDebugUtilsMessengerEXT(_instance, _messenger, nullptr);

@@ -20,10 +20,31 @@ AutomatonRenderer::AutomatonRenderer(const DeviceContext* ctx, Window& window, R
 	_pipeline_layout(create_pipeline_layout()),
 	_simulation_pipeline(*_ctx, _vertex_shader, _simulation_fragment_shader, _pipeline_layout, _simulation_pass),
 	_presentation_pipeline(*_ctx, _vertex_shader, _presentation_fragment_shader, _pipeline_layout, _presentation_pass),
-	_sampler(create_sampler()) {
+	_sampler(create_sampler()),
+	_descriptor_pool(create_descriptor_pool()),
+	_descriptor_set_front(create_descriptor_set(_front_target)),
+	_descriptor_set_back(create_descriptor_set(_back_target)),
+	_frame_fences {create_fence(), create_fence()},
+	_img_release_semaphores {create_semaphore(), create_semaphore()},
+	_img_acquire_semaphores {create_semaphore(), create_semaphore()},
+	_image_in_flight_fences(_swap_chain.get_image_count()) {
 }
 
 AutomatonRenderer::~AutomatonRenderer() {
+	VkResult result = _ctx->lib.vkDeviceWaitIdle(_ctx->device());
+	require_vk_result(result, "failed to wait for device idle state");
+
+	for (VkSemaphore semaphore : _img_acquire_semaphores) {
+		_ctx->lib.vkDestroySemaphore(_ctx->device(), semaphore, nullptr);
+	}
+	for (VkSemaphore semaphore : _img_release_semaphores) {
+		_ctx->lib.vkDestroySemaphore(_ctx->device(), semaphore, nullptr);
+	}
+	for (VkFence fence : _frame_fences) {
+		_ctx->lib.vkDestroyFence(_ctx->device(), fence, nullptr);
+	}
+
+	_ctx->lib.vkDestroyDescriptorPool(_ctx->device(), _descriptor_pool, nullptr);
 	_ctx->lib.vkDestroySampler(_ctx->device(), _sampler, nullptr);
 
 	_presentation_pipeline.destroy(*_ctx);
@@ -128,6 +149,83 @@ VkSampler AutomatonRenderer::create_sampler() const {
 	VkResult result = _ctx->lib.vkCreateSampler(_ctx->device(), &sampler_info, nullptr, &sampler);
 	require_vk_result(result, "failed to create Vulkan sampler");
 	return sampler;
+}
+
+VkDescriptorPool AutomatonRenderer::create_descriptor_pool() const {
+	VkDescriptorPoolSize pool_size {
+		.type			 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+		.descriptorCount = 2,
+	};
+	VkDescriptorPoolCreateInfo descriptor_pool_info {
+		.sType		   = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+		.pNext		   = nullptr,
+		.flags		   = 0,
+		.maxSets	   = 2,
+		.poolSizeCount = 1,
+		.pPoolSizes	   = &pool_size,
+	};
+
+	VkDescriptorPool descriptor_pool;
+	VkResult result = _ctx->lib.vkCreateDescriptorPool(_ctx->device(), &descriptor_pool_info, nullptr, &descriptor_pool);
+	require_vk_result(result, "failed to create Vulkan descriptor pool");
+	return descriptor_pool;
+}
+
+VkDescriptorSet AutomatonRenderer::create_descriptor_set(const RenderTarget& render_target) const {
+	VkDescriptorSetAllocateInfo alloc_info {
+		.sType				= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+		.pNext				= nullptr,
+		.descriptorPool		= _descriptor_pool,
+		.descriptorSetCount = 1,
+		.pSetLayouts		= &_descriptor_set_layout,
+	};
+	VkDescriptorSet descriptor_set;
+	VkResult result = _ctx->lib.vkAllocateDescriptorSets(_ctx->device(), &alloc_info, &descriptor_set);
+	require_vk_result(result, "failed to create Vulkan descriptor set");
+
+	VkDescriptorImageInfo image_info {
+		.sampler	 = _sampler,
+		.imageView	 = render_target.get_image_view(),
+		.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+	};
+	VkWriteDescriptorSet write {
+		.sType			  = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+		.pNext			  = nullptr,
+		.dstSet			  = descriptor_set,
+		.dstBinding		  = 0,
+		.descriptorCount  = 1,
+		.descriptorType	  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+		.pImageInfo		  = &image_info,
+		.pBufferInfo	  = nullptr,
+		.pTexelBufferView = nullptr,
+	};
+	_ctx->lib.vkUpdateDescriptorSets(_ctx->device(), 1, &write, 0, nullptr);
+
+	return descriptor_set;
+}
+
+VkFence AutomatonRenderer::create_fence() const {
+	VkFenceCreateInfo fence_info {
+		.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+		.pNext = nullptr,
+		.flags = VK_FENCE_CREATE_SIGNALED_BIT,
+	};
+	VkFence fence;
+	VkResult result = _ctx->lib.vkCreateFence(_ctx->device(), &fence_info, nullptr, &fence);
+	require_vk_result(result, "failed to create Vulkan fence");
+	return fence;
+}
+
+VkSemaphore AutomatonRenderer::create_semaphore() const {
+	VkSemaphoreCreateInfo semaphore_info {
+		.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+		.pNext = nullptr,
+		.flags = 0,
+	};
+	VkSemaphore semaphore;
+	VkResult result = _ctx->lib.vkCreateSemaphore(_ctx->device(), &semaphore_info, nullptr, &semaphore);
+	require_vk_result(result, "failed to create Vulkan semaphore");
+	return semaphore;
 }
 
 } // namespace cltv

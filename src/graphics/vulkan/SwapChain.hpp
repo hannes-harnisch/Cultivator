@@ -14,6 +14,10 @@ public:
 
 	void destroy(const DeviceContext& ctx);
 
+	size_t get_image_count() const {
+		return _images.size();
+	}
+
 private:
 	Surface _surface;
 	VkSurfaceFormatKHR _surface_format;

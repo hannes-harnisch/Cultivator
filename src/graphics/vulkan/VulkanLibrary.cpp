@@ -41,9 +41,7 @@ VulkanLibrary::VulkanLibrary() :
 void VulkanLibrary::load_instance_functions(VkInstance instance) {
 #define macro_vk_fn(name) name = reinterpret_cast<PFN_##name>(vkGetInstanceProcAddr(instance, #name))
 
-	macro_vk_fn(vkDestroyInstance);
 	macro_vk_fn(vkCreateDebugUtilsMessengerEXT);
-	macro_vk_fn(vkDestroyDebugUtilsMessengerEXT);
 	macro_vk_fn(vkEnumeratePhysicalDevices);
 	macro_vk_fn(vkGetPhysicalDeviceProperties);
 	macro_vk_fn(vkGetPhysicalDeviceFeatures);
@@ -58,10 +56,12 @@ void VulkanLibrary::load_instance_functions(VkInstance instance) {
 #elif CLTV_SYSTEM_LINUX
 	macro_vk_fn(vkCreateXcbSurfaceKHR);
 #endif
-	macro_vk_fn(vkDestroySurfaceKHR);
 	macro_vk_fn(vkEnumerateDeviceExtensionProperties);
 	macro_vk_fn(vkCreateDevice);
 	macro_vk_fn(vkGetDeviceProcAddr);
+	macro_vk_fn(vkDestroySurfaceKHR);
+	macro_vk_fn(vkDestroyDebugUtilsMessengerEXT);
+	macro_vk_fn(vkDestroyInstance);
 
 #undef macro_vk_fn
 }
@@ -69,38 +69,50 @@ void VulkanLibrary::load_instance_functions(VkInstance instance) {
 void VulkanLibrary::load_device_functions(VkDevice device) {
 #define macro_vk_fn(name) name = reinterpret_cast<PFN_##name>(vkGetDeviceProcAddr(device, #name))
 
-	macro_vk_fn(vkDeviceWaitIdle);
-	macro_vk_fn(vkDestroyDevice);
 	macro_vk_fn(vkGetDeviceQueue);
 	macro_vk_fn(vkCreateRenderPass);
-	macro_vk_fn(vkDestroyRenderPass);
 	macro_vk_fn(vkCreateSwapchainKHR);
-	macro_vk_fn(vkDestroySwapchainKHR);
-	macro_vk_fn(vkGetSwapchainImagesKHR);
 	macro_vk_fn(vkCreateImageView);
-	macro_vk_fn(vkDestroyImageView);
 	macro_vk_fn(vkCreateFramebuffer);
-	macro_vk_fn(vkDestroyFramebuffer);
-	macro_vk_fn(vkCreateShaderModule);
-	macro_vk_fn(vkDestroyShaderModule);
-	macro_vk_fn(vkCreateDescriptorSetLayout);
-	macro_vk_fn(vkDestroyDescriptorSetLayout);
-	macro_vk_fn(vkCreatePipelineLayout);
-	macro_vk_fn(vkDestroyPipelineLayout);
-	macro_vk_fn(vkCreateGraphicsPipelines);
-	macro_vk_fn(vkDestroyPipeline);
-	macro_vk_fn(vkCreateSampler);
-	macro_vk_fn(vkDestroySampler);
-	macro_vk_fn(vkCreateDescriptorPool);
-	macro_vk_fn(vkDestroyDescriptorPool);
 	macro_vk_fn(vkCreateImage);
-	macro_vk_fn(vkDestroyImage);
+	macro_vk_fn(vkCreateShaderModule);
+	macro_vk_fn(vkCreateDescriptorSetLayout);
+	macro_vk_fn(vkCreatePipelineLayout);
+	macro_vk_fn(vkCreateGraphicsPipelines);
+	macro_vk_fn(vkCreateSampler);
+	macro_vk_fn(vkCreateDescriptorPool);
+	macro_vk_fn(vkCreateFence);
+	macro_vk_fn(vkCreateSemaphore);
+	macro_vk_fn(vkCreateCommandPool);
+	macro_vk_fn(vkGetSwapchainImagesKHR);
 	macro_vk_fn(vkGetImageMemoryRequirements);
 	macro_vk_fn(vkAllocateMemory);
 	macro_vk_fn(vkFreeMemory);
 	macro_vk_fn(vkBindImageMemory);
+	macro_vk_fn(vkAllocateDescriptorSets);
+	macro_vk_fn(vkUpdateDescriptorSets);
+	macro_vk_fn(vkAllocateCommandBuffers);
+	macro_vk_fn(vkResetCommandPool);
+	macro_vk_fn(vkBeginCommandBuffer);
+	macro_vk_fn(vkEndCommandBuffer);
 	macro_vk_fn(vkQueueSubmit);
 	macro_vk_fn(vkQueueWaitIdle);
+	macro_vk_fn(vkDeviceWaitIdle);
+	macro_vk_fn(vkDestroyCommandPool);
+	macro_vk_fn(vkDestroySemaphore);
+	macro_vk_fn(vkDestroyFence);
+	macro_vk_fn(vkDestroyDescriptorPool);
+	macro_vk_fn(vkDestroySampler);
+	macro_vk_fn(vkDestroyPipeline);
+	macro_vk_fn(vkDestroyPipelineLayout);
+	macro_vk_fn(vkDestroyDescriptorSetLayout);
+	macro_vk_fn(vkDestroyShaderModule);
+	macro_vk_fn(vkDestroyImage);
+	macro_vk_fn(vkDestroyFramebuffer);
+	macro_vk_fn(vkDestroyImageView);
+	macro_vk_fn(vkDestroySwapchainKHR);
+	macro_vk_fn(vkDestroyRenderPass);
+	macro_vk_fn(vkDestroyDevice);
 
 #undef macro_vk_fn
 }
