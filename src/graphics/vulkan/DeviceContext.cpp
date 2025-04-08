@@ -242,7 +242,7 @@ void DeviceContext::init_queue_families(Window& window) {
 	std::vector<VkQueueFamilyProperties> queue_family_properties(count);
 	lib.vkGetPhysicalDeviceQueueFamilyProperties(_physical_device, &count, queue_family_properties.data());
 
-	Surface surface(*this, window);
+	Surface surface(this, window);
 	uint32_t index = 0;
 	for (auto& queue_family : queue_family_properties) {
 		if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
@@ -257,7 +257,6 @@ void DeviceContext::init_queue_families(Window& window) {
 		}
 		++index;
 	}
-	surface.destroy(*this);
 
 	require(graphics_queue.family != UINT32_MAX, "Vulkan driver does not support graphics queues");
 	require(presentation_queue.family != UINT32_MAX, "Vulkan driver does not support presentation queues");

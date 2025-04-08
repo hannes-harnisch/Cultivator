@@ -8,18 +8,18 @@ namespace cltv {
 AutomatonRenderer::AutomatonRenderer(const DeviceContext* ctx, Window& window, RectSize size, const char* shader_path) :
 	_ctx(ctx),
 	_window_size(window.get_viewport()),
-	_simulation_pass(*_ctx, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
-	_presentation_pass(*_ctx, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR),
-	_swap_chain(*_ctx, _window_size, window, _presentation_pass),
-	_front_target(*_ctx, size, _simulation_pass),
-	_back_target(*_ctx, size, _simulation_pass),
+	_simulation_pass(_ctx, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+	_presentation_pass(_ctx, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR),
+	_swap_chain(_ctx, _window_size, window, _presentation_pass),
+	_front_target(_ctx, size, _simulation_pass),
+	_back_target(_ctx, size, _simulation_pass),
 	_vertex_shader(create_shader_module("ScreenQuad.vert.spv")),
 	_simulation_fragment_shader(create_shader_module(shader_path)),
 	_presentation_fragment_shader(create_shader_module("Presentation.frag.spv")),
 	_descriptor_set_layout(create_descriptor_set_layout()),
 	_pipeline_layout(create_pipeline_layout()),
-	_simulation_pipeline(*_ctx, _vertex_shader, _simulation_fragment_shader, _pipeline_layout, _simulation_pass),
-	_presentation_pipeline(*_ctx, _vertex_shader, _presentation_fragment_shader, _pipeline_layout, _presentation_pass),
+	_simulation_pipeline(_ctx, _vertex_shader, _simulation_fragment_shader, _pipeline_layout, _simulation_pass),
+	_presentation_pipeline(_ctx, _vertex_shader, _presentation_fragment_shader, _pipeline_layout, _presentation_pass),
 	_sampler(create_sampler()),
 	_descriptor_pool(create_descriptor_pool()),
 	_descriptor_set_front(create_descriptor_set(_front_target)),
@@ -27,7 +27,9 @@ AutomatonRenderer::AutomatonRenderer(const DeviceContext* ctx, Window& window, R
 	_frame_fences {create_fence(), create_fence()},
 	_img_release_semaphores {create_semaphore(), create_semaphore()},
 	_img_acquire_semaphores {create_semaphore(), create_semaphore()},
-	_image_in_flight_fences(_swap_chain.get_image_count()) {
+	_image_in_flight_fences(_swap_chain.get_image_count()),
+	_cmd_buffers() {
+	prepare_render_targets();
 }
 
 AutomatonRenderer::~AutomatonRenderer() {
@@ -47,23 +49,20 @@ AutomatonRenderer::~AutomatonRenderer() {
 	_ctx->lib.vkDestroyDescriptorPool(_ctx->device(), _descriptor_pool, nullptr);
 	_ctx->lib.vkDestroySampler(_ctx->device(), _sampler, nullptr);
 
-	_presentation_pipeline.destroy(*_ctx);
-	_simulation_pipeline.destroy(*_ctx);
-
 	_ctx->lib.vkDestroyPipelineLayout(_ctx->device(), _pipeline_layout, nullptr);
 	_ctx->lib.vkDestroyDescriptorSetLayout(_ctx->device(), _descriptor_set_layout, nullptr);
 	_ctx->lib.vkDestroyShaderModule(_ctx->device(), _presentation_fragment_shader, nullptr);
 	_ctx->lib.vkDestroyShaderModule(_ctx->device(), _simulation_fragment_shader, nullptr);
 	_ctx->lib.vkDestroyShaderModule(_ctx->device(), _vertex_shader, nullptr);
-
-	_back_target.destroy(*_ctx);
-	_front_target.destroy(*_ctx);
-	_swap_chain.destroy(*_ctx);
-	_presentation_pass.destroy(*_ctx);
-	_simulation_pass.destroy(*_ctx);
 }
 
 void AutomatonRenderer::draw_frame() {
+}
+
+void AutomatonRenderer::prepare_render_targets() {
+	::srand(static_cast<unsigned>(::time(nullptr)));
+
+	const size_t size = 4 * static_cast<size_t>(_back_target.get_size().area());
 }
 
 VkShaderModule AutomatonRenderer::create_shader_module(const char* path) const {

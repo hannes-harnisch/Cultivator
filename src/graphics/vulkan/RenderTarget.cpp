@@ -5,35 +5,22 @@
 
 namespace cltv {
 
-RenderTarget::RenderTarget(const DeviceContext& ctx, RectSize size, const RenderPass& render_pass) :
+RenderTarget::RenderTarget(const DeviceContext* ctx, RectSize size, const RenderPass& render_pass) :
+	_ctx(ctx),
 	_size(size) {
-	init_image(ctx, size);
-	init_memory(ctx);
-	init_view_and_framebuffer(ctx, size, render_pass);
+	init_image(size);
+	init_memory();
+	init_view_and_framebuffer(size, render_pass);
 }
 
 RenderTarget::~RenderTarget() {
-	assert(_memory == VK_NULL_HANDLE);
-	assert(_image == VK_NULL_HANDLE);
-	assert(_image_view == VK_NULL_HANDLE);
-	assert(_framebuffer == VK_NULL_HANDLE);
+	_ctx->lib.vkDestroyFramebuffer(_ctx->device(), _framebuffer, nullptr);
+	_ctx->lib.vkDestroyImageView(_ctx->device(), _image_view, nullptr);
+	_ctx->lib.vkDestroyImage(_ctx->device(), _image, nullptr);
+	_ctx->lib.vkFreeMemory(_ctx->device(), _memory, nullptr);
 }
 
-void RenderTarget::destroy(const DeviceContext& ctx) {
-	ctx.lib.vkDestroyFramebuffer(ctx.device(), _framebuffer, nullptr);
-	_framebuffer = VK_NULL_HANDLE;
-
-	ctx.lib.vkDestroyImageView(ctx.device(), _image_view, nullptr);
-	_image_view = VK_NULL_HANDLE;
-
-	ctx.lib.vkDestroyImage(ctx.device(), _image, nullptr);
-	_image = VK_NULL_HANDLE;
-
-	ctx.lib.vkFreeMemory(ctx.device(), _memory, nullptr);
-	_memory = VK_NULL_HANDLE;
-}
-
-void RenderTarget::init_image(const DeviceContext& ctx, RectSize size) {
+void RenderTarget::init_image(RectSize size) {
 	VkImageCreateInfo image_info {
 		.sType		 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.pNext		 = nullptr,
@@ -53,15 +40,15 @@ void RenderTarget::init_image(const DeviceContext& ctx, RectSize size) {
 		.pQueueFamilyIndices   = nullptr,
 		.initialLayout		   = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
-	VkResult result = ctx.lib.vkCreateImage(ctx.device(), &image_info, nullptr, &_image);
+	VkResult result = _ctx->lib.vkCreateImage(_ctx->device(), &image_info, nullptr, &_image);
 	require_vk_result(result, "failed to create Vulkan image");
 }
 
-void RenderTarget::init_memory(const DeviceContext& ctx) {
+void RenderTarget::init_memory() {
 	VkMemoryRequirements requirements;
-	ctx.lib.vkGetImageMemoryRequirements(ctx.device(), _image, &requirements);
+	_ctx->lib.vkGetImageMemoryRequirements(_ctx->device(), _image, &requirements);
 
-	auto mem_type_index = ctx.find_memory_type_index(requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	auto mem_type_index = _ctx->find_memory_type_index(requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	require(mem_type_index.has_value(), "no suitable memory type for texture");
 
 	static constexpr VkDeviceSize MinRecommended = 1048576;
@@ -72,14 +59,14 @@ void RenderTarget::init_memory(const DeviceContext& ctx) {
 		.allocationSize	 = std::max(requirements.size, MinRecommended),
 		.memoryTypeIndex = *mem_type_index,
 	};
-	VkResult result = ctx.lib.vkAllocateMemory(ctx.device(), &alloc_info, nullptr, &_memory);
+	VkResult result = _ctx->lib.vkAllocateMemory(_ctx->device(), &alloc_info, nullptr, &_memory);
 	require_vk_result(result, "failed to allocate GPU memory for texture");
 
-	result = ctx.lib.vkBindImageMemory(ctx.device(), _image, _memory, 0);
+	result = _ctx->lib.vkBindImageMemory(_ctx->device(), _image, _memory, 0);
 	require_vk_result(result, "failed to bind image memory");
 }
 
-void RenderTarget::init_view_and_framebuffer(const DeviceContext& ctx, RectSize size, const RenderPass& render_pass) {
+void RenderTarget::init_view_and_framebuffer(RectSize size, const RenderPass& render_pass) {
 	VkImageViewCreateInfo image_view_info {
 		.sType			  = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 		.pNext			  = nullptr,
@@ -97,7 +84,7 @@ void RenderTarget::init_view_and_framebuffer(const DeviceContext& ctx, RectSize 
 													 .baseArrayLayer = 0,
 													 .layerCount	 = 1},
 	};
-	VkResult result = ctx.lib.vkCreateImageView(ctx.device(), &image_view_info, nullptr, &_image_view);
+	VkResult result = _ctx->lib.vkCreateImageView(_ctx->device(), &image_view_info, nullptr, &_image_view);
 	require_vk_result(result, "failed to create Vulkan image view");
 
 	VkFramebufferCreateInfo framebuffer_info {
@@ -111,7 +98,7 @@ void RenderTarget::init_view_and_framebuffer(const DeviceContext& ctx, RectSize 
 		.height			 = static_cast<uint32_t>(size.height),
 		.layers			 = 1,
 	};
-	result = ctx.lib.vkCreateFramebuffer(ctx.device(), &framebuffer_info, nullptr, &_framebuffer);
+	result = _ctx->lib.vkCreateFramebuffer(_ctx->device(), &framebuffer_info, nullptr, &_framebuffer);
 	require_vk_result(result, "failed to create Vulkan render target framebuffer");
 }
 

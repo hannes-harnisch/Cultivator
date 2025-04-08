@@ -54,6 +54,7 @@ public:
 	macro_vk_fn(vkCreateImageView);
 	macro_vk_fn(vkCreateFramebuffer);
 	macro_vk_fn(vkCreateImage);
+	macro_vk_fn(vkCreateBuffer);
 	macro_vk_fn(vkCreateShaderModule);
 	macro_vk_fn(vkCreateDescriptorSetLayout);
 	macro_vk_fn(vkCreatePipelineLayout);
@@ -65,9 +66,13 @@ public:
 	macro_vk_fn(vkCreateCommandPool);
 	macro_vk_fn(vkGetSwapchainImagesKHR);
 	macro_vk_fn(vkGetImageMemoryRequirements);
+	macro_vk_fn(vkGetBufferMemoryRequirements);
 	macro_vk_fn(vkAllocateMemory);
 	macro_vk_fn(vkFreeMemory);
 	macro_vk_fn(vkBindImageMemory);
+	macro_vk_fn(vkBindBufferMemory);
+	macro_vk_fn(vkMapMemory);
+	macro_vk_fn(vkUnmapMemory);
 	macro_vk_fn(vkAllocateDescriptorSets);
 	macro_vk_fn(vkUpdateDescriptorSets);
 	macro_vk_fn(vkAllocateCommandBuffers);
@@ -86,6 +91,7 @@ public:
 	macro_vk_fn(vkDestroyPipelineLayout);
 	macro_vk_fn(vkDestroyDescriptorSetLayout);
 	macro_vk_fn(vkDestroyShaderModule);
+	macro_vk_fn(vkDestroyBuffer);
 	macro_vk_fn(vkDestroyImage);
 	macro_vk_fn(vkDestroyFramebuffer);
 	macro_vk_fn(vkDestroyImageView);

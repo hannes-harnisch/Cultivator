@@ -7,7 +7,7 @@ namespace cltv {
 
 class Pipeline {
 public:
-	Pipeline(const DeviceContext& ctx,
+	Pipeline(const DeviceContext* ctx,
 			 VkShaderModule vertex,
 			 VkShaderModule fragment,
 			 VkPipelineLayout layout,
@@ -15,9 +15,8 @@ public:
 
 	~Pipeline();
 
-	void destroy(const DeviceContext& ctx);
-
 private:
+	const DeviceContext* _ctx;
 	VkPipeline _pipeline;
 };
 

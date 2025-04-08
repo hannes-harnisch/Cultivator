@@ -4,7 +4,8 @@
 
 namespace cltv {
 
-RenderPass::RenderPass(const DeviceContext& ctx, VkImageLayout initial, VkImageLayout final) {
+RenderPass::RenderPass(const DeviceContext* ctx, VkImageLayout initial, VkImageLayout final) :
+	_ctx(ctx) {
 	VkAttachmentReference color_attachment {
 		.attachment = 0,
 		.layout		= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
@@ -52,17 +53,12 @@ RenderPass::RenderPass(const DeviceContext& ctx, VkImageLayout initial, VkImageL
 		.dependencyCount = 1,
 		.pDependencies	 = &subpass_dependency,
 	};
-	VkResult result = ctx.lib.vkCreateRenderPass(ctx.device(), &render_pass_info, nullptr, &_render_pass);
+	VkResult result = ctx->lib.vkCreateRenderPass(ctx->device(), &render_pass_info, nullptr, &_render_pass);
 	require_vk_result(result, "failed to create Vulkan render pass");
 }
 
 RenderPass::~RenderPass() {
-	assert(_render_pass == VK_NULL_HANDLE);
-}
-
-void RenderPass::destroy(const DeviceContext& ctx) {
-	ctx.lib.vkDestroyRenderPass(ctx.device(), _render_pass, nullptr);
-	_render_pass = VK_NULL_HANDLE;
+	_ctx->lib.vkDestroyRenderPass(_ctx->device(), _render_pass, nullptr);
 }
 
 } // namespace cltv

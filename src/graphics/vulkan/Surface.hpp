@@ -7,15 +7,10 @@ namespace cltv {
 
 class Surface {
 public:
-	Surface(const DeviceContext& ctx, Window& window);
+	Surface(const DeviceContext* ctx, Window& window);
 
 	~Surface() {
-		assert(_surface == VK_NULL_HANDLE);
-	}
-
-	void destroy(const DeviceContext& ctx) {
-		ctx.lib.vkDestroySurfaceKHR(ctx.instance(), _surface, nullptr);
-		_surface = VK_NULL_HANDLE;
+		_ctx->lib.vkDestroySurfaceKHR(_ctx->instance(), _surface, nullptr);
 	}
 
 	VkSurfaceKHR get() const {
@@ -23,6 +18,7 @@ public:
 	}
 
 private:
+	const DeviceContext* _ctx;
 	VkSurfaceKHR _surface;
 };
 

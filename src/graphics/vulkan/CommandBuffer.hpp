@@ -7,7 +7,9 @@ namespace cltv {
 class CommandBuffer {
 public:
 	explicit CommandBuffer(const DeviceContext* ctx);
+
 	~CommandBuffer();
+	CommandBuffer(CommandBuffer&&) = delete;
 
 	void begin();
 	void end();
