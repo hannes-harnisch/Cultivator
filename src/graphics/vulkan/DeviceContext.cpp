@@ -36,18 +36,24 @@ constexpr inline const char* RequiredDeviceExtensions[] = {
 	"VK_KHR_swapchain",
 };
 
-static VKAPI_ATTR VkBool32 VKAPI_PTR debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT,
-													VkDebugUtilsMessageTypeFlagsEXT,
+static VKAPI_ATTR VkBool32 VKAPI_PTR debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+													VkDebugUtilsMessageTypeFlagsEXT messageTypes,
 													const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-													void*) {
-	if (pCallbackData->messageIdNumber != 0x675dc32e) { // ignore enabling VK_EXT_debug_utils
-		std::cerr << pCallbackData->pMessage;
-		std::cerr << "\n\n";
+													void* pUserData) {
+	static constexpr int32_t ignored_message_ids[] = {
+		0x675dc32e, // pointless message about enabling VK_EXT_debug_utils
+		0x22d43910, // erroneously issued message about not retrieving physical device features (bug in validation layer)
+	};
+
+	if (contains(ignored_message_ids, pCallbackData->messageIdNumber)) {
+		return VK_FALSE;
 	}
+
+	std::cerr << pCallbackData->pMessageIdName << '\n' << pCallbackData->pMessage << "\n\n";
 	return VK_FALSE;
 }
 
-DeviceContext::DeviceContext(Window& window, bool enable_debug_layer) :
+DeviceContext::DeviceContext(const Window& window, bool enable_debug_layer) :
 	lib() {
 	if (enable_debug_layer) {
 		check_layers();
@@ -236,7 +242,7 @@ void DeviceContext::init_physical_device() {
 	lib.vkGetPhysicalDeviceMemoryProperties(_physical_device, &_mem_properties);
 }
 
-void DeviceContext::init_queue_families(Window& window) {
+void DeviceContext::init_queue_families(const Window& window) {
 	uint32_t count;
 	lib.vkGetPhysicalDeviceQueueFamilyProperties(_physical_device, &count, nullptr);
 

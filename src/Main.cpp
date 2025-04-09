@@ -13,20 +13,20 @@ const bool EnableDebugLayer = true;
 class Cultivator final : public Application {
 public:
 	Cultivator() :
-		Application("Cultivator") {
+		Application("Cultivator"),
+		_window(this, "Cultivator", {1920, 1080}, 100, 100) {
 	}
 
 	void run() {
-		Window window(this, "Cultivator", {1920, 1080}, 100, 100);
-		window.show();
+		_window.show();
 
-		DeviceContext context(window, EnableDebugLayer);
-		AutomatonRenderer renderer(&context, window, {480, 270}, "GameOfLife.frag.spv");
+		std::thread render_thread(&Cultivator::render_loop, this);
 
 		while (_should_run) {
-			renderer.draw_frame();
 			poll_events();
 		}
+
+		render_thread.join();
 	}
 
 	void quit() override {
@@ -34,7 +34,24 @@ public:
 	}
 
 private:
-	bool _should_run = true;
+	Window _window;
+	std::atomic_bool _should_run = true;
+
+	void render_loop() {
+		DeviceContext context(_window, EnableDebugLayer);
+
+		RendererParams params {
+			.universe_size				 = RectSize {.width = 480, .height = 270},
+			.simulation_shader_path		 = "GameOfLife.frag.spv",
+			.initial_live_cell_incidence = 10,
+			.delay_milliseconds			 = 500,
+		};
+		AutomatonRenderer renderer(&context, _window, params);
+
+		while (_should_run) {
+			renderer.draw_frame();
+		}
+	}
 };
 
 void terminate_handler() {

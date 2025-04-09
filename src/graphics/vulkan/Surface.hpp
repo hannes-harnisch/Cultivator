@@ -7,7 +7,7 @@ namespace cltv {
 
 class Surface {
 public:
-	Surface(const DeviceContext* ctx, Window& window);
+	Surface(const DeviceContext* ctx, const Window& window);
 
 	~Surface() {
 		_ctx->lib.vkDestroySurfaceKHR(_ctx->instance(), _surface, nullptr);

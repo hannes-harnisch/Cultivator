@@ -17,7 +17,7 @@ public:
 	void present(uint32_t image_index, VkSemaphore img_release_semaphore);
 
 	VkFramebuffer get_framebuffer(uint32_t image_index) const {
-		return _framebuffers[image_index];
+		return _framebuffers.at(image_index);
 	}
 
 	size_t get_image_count() const {

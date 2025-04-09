@@ -16,7 +16,7 @@ public:
 	Queue graphics_queue;
 	Queue presentation_queue;
 
-	DeviceContext(Window& window, bool enable_debug_layer);
+	DeviceContext(const Window& window, bool enable_debug_layer);
 
 	~DeviceContext();
 	DeviceContext(DeviceContext&&) = delete;
@@ -55,7 +55,7 @@ private:
 	void check_instance_extensions() const;
 	void init_instance(bool enable_debug_layer);
 	void init_physical_device();
-	void init_queue_families(Window& window);
+	void init_queue_families(const Window& window);
 	void check_device_extensions() const;
 	void init_device(bool enable_debug_layer);
 };

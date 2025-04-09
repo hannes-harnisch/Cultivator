@@ -62,10 +62,10 @@ void SwapChain::init_surface_format() {
 		.format		= VK_FORMAT_B8G8R8A8_SRGB,
 		.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
 	};
-	auto predicate = [](VkSurfaceFormatKHR format) {
+	auto equals_desired = [](VkSurfaceFormatKHR format) {
 		return format.format == Desired.format && format.colorSpace == Desired.colorSpace;
 	};
-	if (std::ranges::find_if(formats, predicate) != formats.end()) {
+	if (std::ranges::find_if(formats, equals_desired) != formats.end()) {
 		_surface_format = Desired;
 	} else {
 		_surface_format = formats.at(0);

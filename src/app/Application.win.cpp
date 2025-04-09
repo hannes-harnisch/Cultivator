@@ -51,6 +51,9 @@ Application::~Application() {
 }
 
 void Application::poll_events() {
+	BOOL success = ::WaitMessage();
+	require(success, "failed to wait for messages");
+
 	MSG msg;
 	while (::PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 		if (msg.message == WM_QUIT) {

@@ -4,7 +4,7 @@
 
 namespace cltv {
 
-Surface::Surface(const DeviceContext* ctx, Window& window) :
+Surface::Surface(const DeviceContext* ctx, const Window& window) :
 	_ctx(ctx) {
 	VkWin32SurfaceCreateInfoKHR surface_info {
 		.sType	   = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,

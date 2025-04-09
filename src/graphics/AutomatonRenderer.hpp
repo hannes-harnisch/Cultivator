@@ -11,9 +11,17 @@
 
 namespace cltv {
 
+struct RendererParams {
+	RectSize universe_size;
+	const char* simulation_shader_path;
+	uint32_t initial_live_cell_incidence;
+	uint64_t delay_milliseconds;
+};
+
 class AutomatonRenderer {
 public:
-	AutomatonRenderer(const DeviceContext* ctx, Window& window, RectSize size, const char* shader_path);
+	AutomatonRenderer(const DeviceContext* ctx, Window& window, const RendererParams& params);
+
 	~AutomatonRenderer();
 
 	void draw_frame();
@@ -23,6 +31,7 @@ private:
 
 	const DeviceContext* _ctx;
 	RectSize _window_size;
+	uint64_t _delay_milliseconds;
 	RenderPass _simulation_pass;
 	RenderPass _presentation_pass;
 	SwapChain _swap_chain;
@@ -46,7 +55,7 @@ private:
 	uint32_t _current_frame = 0;
 	std::deque<CommandList> _cmd_lists;
 
-	void prepare_render_targets();
+	void prepare_render_targets(uint32_t initial_live_cell_incidence);
 	void record_commands(uint32_t image_index);
 
 	VkShaderModule create_shader_module(const char* path) const;

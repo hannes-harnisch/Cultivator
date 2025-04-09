@@ -6,16 +6,17 @@
 
 namespace cltv {
 
-AutomatonRenderer::AutomatonRenderer(const DeviceContext* ctx, Window& window, RectSize size, const char* shader_path) :
+AutomatonRenderer::AutomatonRenderer(const DeviceContext* ctx, Window& window, const RendererParams& params) :
 	_ctx(ctx),
 	_window_size(window.get_viewport()),
+	_delay_milliseconds(params.delay_milliseconds),
 	_simulation_pass(_ctx, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
 	_presentation_pass(_ctx, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR),
 	_swap_chain(_ctx, _window_size, window, _presentation_pass),
-	_front_target(_ctx, size, _simulation_pass),
-	_back_target(_ctx, size, _simulation_pass),
+	_front_target(_ctx, params.universe_size, _simulation_pass),
+	_back_target(_ctx, params.universe_size, _simulation_pass),
 	_vertex_shader(create_shader_module("ScreenQuad.vert.spv")),
-	_simulation_fragment_shader(create_shader_module(shader_path)),
+	_simulation_fragment_shader(create_shader_module(params.simulation_shader_path)),
 	_presentation_fragment_shader(create_shader_module("Presentation.frag.spv")),
 	_descriptor_set_layout(create_descriptor_set_layout()),
 	_pipeline_layout(create_pipeline_layout()),
@@ -33,7 +34,7 @@ AutomatonRenderer::AutomatonRenderer(const DeviceContext* ctx, Window& window, R
 		_cmd_lists.emplace_back(_ctx);
 	}
 
-	prepare_render_targets();
+	prepare_render_targets(params.initial_live_cell_incidence);
 }
 
 AutomatonRenderer::~AutomatonRenderer() {
@@ -61,8 +62,6 @@ AutomatonRenderer::~AutomatonRenderer() {
 }
 
 void AutomatonRenderer::draw_frame() {
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
 	VkFence frame_fence			  = _frame_fences[_current_frame];
 	VkSemaphore acquire_semaphore = _img_acquire_semaphores[_current_frame];
 	VkSemaphore release_semaphore = _img_release_semaphores[_current_frame];
@@ -87,9 +86,11 @@ void AutomatonRenderer::draw_frame() {
 
 	_swap_chain.present(image_index, release_semaphore);
 	_current_frame = (_current_frame + 1) % MaxFrames;
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(_delay_milliseconds));
 }
 
-void AutomatonRenderer::prepare_render_targets() {
+void AutomatonRenderer::prepare_render_targets(uint32_t initial_live_cell_incidence) {
 	::srand(static_cast<unsigned>(::time(nullptr)));
 
 	const size_t size = 4 * static_cast<size_t>(_back_target.get_size().area());
@@ -102,13 +103,12 @@ void AutomatonRenderer::prepare_render_targets() {
 
 	uint32_t* pixels = reinterpret_cast<uint32_t*>(staging_target);
 	for (size_t i = 0; i < size / sizeof(uint32_t); ++i) {
-		*pixels++ = ::rand() % 2 == 0 ? 0xFFFFFFFF : 0;
+		*pixels++ = static_cast<uint32_t>(::rand()) % initial_live_cell_incidence == 0 ? 0xFFFFFFFF : 0;
 	}
 	_ctx->lib.vkUnmapMemory(_ctx->device(), staging_buffer.get_memory());
 
 	CommandList cmd(_ctx);
 	cmd.begin();
-	cmd.transition_render_target(_front_target, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 	cmd.transition_render_target(_back_target, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	cmd.end();
 	_ctx->submit_to_queue_blocking(_ctx->graphics_queue, cmd.get());
@@ -125,11 +125,15 @@ void AutomatonRenderer::prepare_render_targets() {
 }
 
 void AutomatonRenderer::record_commands(uint32_t image_index) {
+	static bool x = false;
+
 	CommandList& cmd	 = _cmd_lists[image_index];
 	RenderTarget& target = _current_frame == 0 ? _front_target : _back_target;
 
 	cmd.begin();
-	cmd.transition_render_target(target, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	cmd.transition_render_target(target, x ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED,
+								 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	x = true;
 
 	cmd.begin_render_pass(target.get_size(), _simulation_pass, target.get_framebuffer());
 	cmd.bind_viewport(target.get_size());
