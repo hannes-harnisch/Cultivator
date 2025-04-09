@@ -15,6 +15,10 @@ public:
 
 	~Pipeline();
 
+	VkPipeline get() const {
+		return _pipeline;
+	}
+
 private:
 	const DeviceContext* _ctx;
 	VkPipeline _pipeline;

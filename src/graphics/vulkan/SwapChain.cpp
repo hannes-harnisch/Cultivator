@@ -26,6 +26,29 @@ SwapChain::~SwapChain() {
 	_ctx->lib.vkDestroySwapchainKHR(_ctx->device(), _swapchain, nullptr);
 }
 
+uint32_t SwapChain::get_next_image_index(VkSemaphore img_acquire_semaphore) {
+	uint32_t index;
+	VkResult result = _ctx->lib.vkAcquireNextImageKHR(_ctx->device(), _swapchain, UINT64_MAX, img_acquire_semaphore,
+													  VK_NULL_HANDLE, &index);
+	require_vk_result(result, "could not acquire next swapchain image");
+	return index;
+}
+
+void SwapChain::present(uint32_t image_index, VkSemaphore img_release_semaphore) {
+	VkPresentInfoKHR present_info {
+		.sType				= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+		.pNext				= nullptr,
+		.waitSemaphoreCount = 1,
+		.pWaitSemaphores	= &img_release_semaphore,
+		.swapchainCount		= 1,
+		.pSwapchains		= &_swapchain,
+		.pImageIndices		= &image_index,
+		.pResults			= nullptr,
+	};
+	VkResult result = _ctx->lib.vkQueuePresentKHR(_ctx->presentation_queue.queue, &present_info);
+	require_vk_result(result, "could not present swapchain image to queue");
+}
+
 void SwapChain::init_surface_format() {
 	uint32_t count;
 	VkResult result = _ctx->lib.vkGetPhysicalDeviceSurfaceFormatsKHR(_ctx->physical_device(), _surface.get(), &count, nullptr);

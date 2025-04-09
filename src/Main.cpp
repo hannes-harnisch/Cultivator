@@ -17,11 +17,11 @@ public:
 	}
 
 	void run() {
-		Window window(this, "Cultivator", {1366, 768}, 100, 100);
+		Window window(this, "Cultivator", {1920, 1080}, 100, 100);
 		window.show();
 
 		DeviceContext context(window, EnableDebugLayer);
-		AutomatonRenderer renderer(&context, window, {480, 720}, "GameOfLife.frag.spv");
+		AutomatonRenderer renderer(&context, window, {480, 270}, "GameOfLife.frag.spv");
 
 		while (_should_run) {
 			renderer.draw_frame();

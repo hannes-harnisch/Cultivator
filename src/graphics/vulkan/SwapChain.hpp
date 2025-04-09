@@ -12,6 +12,14 @@ public:
 	SwapChain(const DeviceContext* ctx, RectSize size, Window& window, const RenderPass& render_pass);
 	~SwapChain();
 
+	uint32_t get_next_image_index(VkSemaphore img_acquire_semaphore);
+
+	void present(uint32_t image_index, VkSemaphore img_release_semaphore);
+
+	VkFramebuffer get_framebuffer(uint32_t image_index) const {
+		return _framebuffers[image_index];
+	}
+
 	size_t get_image_count() const {
 		return _images.size();
 	}

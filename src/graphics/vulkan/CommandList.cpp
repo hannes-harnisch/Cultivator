@@ -135,6 +135,58 @@ void CommandList::copy_buffer_to_render_target(const Buffer& buffer, const Rende
 									 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 }
 
+void CommandList::begin_render_pass(RectSize render_area, const RenderPass& render_pass, VkFramebuffer framebuffer) {
+	VkRenderPassBeginInfo begin_info {
+		.sType			 = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+		.pNext			 = nullptr,
+		.renderPass		 = render_pass.get(),
+		.framebuffer	 = framebuffer,
+		.renderArea		 = VkRect2D {.offset = VkOffset2D {.x = 0, .y = 0},
+									 .extent = VkExtent2D {.width  = static_cast<uint32_t>(render_area.width),
+														   .height = static_cast<uint32_t>(render_area.height)}},
+		.clearValueCount = 0,
+		.pClearValues	 = nullptr,
+	};
+	_ctx->lib.vkCmdBeginRenderPass(_cmd_buffer, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void CommandList::bind_viewport(RectSize viewport_size) {
+	VkViewport viewport {
+		.x		  = 0,
+		.y		  = 0,
+		.width	  = static_cast<float>(viewport_size.width),
+		.height	  = static_cast<float>(viewport_size.height),
+		.minDepth = 0,
+		.maxDepth = 1,
+	};
+	_ctx->lib.vkCmdSetViewport(_cmd_buffer, 0, 1, &viewport);
+}
+
+void CommandList::bind_scissor(RectSize scissor_size) {
+	VkRect2D scissor {
+		.offset = VkOffset2D {.x = 0, .y = 0},
+		.extent = VkExtent2D {.width  = static_cast<uint32_t>(scissor_size.width),
+							  .height = static_cast<uint32_t>(scissor_size.height)},
+	};
+	_ctx->lib.vkCmdSetScissor(_cmd_buffer, 0, 1, &scissor);
+}
+
+void CommandList::bind_descriptor_set(VkPipelineLayout layout, VkDescriptorSet descriptor_set) {
+	_ctx->lib.vkCmdBindDescriptorSets(_cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &descriptor_set, 0, nullptr);
+}
+
+void CommandList::bind_pipeline(const Pipeline& pipeline) {
+	_ctx->lib.vkCmdBindPipeline(_cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.get());
+}
+
+void CommandList::draw(uint32_t vertex_count) {
+	_ctx->lib.vkCmdDraw(_cmd_buffer, vertex_count, 1, 0, 0);
+}
+
+void CommandList::end_render_pass() {
+	_ctx->lib.vkCmdEndRenderPass(_cmd_buffer);
+}
+
 void CommandList::end() {
 	VkResult result = _ctx->lib.vkEndCommandBuffer(_cmd_buffer);
 	require_vk_result(result, "failed to end command buffer");

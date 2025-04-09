@@ -19,7 +19,7 @@ public:
 	void draw_frame();
 
 private:
-	static constexpr size_t MaxFrames = 2;
+	static constexpr uint32_t MaxFrames = 2;
 
 	const DeviceContext* _ctx;
 	RectSize _window_size;
@@ -42,11 +42,12 @@ private:
 	VkFence _frame_fences[MaxFrames];
 	VkSemaphore _img_release_semaphores[MaxFrames];
 	VkSemaphore _img_acquire_semaphores[MaxFrames];
-	std::vector<VkFence> _image_in_flight_fences;
+	std::vector<VkFence> _image_pending_fences;
 	uint32_t _current_frame = 0;
 	std::deque<CommandList> _cmd_lists;
 
 	void prepare_render_targets();
+	void record_commands(uint32_t image_index);
 
 	VkShaderModule create_shader_module(const char* path) const;
 	VkDescriptorSetLayout create_descriptor_set_layout() const;

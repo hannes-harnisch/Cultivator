@@ -101,7 +101,18 @@ void VulkanLibrary::load_device_functions(VkDevice device) {
 	macro_vk_fn(vkBeginCommandBuffer);
 	macro_vk_fn(vkCmdPipelineBarrier);
 	macro_vk_fn(vkCmdCopyBufferToImage);
+	macro_vk_fn(vkCmdBeginRenderPass);
+	macro_vk_fn(vkCmdSetViewport);
+	macro_vk_fn(vkCmdSetScissor);
+	macro_vk_fn(vkCmdBindPipeline);
+	macro_vk_fn(vkCmdBindDescriptorSets);
+	macro_vk_fn(vkCmdDraw);
+	macro_vk_fn(vkCmdEndRenderPass);
 	macro_vk_fn(vkEndCommandBuffer);
+	macro_vk_fn(vkWaitForFences);
+	macro_vk_fn(vkResetFences);
+	macro_vk_fn(vkAcquireNextImageKHR);
+	macro_vk_fn(vkQueuePresentKHR);
 	macro_vk_fn(vkQueueSubmit);
 	macro_vk_fn(vkQueueWaitIdle);
 	macro_vk_fn(vkDeviceWaitIdle);

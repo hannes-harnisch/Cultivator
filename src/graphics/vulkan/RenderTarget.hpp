@@ -22,6 +22,10 @@ public:
 		return _image_view;
 	}
 
+	VkFramebuffer get_framebuffer() const {
+		return _framebuffer;
+	}
+
 private:
 	const DeviceContext* _ctx;
 	RectSize _size;

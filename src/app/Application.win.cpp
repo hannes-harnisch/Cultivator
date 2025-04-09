@@ -11,6 +11,10 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM w_param, LPA
 	Window* window = reinterpret_cast<Window*>(::GetWindowLongPtrW(hwnd, GWLP_USERDATA));
 	if (window != nullptr) {
 		switch (message) {
+		case WM_DESTROY:
+			::PostQuitMessage(0);
+			return 0;
+
 		case WM_CLOSE:
 			window->on_close();
 			return 0;

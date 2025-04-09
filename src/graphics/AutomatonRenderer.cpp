@@ -28,7 +28,7 @@ AutomatonRenderer::AutomatonRenderer(const DeviceContext* ctx, Window& window, R
 	_frame_fences {create_fence(), create_fence()},
 	_img_release_semaphores {create_semaphore(), create_semaphore()},
 	_img_acquire_semaphores {create_semaphore(), create_semaphore()},
-	_image_in_flight_fences(_swap_chain.get_image_count()) {
+	_image_pending_fences(_swap_chain.get_image_count(), VK_NULL_HANDLE) {
 	for (size_t i = 0; i < _swap_chain.get_image_count(); ++i) {
 		_cmd_lists.emplace_back(_ctx);
 	}
@@ -61,6 +61,32 @@ AutomatonRenderer::~AutomatonRenderer() {
 }
 
 void AutomatonRenderer::draw_frame() {
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+	VkFence frame_fence			  = _frame_fences[_current_frame];
+	VkSemaphore acquire_semaphore = _img_acquire_semaphores[_current_frame];
+	VkSemaphore release_semaphore = _img_release_semaphores[_current_frame];
+
+	VkResult result = _ctx->lib.vkWaitForFences(_ctx->device(), 1, &frame_fence, VK_TRUE, UINT64_MAX);
+	require_vk_result(result, "failed to wait for current frame fence");
+
+	uint32_t image_index = _swap_chain.get_next_image_index(acquire_semaphore);
+	record_commands(image_index);
+
+	VkFence image_pending_fence = _image_pending_fences[image_index];
+	if (image_pending_fence != VK_NULL_HANDLE) {
+		result = _ctx->lib.vkWaitForFences(_ctx->device(), 1, &image_pending_fence, VK_TRUE, UINT64_MAX);
+		require_vk_result(result, "failed to wait for image-pending fence");
+	}
+
+	_image_pending_fences[image_index] = frame_fence;
+	_ctx->lib.vkResetFences(_ctx->device(), 1, &frame_fence);
+
+	VkCommandBuffer cmd_buffer = _cmd_lists[image_index].get();
+	_ctx->submit_to_queue(_ctx->graphics_queue, cmd_buffer, acquire_semaphore, release_semaphore, frame_fence);
+
+	_swap_chain.present(image_index, release_semaphore);
+	_current_frame = (_current_frame + 1) % MaxFrames;
 }
 
 void AutomatonRenderer::prepare_render_targets() {
@@ -96,6 +122,34 @@ void AutomatonRenderer::prepare_render_targets() {
 	cmd.transition_render_target(_back_target, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	cmd.end();
 	_ctx->submit_to_queue_blocking(_ctx->graphics_queue, cmd.get());
+}
+
+void AutomatonRenderer::record_commands(uint32_t image_index) {
+	CommandList& cmd	 = _cmd_lists[image_index];
+	RenderTarget& target = _current_frame == 0 ? _front_target : _back_target;
+
+	cmd.begin();
+	cmd.transition_render_target(target, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+	cmd.begin_render_pass(target.get_size(), _simulation_pass, target.get_framebuffer());
+	cmd.bind_viewport(target.get_size());
+	cmd.bind_scissor(target.get_size());
+	cmd.bind_descriptor_set(_pipeline_layout, _current_frame == 0 ? _descriptor_set_back : _descriptor_set_front);
+	cmd.bind_pipeline(_simulation_pipeline);
+	cmd.draw(3);
+	cmd.end_render_pass();
+
+	cmd.transition_render_target(target, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	cmd.begin_render_pass(_window_size, _presentation_pass, _swap_chain.get_framebuffer(image_index));
+	cmd.bind_viewport(_window_size);
+	cmd.bind_scissor(_window_size);
+	cmd.bind_descriptor_set(_pipeline_layout, _current_frame == 0 ? _descriptor_set_front : _descriptor_set_back);
+	cmd.bind_pipeline(_presentation_pipeline);
+	cmd.draw(3);
+	cmd.end_render_pass();
+
+	cmd.end();
 }
 
 VkShaderModule AutomatonRenderer::create_shader_module(const char* path) const {
