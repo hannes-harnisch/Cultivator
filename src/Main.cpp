@@ -44,7 +44,7 @@ private:
 			.universe_size				 = RectSize {.width = 480, .height = 270},
 			.simulation_shader_path		 = "GameOfLife.frag.spv",
 			.initial_live_cell_incidence = 10,
-			.delay_milliseconds			 = 500,
+			.delay_milliseconds			 = 100,
 		};
 		AutomatonRenderer renderer(&context, &_window, params);
 

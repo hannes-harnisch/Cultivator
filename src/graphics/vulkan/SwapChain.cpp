@@ -114,7 +114,7 @@ void SwapChain::init_surface_format() {
 		.format		= VK_FORMAT_B8G8R8A8_SRGB,
 		.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
 	};
-	auto equals_desired = [](VkSurfaceFormatKHR format) {
+	auto equals_desired = [](VkSurfaceFormatKHR format) -> bool {
 		return format.format == Desired.format && format.colorSpace == Desired.colorSpace;
 	};
 	if (std::ranges::find_if(formats, equals_desired) != formats.end()) {

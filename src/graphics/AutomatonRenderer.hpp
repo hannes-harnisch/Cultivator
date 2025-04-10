@@ -52,6 +52,7 @@ private:
 	VkSemaphore _img_acquire_semaphores[MaxFrames];
 	std::vector<VkFence> _image_pending_fences;
 	uint32_t _current_frame = 0;
+	bool _first_frame_done	= false;
 	std::deque<CommandList> _cmd_lists;
 
 	void record_commands(uint32_t image_index);

@@ -29,6 +29,7 @@ AutomatonRenderer::AutomatonRenderer(const DeviceContext* ctx, const Window* win
 	_img_release_semaphores {create_semaphore(), create_semaphore()},
 	_img_acquire_semaphores {create_semaphore(), create_semaphore()},
 	_image_pending_fences(_swap_chain.get_image_count(), VK_NULL_HANDLE) {
+	// prepare as many command lists as there are swap chain images
 	for (size_t i = 0; i < _swap_chain.get_image_count(); ++i) {
 		_cmd_lists.emplace_back(_ctx);
 	}
@@ -92,25 +93,26 @@ void AutomatonRenderer::draw_frame() {
 	_current_frame = (_current_frame + 1) % MaxFrames;
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(_delay_milliseconds));
+	_first_frame_done = true;
 }
 
 void AutomatonRenderer::record_commands(uint32_t image_index) {
-	CommandList& cmd	 = _cmd_lists[image_index];
-	RenderTarget& target = _current_frame == 0 ? _front_target : _back_target;
+	CommandList& cmd = _cmd_lists[image_index];
+	RenderTarget& rt = _current_frame == 0 ? _front_target : _back_target;
 
 	cmd.begin();
-	cmd.transition_render_target(target, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	if (_first_frame_done) {
+		cmd.transition_render_target(rt, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	}
 
-	RectSize simulation_size = target.get_size();
-	cmd.begin_render_pass(simulation_size, _simulation_pass, target.get_framebuffer());
+	RectSize simulation_size = rt.get_size();
+	cmd.begin_render_pass(simulation_size, _simulation_pass, rt.get_framebuffer());
 	cmd.bind_viewport(simulation_size);
 	cmd.bind_scissor(simulation_size);
 	cmd.bind_descriptor_set(_pipeline_layout, _current_frame == 0 ? _descriptor_set_back : _descriptor_set_front);
 	cmd.bind_pipeline(_simulation_pipeline);
 	cmd.draw(3);
 	cmd.end_render_pass();
-
-	cmd.transition_render_target(target, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	RectSize window_size = _swap_chain.get_size();
 	cmd.begin_render_pass(window_size, _presentation_pass, _swap_chain.get_framebuffer(image_index));
@@ -127,7 +129,7 @@ void AutomatonRenderer::record_commands(uint32_t image_index) {
 void AutomatonRenderer::prepare_render_targets(uint32_t initial_live_cell_incidence) {
 	::srand(static_cast<unsigned>(::time(nullptr)));
 
-	const size_t size = 4 * static_cast<size_t>(_back_target.get_size().area());
+	const size_t size = sizeof(uint32_t) * _back_target.get_size().area();
 	Buffer staging_buffer(_ctx, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 						  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
@@ -137,22 +139,15 @@ void AutomatonRenderer::prepare_render_targets(uint32_t initial_live_cell_incide
 
 	uint32_t* pixels = reinterpret_cast<uint32_t*>(staging_target);
 	for (size_t i = 0; i < size / sizeof(uint32_t); ++i) {
-		*pixels++ = static_cast<uint32_t>(::rand()) % initial_live_cell_incidence == 0 ? 0xFFFFFFFF : 0;
+		*pixels++ = ::rand() % initial_live_cell_incidence == 0 ? 0xFFFFFFFF : 0;
 	}
 	_ctx->lib.vkUnmapMemory(_ctx->device(), staging_buffer.get_memory());
 
 	CommandList cmd(_ctx);
 	cmd.begin();
+	cmd.transition_render_target(_front_target, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 	cmd.transition_render_target(_back_target, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	cmd.end();
-	_ctx->submit_to_queue_blocking(_ctx->graphics_queue, cmd.get());
-
-	cmd.begin();
 	cmd.copy_buffer_to_render_target(staging_buffer, _back_target);
-	cmd.end();
-	_ctx->submit_to_queue_blocking(_ctx->graphics_queue, cmd.get());
-
-	cmd.begin();
 	cmd.transition_render_target(_back_target, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	cmd.end();
 	_ctx->submit_to_queue_blocking(_ctx->graphics_queue, cmd.get());
