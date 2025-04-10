@@ -31,7 +31,7 @@ Window::~Window() {
 	require(success, "failed to destroy window");
 }
 
-RectSize Window::get_viewport() const {
+RectSize Window::get_size() const {
 	RECT rect;
 	BOOL success = ::GetClientRect(_impl->hwnd, &rect);
 	require(success, "failed to get window client rect");

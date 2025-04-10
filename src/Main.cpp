@@ -46,7 +46,7 @@ private:
 			.initial_live_cell_incidence = 10,
 			.delay_milliseconds			 = 500,
 		};
-		AutomatonRenderer renderer(&context, _window, params);
+		AutomatonRenderer renderer(&context, &_window, params);
 
 		while (_should_run) {
 			renderer.draw_frame();

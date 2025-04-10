@@ -18,7 +18,7 @@ public:
 	void show();
 	void close();
 
-	RectSize get_viewport() const;
+	RectSize get_size() const;
 
 #if CLTV_SYSTEM_WINDOWS
 	HINSTANCE get_instance_handle() const;

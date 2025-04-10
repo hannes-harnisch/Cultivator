@@ -9,10 +9,12 @@ namespace cltv {
 
 class SwapChain {
 public:
-	SwapChain(const DeviceContext* ctx, RectSize size, Window& window, const RenderPass& render_pass);
+	SwapChain(const DeviceContext* ctx, const Window* window, const RenderPass& render_pass);
 	~SwapChain();
 
-	uint32_t get_next_image_index(VkSemaphore img_acquire_semaphore);
+	RectSize get_size() const;
+
+	std::optional<uint32_t> get_next_image_index(VkSemaphore img_acquire_semaphore);
 
 	void present(uint32_t image_index, VkSemaphore img_release_semaphore);
 
@@ -26,7 +28,9 @@ public:
 
 private:
 	const DeviceContext* _ctx;
+	const Window* _window;
 	Surface _surface;
+	VkRenderPass _render_pass;
 	VkSurfaceFormatKHR _surface_format;
 	VkPresentModeKHR _present_mode;
 	VkExtent2D _extent;
@@ -35,10 +39,11 @@ private:
 	std::vector<VkImageView> _image_views;
 	std::vector<VkFramebuffer> _framebuffers;
 
+	void recreate();
 	void init_surface_format();
 	void init_present_mode();
 	void init_extent_and_swapchain(RectSize size);
-	void init_images(const RenderPass& render_pass);
+	void init_images();
 };
 
 } // namespace cltv

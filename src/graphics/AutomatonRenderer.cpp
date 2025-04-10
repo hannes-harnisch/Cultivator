@@ -6,13 +6,12 @@
 
 namespace cltv {
 
-AutomatonRenderer::AutomatonRenderer(const DeviceContext* ctx, Window& window, const RendererParams& params) :
+AutomatonRenderer::AutomatonRenderer(const DeviceContext* ctx, const Window* window, const RendererParams& params) :
 	_ctx(ctx),
-	_window_size(window.get_viewport()),
 	_delay_milliseconds(params.delay_milliseconds),
 	_simulation_pass(_ctx, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
 	_presentation_pass(_ctx, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR),
-	_swap_chain(_ctx, _window_size, window, _presentation_pass),
+	_swap_chain(_ctx, window, _presentation_pass),
 	_front_target(_ctx, params.universe_size, _simulation_pass),
 	_back_target(_ctx, params.universe_size, _simulation_pass),
 	_vertex_shader(create_shader_module("ScreenQuad.vert.spv")),
@@ -69,7 +68,12 @@ void AutomatonRenderer::draw_frame() {
 	VkResult result = _ctx->lib.vkWaitForFences(_ctx->device(), 1, &frame_fence, VK_TRUE, UINT64_MAX);
 	require_vk_result(result, "failed to wait for current frame fence");
 
-	uint32_t image_index = _swap_chain.get_next_image_index(acquire_semaphore);
+	std::optional<uint32_t> img_index_result = _swap_chain.get_next_image_index(acquire_semaphore);
+	if (!img_index_result.has_value()) {
+		return;
+	}
+	const uint32_t image_index = img_index_result.value();
+
 	record_commands(image_index);
 
 	VkFence image_pending_fence = _image_pending_fences[image_index];
@@ -88,6 +92,36 @@ void AutomatonRenderer::draw_frame() {
 	_current_frame = (_current_frame + 1) % MaxFrames;
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(_delay_milliseconds));
+}
+
+void AutomatonRenderer::record_commands(uint32_t image_index) {
+	CommandList& cmd	 = _cmd_lists[image_index];
+	RenderTarget& target = _current_frame == 0 ? _front_target : _back_target;
+
+	cmd.begin();
+	cmd.transition_render_target(target, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+	RectSize simulation_size = target.get_size();
+	cmd.begin_render_pass(simulation_size, _simulation_pass, target.get_framebuffer());
+	cmd.bind_viewport(simulation_size);
+	cmd.bind_scissor(simulation_size);
+	cmd.bind_descriptor_set(_pipeline_layout, _current_frame == 0 ? _descriptor_set_back : _descriptor_set_front);
+	cmd.bind_pipeline(_simulation_pipeline);
+	cmd.draw(3);
+	cmd.end_render_pass();
+
+	cmd.transition_render_target(target, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	RectSize window_size = _swap_chain.get_size();
+	cmd.begin_render_pass(window_size, _presentation_pass, _swap_chain.get_framebuffer(image_index));
+	cmd.bind_viewport(window_size);
+	cmd.bind_scissor(window_size);
+	cmd.bind_descriptor_set(_pipeline_layout, _current_frame == 0 ? _descriptor_set_front : _descriptor_set_back);
+	cmd.bind_pipeline(_presentation_pipeline);
+	cmd.draw(3);
+	cmd.end_render_pass();
+
+	cmd.end();
 }
 
 void AutomatonRenderer::prepare_render_targets(uint32_t initial_live_cell_incidence) {
@@ -122,38 +156,6 @@ void AutomatonRenderer::prepare_render_targets(uint32_t initial_live_cell_incide
 	cmd.transition_render_target(_back_target, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	cmd.end();
 	_ctx->submit_to_queue_blocking(_ctx->graphics_queue, cmd.get());
-}
-
-void AutomatonRenderer::record_commands(uint32_t image_index) {
-	static bool x = false;
-
-	CommandList& cmd	 = _cmd_lists[image_index];
-	RenderTarget& target = _current_frame == 0 ? _front_target : _back_target;
-
-	cmd.begin();
-	cmd.transition_render_target(target, x ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED,
-								 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-	x = true;
-
-	cmd.begin_render_pass(target.get_size(), _simulation_pass, target.get_framebuffer());
-	cmd.bind_viewport(target.get_size());
-	cmd.bind_scissor(target.get_size());
-	cmd.bind_descriptor_set(_pipeline_layout, _current_frame == 0 ? _descriptor_set_back : _descriptor_set_front);
-	cmd.bind_pipeline(_simulation_pipeline);
-	cmd.draw(3);
-	cmd.end_render_pass();
-
-	cmd.transition_render_target(target, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-	cmd.begin_render_pass(_window_size, _presentation_pass, _swap_chain.get_framebuffer(image_index));
-	cmd.bind_viewport(_window_size);
-	cmd.bind_scissor(_window_size);
-	cmd.bind_descriptor_set(_pipeline_layout, _current_frame == 0 ? _descriptor_set_front : _descriptor_set_back);
-	cmd.bind_pipeline(_presentation_pipeline);
-	cmd.draw(3);
-	cmd.end_render_pass();
-
-	cmd.end();
 }
 
 VkShaderModule AutomatonRenderer::create_shader_module(const char* path) const {

@@ -20,7 +20,7 @@ struct RendererParams {
 
 class AutomatonRenderer {
 public:
-	AutomatonRenderer(const DeviceContext* ctx, Window& window, const RendererParams& params);
+	AutomatonRenderer(const DeviceContext* ctx, const Window* window, const RendererParams& params);
 
 	~AutomatonRenderer();
 
@@ -30,7 +30,6 @@ private:
 	static constexpr uint32_t MaxFrames = 2;
 
 	const DeviceContext* _ctx;
-	RectSize _window_size;
 	uint64_t _delay_milliseconds;
 	RenderPass _simulation_pass;
 	RenderPass _presentation_pass;
@@ -55,8 +54,8 @@ private:
 	uint32_t _current_frame = 0;
 	std::deque<CommandList> _cmd_lists;
 
-	void prepare_render_targets(uint32_t initial_live_cell_incidence);
 	void record_commands(uint32_t image_index);
+	void prepare_render_targets(uint32_t initial_live_cell_incidence);
 
 	VkShaderModule create_shader_module(const char* path) const;
 	VkDescriptorSetLayout create_descriptor_set_layout() const;

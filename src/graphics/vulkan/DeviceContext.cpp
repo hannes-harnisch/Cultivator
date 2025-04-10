@@ -36,13 +36,13 @@ constexpr inline const char* RequiredDeviceExtensions[] = {
 	"VK_KHR_swapchain",
 };
 
-static VKAPI_ATTR VkBool32 VKAPI_PTR debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-													VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+static VKAPI_ATTR VkBool32 VKAPI_PTR debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT /* messageSeverity */,
+													VkDebugUtilsMessageTypeFlagsEXT /* messageTypes */,
 													const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-													void* pUserData) {
+													void* /* pUserData */) {
 	static constexpr int32_t ignored_message_ids[] = {
 		0x675dc32e, // pointless message about enabling VK_EXT_debug_utils
-		0x22d43910, // erroneously issued message about not retrieving physical device features (bug in validation layer)
+		0x22d43910, // message issued because layer doesn't track vkGetPhysicalDeviceFeatures if loaded directly from driver
 	};
 
 	if (contains(ignored_message_ids, pCallbackData->messageIdNumber)) {

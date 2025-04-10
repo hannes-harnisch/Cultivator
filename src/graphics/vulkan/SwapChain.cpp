@@ -5,33 +5,50 @@
 
 namespace cltv {
 
-SwapChain::SwapChain(const DeviceContext* ctx, RectSize size, Window& window, const RenderPass& render_pass) :
+SwapChain::SwapChain(const DeviceContext* ctx, const Window* window, const RenderPass& render_pass) :
 	_ctx(ctx),
-	_surface(ctx, window) {
+	_window(window),
+	_surface(ctx, *window),
+	_render_pass(render_pass.get()) {
 	init_surface_format();
 	init_present_mode();
-	init_extent_and_swapchain(size);
-	init_images(render_pass);
+	init_extent_and_swapchain(window->get_size());
+	init_images();
 }
 
 SwapChain::~SwapChain() {
 	for (VkFramebuffer framebuffer : _framebuffers) {
 		_ctx->lib.vkDestroyFramebuffer(_ctx->device(), framebuffer, nullptr);
 	}
+
+	// swapchain owns the VkImages, we don't need to destroy them
+
 	for (VkImageView image_view : _image_views) {
 		_ctx->lib.vkDestroyImageView(_ctx->device(), image_view, nullptr);
 	}
-	// swapchain owns the VkImages, we don't need to destroy them
 
 	_ctx->lib.vkDestroySwapchainKHR(_ctx->device(), _swapchain, nullptr);
 }
 
-uint32_t SwapChain::get_next_image_index(VkSemaphore img_acquire_semaphore) {
+RectSize SwapChain::get_size() const {
+	return RectSize {
+		.width	= static_cast<int32_t>(_extent.width),
+		.height = static_cast<int32_t>(_extent.height),
+	};
+}
+
+std::optional<uint32_t> SwapChain::get_next_image_index(VkSemaphore img_acquire_semaphore) {
 	uint32_t index;
 	VkResult result = _ctx->lib.vkAcquireNextImageKHR(_ctx->device(), _swapchain, UINT64_MAX, img_acquire_semaphore,
 													  VK_NULL_HANDLE, &index);
-	require_vk_result(result, "could not acquire next swapchain image");
-	return index;
+	if (result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR) {
+		return index;
+	} else if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		recreate();
+		return std::nullopt;
+	} else {
+		fail_vk_result(result, "could not acquire next swapchain image");
+	}
 }
 
 void SwapChain::present(uint32_t image_index, VkSemaphore img_release_semaphore) {
@@ -46,7 +63,42 @@ void SwapChain::present(uint32_t image_index, VkSemaphore img_release_semaphore)
 		.pResults			= nullptr,
 	};
 	VkResult result = _ctx->lib.vkQueuePresentKHR(_ctx->presentation_queue.queue, &present_info);
-	require_vk_result(result, "could not present swapchain image to queue");
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+		recreate();
+	} else if (result != VK_SUCCESS) {
+		fail_vk_result(result, "could not present swapchain image to queue");
+	}
+}
+
+void SwapChain::recreate() {
+	RectSize size = _window->get_size();
+	if (size.is_empty()) {
+		return;
+	}
+
+	VkResult result = _ctx->lib.vkDeviceWaitIdle(_ctx->device());
+	require_vk_result(result, "failed to wait for device idle when recreating swapchain");
+
+	for (VkFramebuffer framebuffer : _framebuffers) {
+		_ctx->lib.vkDestroyFramebuffer(_ctx->device(), framebuffer, nullptr);
+	}
+	_framebuffers.clear();
+
+	// swapchain owns the VkImages, we don't need to destroy them
+	_images.clear();
+
+	for (VkImageView image_view : _image_views) {
+		_ctx->lib.vkDestroyImageView(_ctx->device(), image_view, nullptr);
+	}
+	_image_views.clear();
+
+	VkSwapchainKHR old_swapchain = _swapchain;
+
+	init_extent_and_swapchain(size);
+	init_images();
+
+	// destroy old swapchain after it was reused for new one
+	_ctx->lib.vkDestroySwapchainKHR(_ctx->device(), old_swapchain, nullptr);
 }
 
 void SwapChain::init_surface_format() {
@@ -134,13 +186,13 @@ void SwapChain::init_extent_and_swapchain(RectSize size) {
 		.compositeAlpha		   = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
 		.presentMode		   = _present_mode,
 		.clipped			   = VK_TRUE,
-		.oldSwapchain		   = VK_NULL_HANDLE,
+		.oldSwapchain		   = _swapchain, // null on first creation
 	};
 	result = _ctx->lib.vkCreateSwapchainKHR(_ctx->device(), &swapchain_info, nullptr, &_swapchain);
 	require_vk_result(result, "failed to create Vulkan swapchain");
 }
 
-void SwapChain::init_images(const RenderPass& render_pass) {
+void SwapChain::init_images() {
 	uint32_t count;
 	VkResult result = _ctx->lib.vkGetSwapchainImagesKHR(_ctx->device(), _swapchain, &count, nullptr);
 	require_vk_result(result, "failed to get Vulkan swapchain image count");
@@ -176,11 +228,11 @@ void SwapChain::init_images(const RenderPass& render_pass) {
 			.sType			 = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
 			.pNext			 = nullptr,
 			.flags			 = 0,
-			.renderPass		 = render_pass.get(),
+			.renderPass		 = _render_pass,
 			.attachmentCount = 1,
 			.pAttachments	 = &image_view,
-			.width			 = static_cast<uint32_t>(_extent.width),
-			.height			 = static_cast<uint32_t>(_extent.height),
+			.width			 = _extent.width,
+			.height			 = _extent.height,
 			.layers			 = 1,
 		};
 		VkFramebuffer framebuffer;

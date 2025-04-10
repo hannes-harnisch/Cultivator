@@ -9,6 +9,10 @@ struct RectSize {
 	int32_t area() const {
 		return width * height;
 	}
+
+	bool is_empty() const {
+		return width == 0 || height == 0;
+	}
 };
 
 } // namespace cltv
