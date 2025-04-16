@@ -250,19 +250,17 @@ void DeviceContext::init_queue_families(const Window& window) {
 	lib.vkGetPhysicalDeviceQueueFamilyProperties(_physical_device, &count, queue_family_properties.data());
 
 	Surface surface(this, window);
-	uint32_t index = 0;
+	uint32_t idx = 0;
 	for (auto& queue_family : queue_family_properties) {
-		if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-			graphics_queue.family = index;
+		const bool supports_rendering = has_flags<VkQueueFlags>(queue_family.queueFlags, VK_QUEUE_GRAPHICS_BIT);
+		if (graphics_queue.family == UINT32_MAX && supports_rendering) {
+			graphics_queue.family = idx;
 		}
 
-		VkBool32 supported;
-		VkResult result = lib.vkGetPhysicalDeviceSurfaceSupportKHR(_physical_device, index, surface.get(), &supported);
-		require_vk_result(result, "failed to query Vulkan surface support");
-		if (supported) {
-			presentation_queue.family = index;
+		if (presentation_queue.family == UINT32_MAX && surface.supported_by_queue(idx) && surface.can_present_with_queue(idx)) {
+			presentation_queue.family = idx;
 		}
-		++index;
+		++idx;
 	}
 
 	require(graphics_queue.family != UINT32_MAX, "Vulkan driver does not support graphics queues");

@@ -8,10 +8,10 @@ namespace cltv {
 class Surface {
 public:
 	Surface(const DeviceContext* ctx, const Window& window);
+	~Surface();
 
-	~Surface() {
-		_ctx->lib.vkDestroySurfaceKHR(_ctx->instance(), _surface, nullptr);
-	}
+	bool can_present_with_queue(uint32_t queue_family);
+	bool supported_by_queue(uint32_t queue_family);
 
 	VkSurfaceKHR get() const {
 		return _surface;

@@ -17,4 +17,8 @@ Surface::Surface(const DeviceContext* ctx, const Window& window) :
 	require_vk_result(result, "failed to create Vulkan surface");
 }
 
+bool Surface::can_present_with_queue(uint32_t queue_family) {
+	return _ctx->lib.vkGetPhysicalDeviceWin32PresentationSupportKHR(_ctx->physical_device(), queue_family);
+}
+
 } // namespace cltv

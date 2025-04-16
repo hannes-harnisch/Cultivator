@@ -38,8 +38,10 @@ public:
 	macro_vk_fn(vkGetPhysicalDeviceSurfaceCapabilitiesKHR);
 #if CLTV_SYSTEM_WINDOWS
 	macro_vk_fn(vkCreateWin32SurfaceKHR);
+	macro_vk_fn(vkGetPhysicalDeviceWin32PresentationSupportKHR);
 #elif CLTV_SYSTEM_LINUX
 	macro_vk_fn(vkCreateXcbSurfaceKHR);
+	macro_vk_fn(vkGetPhysicalDeviceXcbPresentationSupportKHR);
 #endif
 	macro_vk_fn(vkEnumerateDeviceExtensionProperties);
 	macro_vk_fn(vkCreateDevice);
