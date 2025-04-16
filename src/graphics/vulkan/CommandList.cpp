@@ -6,33 +6,33 @@
 namespace cltv {
 
 CommandList::CommandList(const DeviceContext* ctx) :
-	_ctx(ctx) {
+	ctx_(ctx) {
 	VkCommandPoolCreateInfo pool_info {
 		.sType			  = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
 		.pNext			  = nullptr,
 		.flags			  = 0,
 		.queueFamilyIndex = ctx->graphics_queue.family,
 	};
-	VkResult result = ctx->lib.vkCreateCommandPool(ctx->device(), &pool_info, nullptr, &_cmd_pool);
+	VkResult result = ctx->lib.vkCreateCommandPool(ctx->device(), &pool_info, nullptr, &cmd_pool_);
 	require_vk_result(result, "failed to create command pool");
 
 	VkCommandBufferAllocateInfo alloc_info {
 		.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 		.pNext				= nullptr,
-		.commandPool		= _cmd_pool,
+		.commandPool		= cmd_pool_,
 		.level				= VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = 1,
 	};
-	result = ctx->lib.vkAllocateCommandBuffers(ctx->device(), &alloc_info, &_cmd_buffer);
+	result = ctx->lib.vkAllocateCommandBuffers(ctx->device(), &alloc_info, &cmd_buffer_);
 	require_vk_result(result, "failed to allocate command buffer");
 }
 
 CommandList::~CommandList() {
-	_ctx->lib.vkDestroyCommandPool(_ctx->device(), _cmd_pool, nullptr);
+	ctx_->lib.vkDestroyCommandPool(ctx_->device(), cmd_pool_, nullptr);
 }
 
 void CommandList::begin() {
-	VkResult result = _ctx->lib.vkResetCommandPool(_ctx->device(), _cmd_pool, 0);
+	VkResult result = ctx_->lib.vkResetCommandPool(ctx_->device(), cmd_pool_, 0);
 	require_vk_result(result, "failed to reset command pool");
 
 	VkCommandBufferBeginInfo begin_info {
@@ -41,7 +41,7 @@ void CommandList::begin() {
 		.flags			  = 0,
 		.pInheritanceInfo = nullptr,
 	};
-	result = _ctx->lib.vkBeginCommandBuffer(_cmd_buffer, &begin_info);
+	result = ctx_->lib.vkBeginCommandBuffer(cmd_buffer_, &begin_info);
 	require_vk_result(result, "failed to begin command buffer");
 }
 
@@ -113,7 +113,7 @@ void CommandList::transition_render_target(const RenderTarget& render_target,
 														.baseArrayLayer = 0,
 														.layerCount		= 1},
 	};
-	_ctx->lib.vkCmdPipelineBarrier(_cmd_buffer, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	ctx_->lib.vkCmdPipelineBarrier(cmd_buffer_, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
 void CommandList::copy_buffer_to_render_target(const Buffer& buffer, const RenderTarget& render_target) {
@@ -131,7 +131,7 @@ void CommandList::copy_buffer_to_render_target(const Buffer& buffer, const Rende
 										 .height = static_cast<uint32_t>(size.height),
 										 .depth	 = 1},
 	};
-	_ctx->lib.vkCmdCopyBufferToImage(_cmd_buffer, buffer.get_buffer(), render_target.get_image(),
+	ctx_->lib.vkCmdCopyBufferToImage(cmd_buffer_, buffer.get_buffer(), render_target.get_image(),
 									 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 }
 
@@ -147,7 +147,7 @@ void CommandList::begin_render_pass(RectSize render_area, const RenderPass& rend
 		.clearValueCount = 0,
 		.pClearValues	 = nullptr,
 	};
-	_ctx->lib.vkCmdBeginRenderPass(_cmd_buffer, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
+	ctx_->lib.vkCmdBeginRenderPass(cmd_buffer_, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 void CommandList::bind_viewport(RectSize viewport_size) {
@@ -159,7 +159,7 @@ void CommandList::bind_viewport(RectSize viewport_size) {
 		.minDepth = 0,
 		.maxDepth = 1,
 	};
-	_ctx->lib.vkCmdSetViewport(_cmd_buffer, 0, 1, &viewport);
+	ctx_->lib.vkCmdSetViewport(cmd_buffer_, 0, 1, &viewport);
 }
 
 void CommandList::bind_scissor(RectSize scissor_size) {
@@ -168,27 +168,27 @@ void CommandList::bind_scissor(RectSize scissor_size) {
 		.extent = VkExtent2D {.width  = static_cast<uint32_t>(scissor_size.width),
 							  .height = static_cast<uint32_t>(scissor_size.height)},
 	};
-	_ctx->lib.vkCmdSetScissor(_cmd_buffer, 0, 1, &scissor);
+	ctx_->lib.vkCmdSetScissor(cmd_buffer_, 0, 1, &scissor);
 }
 
 void CommandList::bind_descriptor_set(VkPipelineLayout layout, VkDescriptorSet descriptor_set) {
-	_ctx->lib.vkCmdBindDescriptorSets(_cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &descriptor_set, 0, nullptr);
+	ctx_->lib.vkCmdBindDescriptorSets(cmd_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &descriptor_set, 0, nullptr);
 }
 
 void CommandList::bind_pipeline(const Pipeline& pipeline) {
-	_ctx->lib.vkCmdBindPipeline(_cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.get());
+	ctx_->lib.vkCmdBindPipeline(cmd_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.get());
 }
 
 void CommandList::draw(uint32_t vertex_count) {
-	_ctx->lib.vkCmdDraw(_cmd_buffer, vertex_count, 1, 0, 0);
+	ctx_->lib.vkCmdDraw(cmd_buffer_, vertex_count, 1, 0, 0);
 }
 
 void CommandList::end_render_pass() {
-	_ctx->lib.vkCmdEndRenderPass(_cmd_buffer);
+	ctx_->lib.vkCmdEndRenderPass(cmd_buffer_);
 }
 
 void CommandList::end() {
-	VkResult result = _ctx->lib.vkEndCommandBuffer(_cmd_buffer);
+	VkResult result = ctx_->lib.vkEndCommandBuffer(cmd_buffer_);
 	require_vk_result(result, "failed to end command buffer");
 }
 

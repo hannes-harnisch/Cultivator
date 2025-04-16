@@ -29,24 +29,29 @@ struct Application::Impl {
 };
 
 Application::Application(std::string_view app_name) {
-	_impl->instance = ::GetModuleHandleW(nullptr);
-	require(_impl->instance != nullptr, "failed to get module handle");
+	impl_->instance = ::GetModuleHandleW(nullptr);
+	require(impl_->instance != nullptr, "failed to get module handle");
 
 	std::wstring w_app_name = windows::utf8_to_utf16(app_name);
 
 	WNDCLASSW wnd_class {
 		.style		   = CS_DBLCLKS,
 		.lpfnWndProc   = window_proc,
+		.cbClsExtra	   = 0,
 		.cbWndExtra	   = sizeof(Window*),
-		.hInstance	   = _impl->instance,
+		.hInstance	   = impl_->instance,
+		.hIcon		   = nullptr,
+		.hCursor	   = nullptr,
+		.hbrBackground = nullptr,
+		.lpszMenuName  = nullptr,
 		.lpszClassName = w_app_name.c_str(),
 	};
-	_impl->window_class = ::RegisterClassW(&wnd_class);
-	require(_impl->instance != 0, "failed to register window class");
+	impl_->window_class = ::RegisterClassW(&wnd_class);
+	require(impl_->instance != 0, "failed to register window class");
 }
 
 Application::~Application() {
-	BOOL success = ::UnregisterClassW(MAKEINTATOM(_impl->window_class), _impl->instance);
+	BOOL success = ::UnregisterClassW(MAKEINTATOM(impl_->window_class), impl_->instance);
 	require(success, "failed to unregister window class");
 }
 
@@ -72,11 +77,11 @@ void Application::show_error_window(std::string_view title, std::string_view mes
 }
 
 HINSTANCE Application::get_instance_handle() const {
-	return _impl->instance;
+	return impl_->instance;
 }
 
 ATOM Application::get_window_class() const {
-	return _impl->window_class;
+	return impl_->window_class;
 }
 
 } // namespace cltv

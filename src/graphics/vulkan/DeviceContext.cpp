@@ -67,11 +67,11 @@ DeviceContext::DeviceContext(const Window& window, bool enable_debug_layer) :
 }
 
 DeviceContext::~DeviceContext() {
-	lib.vkDestroyDevice(_device, nullptr);
-	if (_messenger != VK_NULL_HANDLE) {
-		lib.vkDestroyDebugUtilsMessengerEXT(_instance, _messenger, nullptr);
+	lib.vkDestroyDevice(device_, nullptr);
+	if (messenger_ != VK_NULL_HANDLE) {
+		lib.vkDestroyDebugUtilsMessengerEXT(instance_, messenger_, nullptr);
 	}
-	lib.vkDestroyInstance(_instance, nullptr);
+	lib.vkDestroyInstance(instance_, nullptr);
 }
 
 void DeviceContext::submit_to_queue(Queue queue,
@@ -117,9 +117,9 @@ void DeviceContext::submit_to_queue_blocking(Queue queue, VkCommandBuffer cmd_bu
 
 std::optional<uint32_t> DeviceContext::find_memory_type_index(uint32_t supported_type_mask,
 															  VkMemoryPropertyFlags desired_properties) const {
-	for (uint32_t i = 0; i < _mem_properties.memoryTypeCount; ++i) {
+	for (uint32_t i = 0; i < mem_properties_.memoryTypeCount; ++i) {
 		const bool current_type_supported = has_flags(supported_type_mask, 1u << i);
-		if (current_type_supported && has_flags(_mem_properties.memoryTypes[i].propertyFlags, desired_properties)) {
+		if (current_type_supported && has_flags(mem_properties_.memoryTypes[i].propertyFlags, desired_properties)) {
 			return i;
 		}
 	}
@@ -195,24 +195,24 @@ void DeviceContext::init_instance(bool enable_debug_layer) {
 													  : get_count(RequiredInstanceExtensions) - 1,
 		.ppEnabledExtensionNames = RequiredInstanceExtensions,
 	};
-	VkResult result = lib.vkCreateInstance(&instance_info, nullptr, &_instance);
+	VkResult result = lib.vkCreateInstance(&instance_info, nullptr, &instance_);
 	require_vk_result(result, "failed to create Vulkan instance");
 
-	lib.load_instance_functions(_instance);
+	lib.load_instance_functions(instance_);
 
 	if (enable_debug_layer) {
-		result = lib.vkCreateDebugUtilsMessengerEXT(_instance, &messenger_info, nullptr, &_messenger);
+		result = lib.vkCreateDebugUtilsMessengerEXT(instance_, &messenger_info, nullptr, &messenger_);
 		require_vk_result(result, "failed to create Vulkan debug messenger");
 	}
 }
 
 void DeviceContext::init_physical_device() {
 	uint32_t count;
-	VkResult result = lib.vkEnumeratePhysicalDevices(_instance, &count, nullptr);
+	VkResult result = lib.vkEnumeratePhysicalDevices(instance_, &count, nullptr);
 	require_vk_result(result, "failed to query Vulkan physical device count");
 
 	std::vector<VkPhysicalDevice> physical_devices(count);
-	result = lib.vkEnumeratePhysicalDevices(_instance, &count, physical_devices.data());
+	result = lib.vkEnumeratePhysicalDevices(instance_, &count, physical_devices.data());
 	require_vk_result(result, "failed to query Vulkan physical devices");
 
 	for (auto physical_device : physical_devices) {
@@ -229,25 +229,25 @@ void DeviceContext::init_physical_device() {
 		};
 
 		if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU && has_features()) {
-			_physical_device = physical_device;
+			physical_device_ = physical_device;
 		}
 
 		if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && has_features()) {
-			_physical_device = physical_device;
+			physical_device_ = physical_device;
 			break;
 		}
 	}
-	require(_physical_device != VK_NULL_HANDLE, "no suitable physical device found");
+	require(physical_device_ != VK_NULL_HANDLE, "no suitable physical device found");
 
-	lib.vkGetPhysicalDeviceMemoryProperties(_physical_device, &_mem_properties);
+	lib.vkGetPhysicalDeviceMemoryProperties(physical_device_, &mem_properties_);
 }
 
 void DeviceContext::init_queue_families(const Window& window) {
 	uint32_t count;
-	lib.vkGetPhysicalDeviceQueueFamilyProperties(_physical_device, &count, nullptr);
+	lib.vkGetPhysicalDeviceQueueFamilyProperties(physical_device_, &count, nullptr);
 
 	std::vector<VkQueueFamilyProperties> queue_family_properties(count);
-	lib.vkGetPhysicalDeviceQueueFamilyProperties(_physical_device, &count, queue_family_properties.data());
+	lib.vkGetPhysicalDeviceQueueFamilyProperties(physical_device_, &count, queue_family_properties.data());
 
 	Surface surface(this, window);
 	uint32_t idx = 0;
@@ -269,11 +269,11 @@ void DeviceContext::init_queue_families(const Window& window) {
 
 void DeviceContext::check_device_extensions() const {
 	uint32_t count;
-	VkResult result = lib.vkEnumerateDeviceExtensionProperties(_physical_device, nullptr, &count, nullptr);
+	VkResult result = lib.vkEnumerateDeviceExtensionProperties(physical_device_, nullptr, &count, nullptr);
 	require_vk_result(result, "failed to query Vulkan physical device count");
 
 	std::vector<VkExtensionProperties> extensions(count);
-	result = lib.vkEnumerateDeviceExtensionProperties(_physical_device, nullptr, &count, extensions.data());
+	result = lib.vkEnumerateDeviceExtensionProperties(physical_device_, nullptr, &count, extensions.data());
 	require_vk_result(result, "failed to query Vulkan physical devices");
 
 	for (std::string_view required_extension : RequiredDeviceExtensions) {
@@ -321,13 +321,13 @@ void DeviceContext::init_device(bool enable_debug_layer) {
 		.ppEnabledExtensionNames = RequiredDeviceExtensions,
 		.pEnabledFeatures		 = &enabled_features,
 	};
-	VkResult result = lib.vkCreateDevice(_physical_device, &device_info, nullptr, &_device);
+	VkResult result = lib.vkCreateDevice(physical_device_, &device_info, nullptr, &device_);
 	require_vk_result(result, "failed to create Vulkan device");
 
-	lib.load_device_functions(_device);
+	lib.load_device_functions(device_);
 
-	lib.vkGetDeviceQueue(_device, graphics_queue.family, 0, &graphics_queue.queue);
-	lib.vkGetDeviceQueue(_device, presentation_queue.family, 0, &presentation_queue.queue);
+	lib.vkGetDeviceQueue(device_, graphics_queue.family, 0, &graphics_queue.queue);
+	lib.vkGetDeviceQueue(device_, presentation_queue.family, 0, &presentation_queue.queue);
 }
 
 } // namespace cltv

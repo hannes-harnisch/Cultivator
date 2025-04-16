@@ -10,17 +10,17 @@ public:
 	~Buffer();
 
 	VkBuffer get_buffer() const {
-		return _buffer;
+		return buffer_;
 	}
 
 	VkDeviceMemory get_memory() const {
-		return _memory;
+		return memory_;
 	}
 
 private:
-	const DeviceContext* _ctx;
-	VkBuffer _buffer;
-	VkDeviceMemory _memory;
+	const DeviceContext* ctx_;
+	VkBuffer buffer_;
+	VkDeviceMemory memory_;
 };
 
 } // namespace cltv

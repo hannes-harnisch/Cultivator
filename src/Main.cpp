@@ -14,15 +14,15 @@ class Cultivator final : public Application {
 public:
 	Cultivator() :
 		Application("Cultivator"),
-		_window(this, "Cultivator", {1920, 1080}, 100, 100) {
+		window_(this, "Cultivator", {1920, 1080}, 100, 100) {
 	}
 
 	void run() {
-		_window.show();
+		window_.show();
 
 		std::thread render_thread(&Cultivator::render_loop, this);
 
-		while (_should_run) {
+		while (should_run_) {
 			poll_events();
 		}
 
@@ -30,15 +30,15 @@ public:
 	}
 
 	void quit() override {
-		_should_run = false;
+		should_run_ = false;
 	}
 
 private:
-	Window _window;
-	std::atomic_bool _should_run = true;
+	Window window_;
+	std::atomic_bool should_run_ = true;
 
 	void render_loop() {
-		DeviceContext context(_window, EnableDebugLayer);
+		DeviceContext context(window_, EnableDebugLayer);
 
 		RendererParams params {
 			.universe_size				 = RectSize {.width = 480, .height = 270},
@@ -46,9 +46,9 @@ private:
 			.initial_live_cell_incidence = 10,
 			.delay_milliseconds			 = 100,
 		};
-		AutomatonRenderer renderer(&context, &_window, params);
+		AutomatonRenderer renderer(&context, &window_, params);
 
-		while (_should_run) {
+		while (should_run_) {
 			renderer.draw_frame();
 		}
 	}

@@ -19,25 +19,25 @@ public:
 	void present(uint32_t image_index, VkSemaphore img_release_semaphore);
 
 	VkFramebuffer get_framebuffer(uint32_t image_index) const {
-		return _framebuffers.at(image_index);
+		return framebuffers_.at(image_index);
 	}
 
 	size_t get_image_count() const {
-		return _images.size();
+		return images_.size();
 	}
 
 private:
-	const DeviceContext* _ctx;
-	const Window* _window;
-	Surface _surface;
-	VkRenderPass _render_pass;
-	VkSurfaceFormatKHR _surface_format;
-	VkPresentModeKHR _present_mode;
-	VkExtent2D _extent;
-	VkSwapchainKHR _swapchain = VK_NULL_HANDLE;
-	std::vector<VkImage> _images;
-	std::vector<VkImageView> _image_views;
-	std::vector<VkFramebuffer> _framebuffers;
+	const DeviceContext* ctx_;
+	const Window* window_;
+	Surface surface_;
+	VkRenderPass render_pass_;
+	VkSurfaceFormatKHR surface_format_;
+	VkPresentModeKHR present_mode_;
+	VkExtent2D extent_;
+	VkSwapchainKHR swapchain_ = VK_NULL_HANDLE;
+	std::vector<VkImage> images_;
+	std::vector<VkImageView> image_views_;
+	std::vector<VkFramebuffer> framebuffers_;
 
 	void recreate();
 	void init_surface_format();

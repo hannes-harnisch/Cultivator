@@ -4,7 +4,7 @@ namespace cltv {
 
 void Window::on_close() {
 	close();
-	_app->quit();
+	app_->quit();
 }
 
 } // namespace cltv

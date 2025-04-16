@@ -14,12 +14,12 @@ public:
 	bool supported_by_queue(uint32_t queue_family);
 
 	VkSurfaceKHR get() const {
-		return _surface;
+		return surface_;
 	}
 
 private:
-	const DeviceContext* _ctx;
-	VkSurfaceKHR _surface;
+	const DeviceContext* ctx_;
+	VkSurfaceKHR surface_;
 };
 
 } // namespace cltv

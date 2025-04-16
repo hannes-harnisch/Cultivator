@@ -7,69 +7,69 @@
 namespace cltv {
 
 AutomatonRenderer::AutomatonRenderer(const DeviceContext* ctx, const Window* window, const RendererParams& params) :
-	_ctx(ctx),
-	_delay_milliseconds(params.delay_milliseconds),
-	_simulation_pass(_ctx, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
-	_presentation_pass(_ctx, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR),
-	_swap_chain(_ctx, window, _presentation_pass),
-	_front_target(_ctx, params.universe_size, _simulation_pass),
-	_back_target(_ctx, params.universe_size, _simulation_pass),
-	_vertex_shader(create_shader_module("ScreenQuad.vert.spv")),
-	_simulation_fragment_shader(create_shader_module(params.simulation_shader_path)),
-	_presentation_fragment_shader(create_shader_module("Presentation.frag.spv")),
-	_descriptor_set_layout(create_descriptor_set_layout()),
-	_pipeline_layout(create_pipeline_layout()),
-	_simulation_pipeline(_ctx, _vertex_shader, _simulation_fragment_shader, _pipeline_layout, _simulation_pass),
-	_presentation_pipeline(_ctx, _vertex_shader, _presentation_fragment_shader, _pipeline_layout, _presentation_pass),
-	_sampler(create_sampler()),
-	_descriptor_pool(create_descriptor_pool()),
-	_descriptor_set_front(create_descriptor_set(_front_target)),
-	_descriptor_set_back(create_descriptor_set(_back_target)),
-	_frame_fences {create_fence(), create_fence()},
-	_img_release_semaphores {create_semaphore(), create_semaphore()},
-	_img_acquire_semaphores {create_semaphore(), create_semaphore()},
-	_image_pending_fences(_swap_chain.get_image_count(), VK_NULL_HANDLE) {
+	ctx_(ctx),
+	delay_milliseconds_(params.delay_milliseconds),
+	simulation_pass_(ctx_, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+	presentation_pass_(ctx_, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR),
+	swap_chain_(ctx_, window, presentation_pass_),
+	front_target_(ctx_, params.universe_size, simulation_pass_),
+	back_target_(ctx_, params.universe_size, simulation_pass_),
+	vertex_shader_(create_shader_module("ScreenQuad.vert.spv")),
+	simulation_fragment_shader_(create_shader_module(params.simulation_shader_path)),
+	presentation_fragment_shader_(create_shader_module("Presentation.frag.spv")),
+	descriptor_set_layout_(create_descriptor_set_layout()),
+	pipeline_layout_(create_pipeline_layout()),
+	simulation_pipeline_(ctx_, vertex_shader_, simulation_fragment_shader_, pipeline_layout_, simulation_pass_),
+	presentation_pipeline_(ctx_, vertex_shader_, presentation_fragment_shader_, pipeline_layout_, presentation_pass_),
+	sampler_(create_sampler()),
+	descriptor_pool_(create_descriptor_pool()),
+	descriptor_set_front_(create_descriptor_set(front_target_)),
+	descriptor_set_back_(create_descriptor_set(back_target_)),
+	frame_fences_ {create_fence(), create_fence()},
+	img_release_semaphores_ {create_semaphore(), create_semaphore()},
+	img_acquire_semaphores_ {create_semaphore(), create_semaphore()},
+	image_pending_fences_(swap_chain_.get_image_count(), VK_NULL_HANDLE) {
 	// prepare as many command lists as there are swap chain images
-	for (size_t i = 0; i < _swap_chain.get_image_count(); ++i) {
-		_cmd_lists.emplace_back(_ctx);
+	for (size_t i = 0; i < swap_chain_.get_image_count(); ++i) {
+		cmd_lists_.emplace_back(ctx_);
 	}
 
 	prepare_render_targets(params.initial_live_cell_incidence);
 }
 
 AutomatonRenderer::~AutomatonRenderer() {
-	VkResult result = _ctx->lib.vkDeviceWaitIdle(_ctx->device());
+	VkResult result = ctx_->lib.vkDeviceWaitIdle(ctx_->device());
 	require_vk_result(result, "failed to wait for device idle state");
 
-	for (VkSemaphore semaphore : _img_acquire_semaphores) {
-		_ctx->lib.vkDestroySemaphore(_ctx->device(), semaphore, nullptr);
+	for (VkSemaphore semaphore : img_acquire_semaphores_) {
+		ctx_->lib.vkDestroySemaphore(ctx_->device(), semaphore, nullptr);
 	}
-	for (VkSemaphore semaphore : _img_release_semaphores) {
-		_ctx->lib.vkDestroySemaphore(_ctx->device(), semaphore, nullptr);
+	for (VkSemaphore semaphore : img_release_semaphores_) {
+		ctx_->lib.vkDestroySemaphore(ctx_->device(), semaphore, nullptr);
 	}
-	for (VkFence fence : _frame_fences) {
-		_ctx->lib.vkDestroyFence(_ctx->device(), fence, nullptr);
+	for (VkFence fence : frame_fences_) {
+		ctx_->lib.vkDestroyFence(ctx_->device(), fence, nullptr);
 	}
 
-	_ctx->lib.vkDestroyDescriptorPool(_ctx->device(), _descriptor_pool, nullptr);
-	_ctx->lib.vkDestroySampler(_ctx->device(), _sampler, nullptr);
+	ctx_->lib.vkDestroyDescriptorPool(ctx_->device(), descriptor_pool_, nullptr);
+	ctx_->lib.vkDestroySampler(ctx_->device(), sampler_, nullptr);
 
-	_ctx->lib.vkDestroyPipelineLayout(_ctx->device(), _pipeline_layout, nullptr);
-	_ctx->lib.vkDestroyDescriptorSetLayout(_ctx->device(), _descriptor_set_layout, nullptr);
-	_ctx->lib.vkDestroyShaderModule(_ctx->device(), _presentation_fragment_shader, nullptr);
-	_ctx->lib.vkDestroyShaderModule(_ctx->device(), _simulation_fragment_shader, nullptr);
-	_ctx->lib.vkDestroyShaderModule(_ctx->device(), _vertex_shader, nullptr);
+	ctx_->lib.vkDestroyPipelineLayout(ctx_->device(), pipeline_layout_, nullptr);
+	ctx_->lib.vkDestroyDescriptorSetLayout(ctx_->device(), descriptor_set_layout_, nullptr);
+	ctx_->lib.vkDestroyShaderModule(ctx_->device(), presentation_fragment_shader_, nullptr);
+	ctx_->lib.vkDestroyShaderModule(ctx_->device(), simulation_fragment_shader_, nullptr);
+	ctx_->lib.vkDestroyShaderModule(ctx_->device(), vertex_shader_, nullptr);
 }
 
 void AutomatonRenderer::draw_frame() {
-	VkFence frame_fence			  = _frame_fences[_current_frame];
-	VkSemaphore acquire_semaphore = _img_acquire_semaphores[_current_frame];
-	VkSemaphore release_semaphore = _img_release_semaphores[_current_frame];
+	VkFence frame_fence			  = frame_fences_[current_frame_];
+	VkSemaphore acquire_semaphore = img_acquire_semaphores_[current_frame_];
+	VkSemaphore release_semaphore = img_release_semaphores_[current_frame_];
 
-	VkResult result = _ctx->lib.vkWaitForFences(_ctx->device(), 1, &frame_fence, VK_TRUE, UINT64_MAX);
+	VkResult result = ctx_->lib.vkWaitForFences(ctx_->device(), 1, &frame_fence, VK_TRUE, UINT64_MAX);
 	require_vk_result(result, "failed to wait for current frame fence");
 
-	std::optional<uint32_t> img_index_result = _swap_chain.get_next_image_index(acquire_semaphore);
+	std::optional<uint32_t> img_index_result = swap_chain_.get_next_image_index(acquire_semaphore);
 	if (!img_index_result.has_value()) {
 		return;
 	}
@@ -77,49 +77,49 @@ void AutomatonRenderer::draw_frame() {
 
 	record_commands(image_index);
 
-	VkFence image_pending_fence = _image_pending_fences[image_index];
+	VkFence image_pending_fence = image_pending_fences_[image_index];
 	if (image_pending_fence != VK_NULL_HANDLE) {
-		result = _ctx->lib.vkWaitForFences(_ctx->device(), 1, &image_pending_fence, VK_TRUE, UINT64_MAX);
+		result = ctx_->lib.vkWaitForFences(ctx_->device(), 1, &image_pending_fence, VK_TRUE, UINT64_MAX);
 		require_vk_result(result, "failed to wait for image-pending fence");
 	}
 
-	_image_pending_fences[image_index] = frame_fence;
-	_ctx->lib.vkResetFences(_ctx->device(), 1, &frame_fence);
+	image_pending_fences_[image_index] = frame_fence;
+	ctx_->lib.vkResetFences(ctx_->device(), 1, &frame_fence);
 
-	VkCommandBuffer cmd_buffer = _cmd_lists[image_index].get();
-	_ctx->submit_to_queue(_ctx->graphics_queue, cmd_buffer, acquire_semaphore, release_semaphore, frame_fence);
+	VkCommandBuffer cmd_buffer = cmd_lists_[image_index].get();
+	ctx_->submit_to_queue(ctx_->graphics_queue, cmd_buffer, acquire_semaphore, release_semaphore, frame_fence);
 
-	_swap_chain.present(image_index, release_semaphore);
-	_current_frame = (_current_frame + 1) % MaxFrames;
+	swap_chain_.present(image_index, release_semaphore);
+	current_frame_ = (current_frame_ + 1) % MaxFrames;
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(_delay_milliseconds));
-	_first_frame_done = true;
+	std::this_thread::sleep_for(std::chrono::milliseconds(delay_milliseconds_));
+	first_frame_done_ = true;
 }
 
 void AutomatonRenderer::record_commands(uint32_t image_index) {
-	CommandList& cmd = _cmd_lists[image_index];
-	RenderTarget& rt = _current_frame == 0 ? _front_target : _back_target;
+	CommandList& cmd = cmd_lists_[image_index];
+	RenderTarget& rt = current_frame_ == 0 ? front_target_ : back_target_;
 
 	cmd.begin();
-	if (_first_frame_done) {
+	if (first_frame_done_) {
 		cmd.transition_render_target(rt, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 	}
 
 	RectSize simulation_size = rt.get_size();
-	cmd.begin_render_pass(simulation_size, _simulation_pass, rt.get_framebuffer());
+	cmd.begin_render_pass(simulation_size, simulation_pass_, rt.get_framebuffer());
 	cmd.bind_viewport(simulation_size);
 	cmd.bind_scissor(simulation_size);
-	cmd.bind_descriptor_set(_pipeline_layout, _current_frame == 0 ? _descriptor_set_back : _descriptor_set_front);
-	cmd.bind_pipeline(_simulation_pipeline);
+	cmd.bind_descriptor_set(pipeline_layout_, current_frame_ == 0 ? descriptor_set_back_ : descriptor_set_front_);
+	cmd.bind_pipeline(simulation_pipeline_);
 	cmd.draw(3);
 	cmd.end_render_pass();
 
-	RectSize window_size = _swap_chain.get_size();
-	cmd.begin_render_pass(window_size, _presentation_pass, _swap_chain.get_framebuffer(image_index));
+	RectSize window_size = swap_chain_.get_size();
+	cmd.begin_render_pass(window_size, presentation_pass_, swap_chain_.get_framebuffer(image_index));
 	cmd.bind_viewport(window_size);
 	cmd.bind_scissor(window_size);
-	cmd.bind_descriptor_set(_pipeline_layout, _current_frame == 0 ? _descriptor_set_front : _descriptor_set_back);
-	cmd.bind_pipeline(_presentation_pipeline);
+	cmd.bind_descriptor_set(pipeline_layout_, current_frame_ == 0 ? descriptor_set_front_ : descriptor_set_back_);
+	cmd.bind_pipeline(presentation_pipeline_);
 	cmd.draw(3);
 	cmd.end_render_pass();
 
@@ -129,28 +129,28 @@ void AutomatonRenderer::record_commands(uint32_t image_index) {
 void AutomatonRenderer::prepare_render_targets(uint32_t initial_live_cell_incidence) {
 	::srand(static_cast<unsigned>(::time(nullptr)));
 
-	const size_t size = sizeof(uint32_t) * _back_target.get_size().area();
-	Buffer staging_buffer(_ctx, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+	const size_t size = sizeof(uint32_t) * back_target_.get_size().area();
+	Buffer staging_buffer(ctx_, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 						  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 	void* staging_target;
-	VkResult result = _ctx->lib.vkMapMemory(_ctx->device(), staging_buffer.get_memory(), 0, size, 0, &staging_target);
+	VkResult result = ctx_->lib.vkMapMemory(ctx_->device(), staging_buffer.get_memory(), 0, size, 0, &staging_target);
 	require_vk_result(result, "failed to map memory");
 
 	uint32_t* pixels = reinterpret_cast<uint32_t*>(staging_target);
 	for (size_t i = 0; i < size / sizeof(uint32_t); ++i) {
 		*pixels++ = ::rand() % initial_live_cell_incidence == 0 ? 0xFFFFFFFF : 0;
 	}
-	_ctx->lib.vkUnmapMemory(_ctx->device(), staging_buffer.get_memory());
+	ctx_->lib.vkUnmapMemory(ctx_->device(), staging_buffer.get_memory());
 
-	CommandList cmd(_ctx);
+	CommandList cmd(ctx_);
 	cmd.begin();
-	cmd.transition_render_target(_front_target, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-	cmd.transition_render_target(_back_target, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	cmd.copy_buffer_to_render_target(staging_buffer, _back_target);
-	cmd.transition_render_target(_back_target, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	cmd.transition_render_target(front_target_, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	cmd.transition_render_target(back_target_, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	cmd.copy_buffer_to_render_target(staging_buffer, back_target_);
+	cmd.transition_render_target(back_target_, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	cmd.end();
-	_ctx->submit_to_queue_blocking(_ctx->graphics_queue, cmd.get());
+	ctx_->submit_to_queue_blocking(ctx_->graphics_queue, cmd.get());
 }
 
 VkShaderModule AutomatonRenderer::create_shader_module(const char* path) const {
@@ -166,7 +166,7 @@ VkShaderModule AutomatonRenderer::create_shader_module(const char* path) const {
 	};
 
 	VkShaderModule shader_module;
-	VkResult result = _ctx->lib.vkCreateShaderModule(_ctx->device(), &shader_info, nullptr, &shader_module);
+	VkResult result = ctx_->lib.vkCreateShaderModule(ctx_->device(), &shader_info, nullptr, &shader_module);
 	require_vk_result(result, "failed to create Vulkan shader module");
 	return shader_module;
 }
@@ -188,7 +188,7 @@ VkDescriptorSetLayout AutomatonRenderer::create_descriptor_set_layout() const {
 	};
 
 	VkDescriptorSetLayout descriptor_set_layout;
-	VkResult result = _ctx->lib.vkCreateDescriptorSetLayout(_ctx->device(), &layout_info, nullptr, &descriptor_set_layout);
+	VkResult result = ctx_->lib.vkCreateDescriptorSetLayout(ctx_->device(), &layout_info, nullptr, &descriptor_set_layout);
 	require_vk_result(result, "failed to create Vulkan descriptor set layout");
 	return descriptor_set_layout;
 }
@@ -199,13 +199,13 @@ VkPipelineLayout AutomatonRenderer::create_pipeline_layout() const {
 		.pNext					= nullptr,
 		.flags					= 0,
 		.setLayoutCount			= 1,
-		.pSetLayouts			= &_descriptor_set_layout,
+		.pSetLayouts			= &descriptor_set_layout_,
 		.pushConstantRangeCount = 0,
 		.pPushConstantRanges	= nullptr,
 	};
 
 	VkPipelineLayout pipeline_layout;
-	VkResult result = _ctx->lib.vkCreatePipelineLayout(_ctx->device(), &pipeline_layout_info, nullptr, &pipeline_layout);
+	VkResult result = ctx_->lib.vkCreatePipelineLayout(ctx_->device(), &pipeline_layout_info, nullptr, &pipeline_layout);
 	require_vk_result(result, "failed to create Vulkan pipeline layout");
 	return pipeline_layout;
 }
@@ -233,7 +233,7 @@ VkSampler AutomatonRenderer::create_sampler() const {
 	};
 
 	VkSampler sampler;
-	VkResult result = _ctx->lib.vkCreateSampler(_ctx->device(), &sampler_info, nullptr, &sampler);
+	VkResult result = ctx_->lib.vkCreateSampler(ctx_->device(), &sampler_info, nullptr, &sampler);
 	require_vk_result(result, "failed to create Vulkan sampler");
 	return sampler;
 }
@@ -253,7 +253,7 @@ VkDescriptorPool AutomatonRenderer::create_descriptor_pool() const {
 	};
 
 	VkDescriptorPool descriptor_pool;
-	VkResult result = _ctx->lib.vkCreateDescriptorPool(_ctx->device(), &descriptor_pool_info, nullptr, &descriptor_pool);
+	VkResult result = ctx_->lib.vkCreateDescriptorPool(ctx_->device(), &descriptor_pool_info, nullptr, &descriptor_pool);
 	require_vk_result(result, "failed to create Vulkan descriptor pool");
 	return descriptor_pool;
 }
@@ -262,16 +262,16 @@ VkDescriptorSet AutomatonRenderer::create_descriptor_set(const RenderTarget& ren
 	VkDescriptorSetAllocateInfo alloc_info {
 		.sType				= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
 		.pNext				= nullptr,
-		.descriptorPool		= _descriptor_pool,
+		.descriptorPool		= descriptor_pool_,
 		.descriptorSetCount = 1,
-		.pSetLayouts		= &_descriptor_set_layout,
+		.pSetLayouts		= &descriptor_set_layout_,
 	};
 	VkDescriptorSet descriptor_set;
-	VkResult result = _ctx->lib.vkAllocateDescriptorSets(_ctx->device(), &alloc_info, &descriptor_set);
+	VkResult result = ctx_->lib.vkAllocateDescriptorSets(ctx_->device(), &alloc_info, &descriptor_set);
 	require_vk_result(result, "failed to create Vulkan descriptor set");
 
 	VkDescriptorImageInfo image_info {
-		.sampler	 = _sampler,
+		.sampler	 = sampler_,
 		.imageView	 = render_target.get_image_view(),
 		.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 	};
@@ -280,13 +280,14 @@ VkDescriptorSet AutomatonRenderer::create_descriptor_set(const RenderTarget& ren
 		.pNext			  = nullptr,
 		.dstSet			  = descriptor_set,
 		.dstBinding		  = 0,
+		.dstArrayElement  = 0,
 		.descriptorCount  = 1,
 		.descriptorType	  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 		.pImageInfo		  = &image_info,
 		.pBufferInfo	  = nullptr,
 		.pTexelBufferView = nullptr,
 	};
-	_ctx->lib.vkUpdateDescriptorSets(_ctx->device(), 1, &write, 0, nullptr);
+	ctx_->lib.vkUpdateDescriptorSets(ctx_->device(), 1, &write, 0, nullptr);
 
 	return descriptor_set;
 }
@@ -298,7 +299,7 @@ VkFence AutomatonRenderer::create_fence() const {
 		.flags = VK_FENCE_CREATE_SIGNALED_BIT,
 	};
 	VkFence fence;
-	VkResult result = _ctx->lib.vkCreateFence(_ctx->device(), &fence_info, nullptr, &fence);
+	VkResult result = ctx_->lib.vkCreateFence(ctx_->device(), &fence_info, nullptr, &fence);
 	require_vk_result(result, "failed to create Vulkan fence");
 	return fence;
 }
@@ -310,7 +311,7 @@ VkSemaphore AutomatonRenderer::create_semaphore() const {
 		.flags = 0,
 	};
 	VkSemaphore semaphore;
-	VkResult result = _ctx->lib.vkCreateSemaphore(_ctx->device(), &semaphore_info, nullptr, &semaphore);
+	VkResult result = ctx_->lib.vkCreateSemaphore(ctx_->device(), &semaphore_info, nullptr, &semaphore);
 	require_vk_result(result, "failed to create Vulkan semaphore");
 	return semaphore;
 }

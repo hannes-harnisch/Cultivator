@@ -16,12 +16,12 @@ public:
 	~Pipeline();
 
 	VkPipeline get() const {
-		return _pipeline;
+		return pipeline_;
 	}
 
 private:
-	const DeviceContext* _ctx;
-	VkPipeline _pipeline;
+	const DeviceContext* ctx_;
+	VkPipeline pipeline_;
 };
 
 } // namespace cltv

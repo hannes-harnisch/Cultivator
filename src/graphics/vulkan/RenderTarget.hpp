@@ -11,28 +11,28 @@ public:
 	~RenderTarget();
 
 	RectSize get_size() const {
-		return _size;
+		return size_;
 	}
 
 	VkImage get_image() const {
-		return _image;
+		return image_;
 	}
 
 	VkImageView get_image_view() const {
-		return _image_view;
+		return image_view_;
 	}
 
 	VkFramebuffer get_framebuffer() const {
-		return _framebuffer;
+		return framebuffer_;
 	}
 
 private:
-	const DeviceContext* _ctx;
-	RectSize _size;
-	VkDeviceMemory _memory	   = VK_NULL_HANDLE;
-	VkImage _image			   = VK_NULL_HANDLE;
-	VkImageView _image_view	   = VK_NULL_HANDLE;
-	VkFramebuffer _framebuffer = VK_NULL_HANDLE;
+	const DeviceContext* ctx_;
+	RectSize size_;
+	VkDeviceMemory memory_	   = VK_NULL_HANDLE;
+	VkImage image_			   = VK_NULL_HANDLE;
+	VkImageView image_view_	   = VK_NULL_HANDLE;
+	VkFramebuffer framebuffer_ = VK_NULL_HANDLE;
 
 	void init_image(RectSize size);
 	void init_memory();

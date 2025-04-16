@@ -12,28 +12,28 @@ struct Window::Impl {
 };
 
 Window::Window(Application* app, std::string_view title, RectSize size, int32_t x, int32_t y) :
-	_app(app) {
-	_impl->instance_handle = app->get_instance_handle();
+	app_(app) {
+	impl_->instance_handle = app->get_instance_handle();
 
 	std::wstring w_title = windows::utf8_to_utf16(title);
-	_impl->hwnd = ::CreateWindowExW(0, MAKEINTATOM(app->get_window_class()), w_title.c_str(), WS_OVERLAPPEDWINDOW, x, y,
-									size.width, size.height, nullptr, nullptr, _impl->instance_handle, nullptr);
-	require(_impl->hwnd != nullptr, "failed to create window");
+	impl_->hwnd = ::CreateWindowExW(0, MAKEINTATOM(app->get_window_class()), w_title.c_str(), WS_OVERLAPPEDWINDOW, x, y,
+									size.width, size.height, nullptr, nullptr, impl_->instance_handle, nullptr);
+	require(impl_->hwnd != nullptr, "failed to create window");
 
 	::SetLastError(0);
-	::SetWindowLongPtrW(_impl->hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+	::SetWindowLongPtrW(impl_->hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 	DWORD err = ::GetLastError();
 	require(err == 0, "failed to register window pointer in window data");
 }
 
 Window::~Window() {
-	BOOL success = ::DestroyWindow(_impl->hwnd);
+	BOOL success = ::DestroyWindow(impl_->hwnd);
 	require(success, "failed to destroy window");
 }
 
 RectSize Window::get_size() const {
 	RECT rect;
-	BOOL success = ::GetClientRect(_impl->hwnd, &rect);
+	BOOL success = ::GetClientRect(impl_->hwnd, &rect);
 	require(success, "failed to get window client rect");
 
 	return {
@@ -43,20 +43,20 @@ RectSize Window::get_size() const {
 }
 
 void Window::show() {
-	::ShowWindow(_impl->hwnd, SW_SHOW); // return value can be ignored here
+	::ShowWindow(impl_->hwnd, SW_SHOW); // return value can be ignored here
 }
 
 void Window::close() {
-	BOOL success = ::CloseWindow(_impl->hwnd);
+	BOOL success = ::CloseWindow(impl_->hwnd);
 	require(success, "failed to close window");
 }
 
 HINSTANCE Window::get_instance_handle() const {
-	return _impl->instance_handle;
+	return impl_->instance_handle;
 }
 
 HWND Window::get_hwnd() const {
-	return _impl->hwnd;
+	return impl_->hwnd;
 }
 
 } // namespace cltv

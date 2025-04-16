@@ -33,23 +33,23 @@ public:
 												   VkMemoryPropertyFlags desired_properties) const;
 
 	VkInstance instance() const {
-		return _instance;
+		return instance_;
 	}
 
 	VkPhysicalDevice physical_device() const {
-		return _physical_device;
+		return physical_device_;
 	}
 
 	VkDevice device() const {
-		return _device;
+		return device_;
 	}
 
 private:
-	VkInstance _instance							 = VK_NULL_HANDLE;
-	VkDebugUtilsMessengerEXT _messenger				 = VK_NULL_HANDLE;
-	VkPhysicalDevice _physical_device				 = VK_NULL_HANDLE;
-	VkDevice _device								 = VK_NULL_HANDLE;
-	VkPhysicalDeviceMemoryProperties _mem_properties = {};
+	VkInstance instance_							 = VK_NULL_HANDLE;
+	VkDebugUtilsMessengerEXT messenger_				 = VK_NULL_HANDLE;
+	VkPhysicalDevice physical_device_				 = VK_NULL_HANDLE;
+	VkDevice device_								 = VK_NULL_HANDLE;
+	VkPhysicalDeviceMemoryProperties mem_properties_ = {};
 
 	void check_layers() const;
 	void check_instance_extensions() const;

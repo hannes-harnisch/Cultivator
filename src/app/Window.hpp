@@ -27,8 +27,8 @@ public:
 
 private:
 	struct Impl;
-	ImplStorage<Impl> _impl;
-	Application* _app;
+	ImplStorage<Impl> impl_;
+	Application* app_;
 };
 
 } // namespace cltv

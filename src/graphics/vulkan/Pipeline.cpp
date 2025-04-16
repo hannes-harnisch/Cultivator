@@ -9,7 +9,7 @@ Pipeline::Pipeline(const DeviceContext* ctx,
 				   VkShaderModule fragment,
 				   VkPipelineLayout layout,
 				   const RenderPass& render_pass) :
-	_ctx(ctx) {
+	ctx_(ctx) {
 	const VkPipelineShaderStageCreateInfo shader_stages[] = {
 		VkPipelineShaderStageCreateInfo {
 			.sType				 = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -135,12 +135,12 @@ Pipeline::Pipeline(const DeviceContext* ctx,
 		.basePipelineHandle	 = VK_NULL_HANDLE,
 		.basePipelineIndex	 = -1,
 	};
-	VkResult result = ctx->lib.vkCreateGraphicsPipelines(ctx->device(), VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &_pipeline);
+	VkResult result = ctx->lib.vkCreateGraphicsPipelines(ctx->device(), VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &pipeline_);
 	require_vk_result(result, "failed to create Vulkan pipeline");
 }
 
 Pipeline::~Pipeline() {
-	_ctx->lib.vkDestroyPipeline(_ctx->device(), _pipeline, nullptr);
+	ctx_->lib.vkDestroyPipeline(ctx_->device(), pipeline_, nullptr);
 }
 
 } // namespace cltv

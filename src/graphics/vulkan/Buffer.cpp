@@ -6,7 +6,7 @@
 namespace cltv {
 
 Buffer::Buffer(const DeviceContext* ctx, size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) :
-	_ctx(ctx) {
+	ctx_(ctx) {
 	VkBufferCreateInfo buffer_info {
 		.sType				   = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 		.pNext				   = nullptr,
@@ -17,11 +17,11 @@ Buffer::Buffer(const DeviceContext* ctx, size_t size, VkBufferUsageFlags usage, 
 		.queueFamilyIndexCount = 0,
 		.pQueueFamilyIndices   = nullptr,
 	};
-	VkResult result = ctx->lib.vkCreateBuffer(ctx->device(), &buffer_info, nullptr, &_buffer);
+	VkResult result = ctx->lib.vkCreateBuffer(ctx->device(), &buffer_info, nullptr, &buffer_);
 	require_vk_result(result, "failed to create Vulkan buffer");
 
 	VkMemoryRequirements requirements;
-	ctx->lib.vkGetBufferMemoryRequirements(ctx->device(), _buffer, &requirements);
+	ctx->lib.vkGetBufferMemoryRequirements(ctx->device(), buffer_, &requirements);
 
 	auto mem_type_index = ctx->find_memory_type_index(requirements.memoryTypeBits, properties);
 	require(mem_type_index.has_value(), "no suitable memory type for buffer");
@@ -34,16 +34,16 @@ Buffer::Buffer(const DeviceContext* ctx, size_t size, VkBufferUsageFlags usage, 
 		.allocationSize	 = std::max(requirements.size, MinRecommended),
 		.memoryTypeIndex = *mem_type_index,
 	};
-	result = ctx->lib.vkAllocateMemory(ctx->device(), &alloc_info, nullptr, &_memory);
+	result = ctx->lib.vkAllocateMemory(ctx->device(), &alloc_info, nullptr, &memory_);
 	require_vk_result(result, "failed to allocate GPU memory for buffer");
 
-	result = ctx->lib.vkBindBufferMemory(ctx->device(), _buffer, _memory, 0);
+	result = ctx->lib.vkBindBufferMemory(ctx->device(), buffer_, memory_, 0);
 	require_vk_result(result, "failed to bind buffer memory");
 }
 
 Buffer::~Buffer() {
-	_ctx->lib.vkDestroyBuffer(_ctx->device(), _buffer, nullptr);
-	_ctx->lib.vkFreeMemory(_ctx->device(), _memory, nullptr);
+	ctx_->lib.vkDestroyBuffer(ctx_->device(), buffer_, nullptr);
+	ctx_->lib.vkFreeMemory(ctx_->device(), memory_, nullptr);
 }
 
 } // namespace cltv

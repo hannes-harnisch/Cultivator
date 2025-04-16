@@ -28,13 +28,13 @@ public:
 	void end();
 
 	VkCommandBuffer get() const {
-		return _cmd_buffer;
+		return cmd_buffer_;
 	}
 
 private:
-	const DeviceContext* _ctx;
-	VkCommandPool _cmd_pool;
-	VkCommandBuffer _cmd_buffer;
+	const DeviceContext* ctx_;
+	VkCommandPool cmd_pool_;
+	VkCommandBuffer cmd_buffer_;
 };
 
 } // namespace cltv

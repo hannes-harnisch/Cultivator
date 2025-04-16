@@ -6,10 +6,10 @@
 namespace cltv {
 
 SwapChain::SwapChain(const DeviceContext* ctx, const Window* window, const RenderPass& render_pass) :
-	_ctx(ctx),
-	_window(window),
-	_surface(ctx, *window),
-	_render_pass(render_pass.get()) {
+	ctx_(ctx),
+	window_(window),
+	surface_(ctx, *window),
+	render_pass_(render_pass.get()) {
 	init_surface_format();
 	init_present_mode();
 	init_extent_and_swapchain(window->get_size());
@@ -17,29 +17,29 @@ SwapChain::SwapChain(const DeviceContext* ctx, const Window* window, const Rende
 }
 
 SwapChain::~SwapChain() {
-	for (VkFramebuffer framebuffer : _framebuffers) {
-		_ctx->lib.vkDestroyFramebuffer(_ctx->device(), framebuffer, nullptr);
+	for (VkFramebuffer framebuffer : framebuffers_) {
+		ctx_->lib.vkDestroyFramebuffer(ctx_->device(), framebuffer, nullptr);
 	}
 
 	// swapchain owns the VkImages, we don't need to destroy them
 
-	for (VkImageView image_view : _image_views) {
-		_ctx->lib.vkDestroyImageView(_ctx->device(), image_view, nullptr);
+	for (VkImageView image_view : image_views_) {
+		ctx_->lib.vkDestroyImageView(ctx_->device(), image_view, nullptr);
 	}
 
-	_ctx->lib.vkDestroySwapchainKHR(_ctx->device(), _swapchain, nullptr);
+	ctx_->lib.vkDestroySwapchainKHR(ctx_->device(), swapchain_, nullptr);
 }
 
 RectSize SwapChain::get_size() const {
 	return RectSize {
-		.width	= static_cast<int32_t>(_extent.width),
-		.height = static_cast<int32_t>(_extent.height),
+		.width	= static_cast<int32_t>(extent_.width),
+		.height = static_cast<int32_t>(extent_.height),
 	};
 }
 
 std::optional<uint32_t> SwapChain::get_next_image_index(VkSemaphore img_acquire_semaphore) {
 	uint32_t index;
-	VkResult result = _ctx->lib.vkAcquireNextImageKHR(_ctx->device(), _swapchain, UINT64_MAX, img_acquire_semaphore,
+	VkResult result = ctx_->lib.vkAcquireNextImageKHR(ctx_->device(), swapchain_, UINT64_MAX, img_acquire_semaphore,
 													  VK_NULL_HANDLE, &index);
 	if (result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR) {
 		return index;
@@ -58,11 +58,11 @@ void SwapChain::present(uint32_t image_index, VkSemaphore img_release_semaphore)
 		.waitSemaphoreCount = 1,
 		.pWaitSemaphores	= &img_release_semaphore,
 		.swapchainCount		= 1,
-		.pSwapchains		= &_swapchain,
+		.pSwapchains		= &swapchain_,
 		.pImageIndices		= &image_index,
 		.pResults			= nullptr,
 	};
-	VkResult result = _ctx->lib.vkQueuePresentKHR(_ctx->presentation_queue.queue, &present_info);
+	VkResult result = ctx_->lib.vkQueuePresentKHR(ctx_->presentation_queue.queue, &present_info);
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
 		recreate();
 	} else if (result != VK_SUCCESS) {
@@ -71,43 +71,43 @@ void SwapChain::present(uint32_t image_index, VkSemaphore img_release_semaphore)
 }
 
 void SwapChain::recreate() {
-	RectSize size = _window->get_size();
+	RectSize size = window_->get_size();
 	if (size.is_empty()) {
 		return;
 	}
 
-	VkResult result = _ctx->lib.vkDeviceWaitIdle(_ctx->device());
+	VkResult result = ctx_->lib.vkDeviceWaitIdle(ctx_->device());
 	require_vk_result(result, "failed to wait for device idle when recreating swapchain");
 
-	for (VkFramebuffer framebuffer : _framebuffers) {
-		_ctx->lib.vkDestroyFramebuffer(_ctx->device(), framebuffer, nullptr);
+	for (VkFramebuffer framebuffer : framebuffers_) {
+		ctx_->lib.vkDestroyFramebuffer(ctx_->device(), framebuffer, nullptr);
 	}
-	_framebuffers.clear();
+	framebuffers_.clear();
 
 	// swapchain owns the VkImages, we don't need to destroy them
-	_images.clear();
+	images_.clear();
 
-	for (VkImageView image_view : _image_views) {
-		_ctx->lib.vkDestroyImageView(_ctx->device(), image_view, nullptr);
+	for (VkImageView image_view : image_views_) {
+		ctx_->lib.vkDestroyImageView(ctx_->device(), image_view, nullptr);
 	}
-	_image_views.clear();
+	image_views_.clear();
 
-	VkSwapchainKHR old_swapchain = _swapchain;
+	VkSwapchainKHR old_swapchain = swapchain_;
 
 	init_extent_and_swapchain(size);
 	init_images();
 
 	// destroy old swapchain after it was reused for new one
-	_ctx->lib.vkDestroySwapchainKHR(_ctx->device(), old_swapchain, nullptr);
+	ctx_->lib.vkDestroySwapchainKHR(ctx_->device(), old_swapchain, nullptr);
 }
 
 void SwapChain::init_surface_format() {
 	uint32_t count;
-	VkResult result = _ctx->lib.vkGetPhysicalDeviceSurfaceFormatsKHR(_ctx->physical_device(), _surface.get(), &count, nullptr);
+	VkResult result = ctx_->lib.vkGetPhysicalDeviceSurfaceFormatsKHR(ctx_->physical_device(), surface_.get(), &count, nullptr);
 	require_vk_result(result, "failed to get physical device surface format count");
 
 	std::vector<VkSurfaceFormatKHR> formats(count);
-	result = _ctx->lib.vkGetPhysicalDeviceSurfaceFormatsKHR(_ctx->physical_device(), _surface.get(), &count, formats.data());
+	result = ctx_->lib.vkGetPhysicalDeviceSurfaceFormatsKHR(ctx_->physical_device(), surface_.get(), &count, formats.data());
 	require_vk_result(result, "failed to get physical device surface formats");
 
 	static constexpr VkSurfaceFormatKHR Desired {
@@ -118,33 +118,33 @@ void SwapChain::init_surface_format() {
 		return format.format == Desired.format && format.colorSpace == Desired.colorSpace;
 	};
 	if (std::ranges::find_if(formats, equals_desired) != formats.end()) {
-		_surface_format = Desired;
+		surface_format_ = Desired;
 	} else {
-		_surface_format = formats.at(0);
+		surface_format_ = formats.at(0);
 	}
 }
 
 void SwapChain::init_present_mode() {
 	uint32_t count;
-	VkResult result = _ctx->lib.vkGetPhysicalDeviceSurfacePresentModesKHR(_ctx->physical_device(), _surface.get(), &count,
+	VkResult result = ctx_->lib.vkGetPhysicalDeviceSurfacePresentModesKHR(ctx_->physical_device(), surface_.get(), &count,
 																		  nullptr);
 	require_vk_result(result, "failed to get physical device present mode count");
 
 	std::vector<VkPresentModeKHR> modes(count);
-	result = _ctx->lib.vkGetPhysicalDeviceSurfacePresentModesKHR(_ctx->physical_device(), _surface.get(), &count, modes.data());
+	result = ctx_->lib.vkGetPhysicalDeviceSurfacePresentModesKHR(ctx_->physical_device(), surface_.get(), &count, modes.data());
 	require_vk_result(result, "failed to get physical device present modes");
 
 	static constexpr VkPresentModeKHR Desired = VK_PRESENT_MODE_MAILBOX_KHR;
 	if (contains(modes, Desired)) {
-		_present_mode = Desired;
+		present_mode_ = Desired;
 	} else {
-		_present_mode = VK_PRESENT_MODE_FIFO_KHR;
+		present_mode_ = VK_PRESENT_MODE_FIFO_KHR;
 	}
 }
 
 void SwapChain::init_extent_and_swapchain(RectSize size) {
 	VkSurfaceCapabilitiesKHR caps;
-	VkResult result = _ctx->lib.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_ctx->physical_device(), _surface.get(), &caps);
+	VkResult result = ctx_->lib.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(ctx_->physical_device(), surface_.get(), &caps);
 	require_vk_result(result, "failed to get physical device surface capabilities");
 
 	uint32_t min_image_count = caps.minImageCount + 1;
@@ -153,30 +153,30 @@ void SwapChain::init_extent_and_swapchain(RectSize size) {
 	}
 
 	if (caps.currentExtent.width != UINT32_MAX && caps.currentExtent.height != UINT32_MAX) {
-		_extent = caps.currentExtent;
+		extent_ = caps.currentExtent;
 	} else {
-		_extent.width  = std::clamp(static_cast<uint32_t>(size.width), caps.minImageExtent.width, caps.maxImageExtent.width);
-		_extent.height = std::clamp(static_cast<uint32_t>(size.height), caps.minImageExtent.height, caps.maxImageExtent.height);
+		extent_.width  = std::clamp(static_cast<uint32_t>(size.width), caps.minImageExtent.width, caps.maxImageExtent.width);
+		extent_.height = std::clamp(static_cast<uint32_t>(size.height), caps.minImageExtent.height, caps.maxImageExtent.height);
 	}
 
 	VkBool32 supported;
-	result = _ctx->lib.vkGetPhysicalDeviceSurfaceSupportKHR(_ctx->physical_device(), _ctx->presentation_queue.family,
-															_surface.get(), &supported);
+	result = ctx_->lib.vkGetPhysicalDeviceSurfaceSupportKHR(ctx_->physical_device(), ctx_->presentation_queue.family,
+															surface_.get(), &supported);
 	require_vk_result(result, "failed to query physical device surface support");
 	require(supported, "surface not supported for swap chain");
 
-	const uint32_t queue_indices[] {_ctx->graphics_queue.family, _ctx->presentation_queue.family};
+	const uint32_t queue_indices[] {ctx_->graphics_queue.family, ctx_->presentation_queue.family};
 	const bool concurrent = queue_indices[0] != queue_indices[1];
 
 	VkSwapchainCreateInfoKHR swapchain_info {
 		.sType				   = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
 		.pNext				   = nullptr,
 		.flags				   = 0,
-		.surface			   = _surface.get(),
+		.surface			   = surface_.get(),
 		.minImageCount		   = min_image_count,
-		.imageFormat		   = _surface_format.format,
-		.imageColorSpace	   = _surface_format.colorSpace,
-		.imageExtent		   = _extent,
+		.imageFormat		   = surface_format_.format,
+		.imageColorSpace	   = surface_format_.colorSpace,
+		.imageExtent		   = extent_,
 		.imageArrayLayers	   = 1,
 		.imageUsage			   = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 		.imageSharingMode	   = concurrent ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE,
@@ -184,31 +184,31 @@ void SwapChain::init_extent_and_swapchain(RectSize size) {
 		.pQueueFamilyIndices   = concurrent ? queue_indices : nullptr,
 		.preTransform		   = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
 		.compositeAlpha		   = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-		.presentMode		   = _present_mode,
+		.presentMode		   = present_mode_,
 		.clipped			   = VK_TRUE,
-		.oldSwapchain		   = _swapchain, // null on first creation
+		.oldSwapchain		   = swapchain_, // null on first creation
 	};
-	result = _ctx->lib.vkCreateSwapchainKHR(_ctx->device(), &swapchain_info, nullptr, &_swapchain);
+	result = ctx_->lib.vkCreateSwapchainKHR(ctx_->device(), &swapchain_info, nullptr, &swapchain_);
 	require_vk_result(result, "failed to create Vulkan swapchain");
 }
 
 void SwapChain::init_images() {
 	uint32_t count;
-	VkResult result = _ctx->lib.vkGetSwapchainImagesKHR(_ctx->device(), _swapchain, &count, nullptr);
+	VkResult result = ctx_->lib.vkGetSwapchainImagesKHR(ctx_->device(), swapchain_, &count, nullptr);
 	require_vk_result(result, "failed to get Vulkan swapchain image count");
 
-	_images.resize(count);
-	result = _ctx->lib.vkGetSwapchainImagesKHR(_ctx->device(), _swapchain, &count, _images.data());
+	images_.resize(count);
+	result = ctx_->lib.vkGetSwapchainImagesKHR(ctx_->device(), swapchain_, &count, images_.data());
 	require_vk_result(result, "failed to get Vulkan swapchain images");
 
-	for (VkImage image : _images) {
+	for (VkImage image : images_) {
 		VkImageViewCreateInfo image_view_info {
 			.sType			  = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 			.pNext			  = nullptr,
 			.flags			  = 0,
 			.image			  = image,
 			.viewType		  = VK_IMAGE_VIEW_TYPE_2D,
-			.format			  = _surface_format.format,
+			.format			  = surface_format_.format,
 			.components		  = VkComponentMapping {.r = VK_COMPONENT_SWIZZLE_IDENTITY,
 													.g = VK_COMPONENT_SWIZZLE_IDENTITY,
 													.b = VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -220,25 +220,25 @@ void SwapChain::init_images() {
 														 .layerCount	 = 1},
 		};
 		VkImageView image_view;
-		result = _ctx->lib.vkCreateImageView(_ctx->device(), &image_view_info, nullptr, &image_view);
+		result = ctx_->lib.vkCreateImageView(ctx_->device(), &image_view_info, nullptr, &image_view);
 		require_vk_result(result, "failed to create image view for swapchain image");
-		_image_views.emplace_back(image_view);
+		image_views_.emplace_back(image_view);
 
 		VkFramebufferCreateInfo framebuffer_info {
 			.sType			 = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
 			.pNext			 = nullptr,
 			.flags			 = 0,
-			.renderPass		 = _render_pass,
+			.renderPass		 = render_pass_,
 			.attachmentCount = 1,
 			.pAttachments	 = &image_view,
-			.width			 = _extent.width,
-			.height			 = _extent.height,
+			.width			 = extent_.width,
+			.height			 = extent_.height,
 			.layers			 = 1,
 		};
 		VkFramebuffer framebuffer;
-		result = _ctx->lib.vkCreateFramebuffer(_ctx->device(), &framebuffer_info, nullptr, &framebuffer);
+		result = ctx_->lib.vkCreateFramebuffer(ctx_->device(), &framebuffer_info, nullptr, &framebuffer);
 		require_vk_result(result, "failed to create Vulkan framebuffer for swapchain");
-		_framebuffers.emplace_back(framebuffer);
+		framebuffers_.emplace_back(framebuffer);
 	}
 }
 

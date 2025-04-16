@@ -10,17 +10,17 @@ class ImplStorage {
 public:
 	ImplStorage() { // NOLINT(*-pro-type-member-init)
 		static_assert_size_align();
-		new (_storage) T();
+		new (storage_) T();
 	}
 
 	explicit(false) ImplStorage(T&& t) { // NOLINT(*-pro-type-member-init)
 		static_assert_size_align();
-		new (_storage) T(std::move(t));
+		new (storage_) T(std::move(t));
 	}
 
 	ImplStorage(ImplStorage&& other) noexcept { // NOLINT(*-pro-type-member-init)
 		static_assert_size_align();
-		new (_storage) T(std::move(*other));
+		new (storage_) T(std::move(*other));
 	}
 
 	~ImplStorage() {
@@ -33,27 +33,27 @@ public:
 	}
 
 	T& operator*() & noexcept {
-		return *std::launder(reinterpret_cast<T*>(_storage));
+		return *std::launder(reinterpret_cast<T*>(storage_));
 	}
 
 	const T& operator*() const& noexcept {
-		return *std::launder(reinterpret_cast<const T*>(_storage));
+		return *std::launder(reinterpret_cast<const T*>(storage_));
 	}
 
 	T&& operator*() && noexcept {
-		return std::move(*std::launder(reinterpret_cast<T*>(_storage)));
+		return std::move(*std::launder(reinterpret_cast<T*>(storage_)));
 	}
 
 	T* operator->() noexcept {
-		return std::launder(reinterpret_cast<T*>(_storage));
+		return std::launder(reinterpret_cast<T*>(storage_));
 	}
 
 	const T* operator->() const noexcept {
-		return std::launder(reinterpret_cast<const T*>(_storage));
+		return std::launder(reinterpret_cast<const T*>(storage_));
 	}
 
 private:
-	alignas(Align) unsigned char _storage[Size];
+	alignas(Align) unsigned char storage_[Size];
 
 	static void static_assert_size_align() {
 		static_assert(Size >= sizeof(T) && Align >= alignof(T), "Specified size and alignment must be greater or equal to the "

@@ -13,26 +13,26 @@ struct SharedLibrary::Impl {
 SharedLibrary::SharedLibrary(std::string_view path, std::error_condition& error) {
 	std::wstring w_path = windows::utf8_to_utf16(path);
 
-	_impl->module_handle = ::LoadLibraryW(w_path.c_str());
-	if (_impl->module_handle == nullptr) {
+	impl_->module_handle = ::LoadLibraryW(w_path.c_str());
+	if (impl_->module_handle == nullptr) {
 		error = windows::last_error_to_error_condition(::GetLastError());
 		return;
 	}
 }
 
 SharedLibrary::~SharedLibrary() {
-	if (_impl->module_handle != nullptr) {
-		BOOL success = ::FreeLibrary(_impl->module_handle);
+	if (impl_->module_handle != nullptr) {
+		BOOL success = ::FreeLibrary(impl_->module_handle);
 		require(success, "failed to unload shared library");
 	}
 }
 
 SharedLibrary::SharedLibrary(SharedLibrary&& other) noexcept :
-	_impl(std::exchange(other._impl, Impl())) {
+	impl_(std::exchange(other.impl_, Impl())) {
 }
 
 void* SharedLibrary::load_address(const char* name) {
-	return reinterpret_cast<void*>(::GetProcAddress(_impl->module_handle, name));
+	return reinterpret_cast<void*>(::GetProcAddress(impl_->module_handle, name));
 }
 
 } // namespace cltv

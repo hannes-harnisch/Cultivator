@@ -10,12 +10,12 @@ public:
 	~RenderPass();
 
 	VkRenderPass get() const {
-		return _render_pass;
+		return render_pass_;
 	}
 
 private:
-	const DeviceContext* _ctx;
-	VkRenderPass _render_pass = VK_NULL_HANDLE;
+	const DeviceContext* ctx_;
+	VkRenderPass render_pass_ = VK_NULL_HANDLE;
 };
 
 } // namespace cltv
