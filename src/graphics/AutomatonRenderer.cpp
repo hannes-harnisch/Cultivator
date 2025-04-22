@@ -129,7 +129,7 @@ void AutomatonRenderer::record_commands(uint32_t image_index) {
 void AutomatonRenderer::prepare_render_targets(uint32_t initial_live_cell_incidence) {
 	::srand(static_cast<unsigned>(::time(nullptr)));
 
-	const size_t size = sizeof(uint32_t) * back_target_.get_size().area();
+	const size_t size = sizeof(uint32_t) * static_cast<uint32_t>(back_target_.get_size().area());
 	Buffer staging_buffer(ctx_, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 						  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
@@ -139,7 +139,7 @@ void AutomatonRenderer::prepare_render_targets(uint32_t initial_live_cell_incide
 
 	uint32_t* pixels = reinterpret_cast<uint32_t*>(staging_target);
 	for (size_t i = 0; i < size / sizeof(uint32_t); ++i) {
-		*pixels++ = ::rand() % initial_live_cell_incidence == 0 ? 0xFFFFFFFF : 0;
+		*pixels++ = static_cast<uint32_t>(::rand()) % initial_live_cell_incidence == 0 ? 0xFFFFFFFF : 0;
 	}
 	ctx_->lib.vkUnmapMemory(ctx_->device(), staging_buffer.get_memory());
 

@@ -15,7 +15,7 @@ std::optional<std::vector<char>> get_all_file_bytes(const char* path) {
 	}
 
 	std::streampos size = stream.tellg();
-	std::vector<char> bytes(size);
+	std::vector<char> bytes(static_cast<size_t>(size));
 
 	stream.seekg(0, std::ios::beg);
 	stream.read(bytes.data(), size);

@@ -1,6 +1,4 @@
-/.cmake/
-/.idea/
-/.vs/
+/.*/
 /build/
 /CMakeFiles/
 /cmake-build-*

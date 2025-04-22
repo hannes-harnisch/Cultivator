@@ -16,7 +16,7 @@ std::wstring utf8_to_utf16(std::string_view utf8_str) {
 	std::wstring utf16_str(size, L'\0');
 
 	const int written = ::MultiByteToWideChar(CP_UTF8, 0, utf8_str.data(), length, utf16_str.data(), length);
-	utf16_str.resize(written);
+	utf16_str.resize(static_cast<size_t>(written));
 
 	return utf16_str;
 }
@@ -34,13 +34,13 @@ std::string utf16_to_utf8(std::wstring_view utf16_str) {
 	std::string utf8_str(static_cast<size_t>(cap), '\0');
 
 	const int written = ::WideCharToMultiByte(CP_UTF8, 0, utf16_str.data(), length, utf8_str.data(), cap, nullptr, nullptr);
-	utf8_str.resize(written);
+	utf8_str.resize(static_cast<size_t>(written));
 
 	return utf8_str;
 }
 
 std::error_condition last_error_to_error_condition(DWORD last_error) {
-	return std::system_category().default_error_condition(last_error);
+	return std::system_category().default_error_condition(static_cast<int>(last_error));
 }
 
 } // namespace cltv::windows
